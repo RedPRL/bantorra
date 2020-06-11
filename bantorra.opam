@@ -1,0 +1,24 @@
+opam-version: "2.0"
+name: "bantorra"
+version: "~dev"
+synopsis: "Library Management for Source-Based Data"
+description: """
+This package is developed for managing libraries of source-based data.
+"""
+maintainer: "favonia <favonia@gmail.com>"
+authors: "favonia <favonia@gmail.com>"
+license: "Apache 2.0"
+homepage: "https://github.com/favonia/bantorra"
+bug-reports: "https://github.com/favonia/bantorra/issues"
+dev-repo: "git+https://github.com/favonia/bantorra.git"
+depends: [
+  "dune" {>= "2.5"}
+  "bigstringaf" {>= "0.6.1"}
+  "camlzip" {>= "1.10"}
+  "jsonm" {>= "1.0.1"}
+  "lmdb" {>= "1.0"}
+]
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+]

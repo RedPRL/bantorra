@@ -1,0 +1,4 @@
+(library
+ (name Backend)
+ (public_name bantorra.backend)
+ (libraries lmdb jsonm camlzip bigstringaf))
