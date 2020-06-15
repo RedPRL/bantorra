@@ -13,10 +13,8 @@ bug-reports: "https://github.com/favonia/bantorra/issues"
 dev-repo: "git+https://github.com/favonia/bantorra.git"
 depends: [
   "dune" {>= "2.5"}
-  "bigstringaf" {>= "0.6.1"}
-  "camlzip" {>= "1.10"}
-  "jsonm" {>= "1.0.1"}
-  "lmdb" {>= "1.0"}
+  "ezjsonm" {>= "1.1.0"}
+  "ezgzip" {>= "0.2.3"}
 ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]
