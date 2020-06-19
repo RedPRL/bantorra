@@ -99,9 +99,7 @@ let filler_from_json_lexeme_stream (s : _ stream) : bytes -> int =
       | `Partial ->
         let output_len = buf_size - J.Manual.dst_rem encoder in
         if output_len = 0 then
-          (* The above line always returns [`Partial] and thus ignored.
-
-             The documentation seems to indicate [len - J.Manual.dst_rem encoder]
+          (* The documentation seems to indicate [len - J.Manual.dst_rem encoder]
              could be zero when encoding [`End], which would make [Z.compress] think
              the stream has ended. Let's do [`Await] again.
 
