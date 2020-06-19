@@ -31,4 +31,4 @@ let rec ensure_dir path =
     ensure_dir parent;
     Unix.mkdir path 0o777
 
-let atime path = (Unix.stat path).st_atime
+let mtime path = (Unix.stat path).st_mtime
