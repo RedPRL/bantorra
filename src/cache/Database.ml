@@ -24,7 +24,7 @@ let replace_item {root; state} ~key ~value =
   and value = JSON.to_gzip value in
   writefile (root/data_subdir/key) value;
   State.update_atime state ~key;
-  Digest.to_hex @@ Digest.string value
+  Digest.string value
 
 let check_digest d s =
   match d with

@@ -51,7 +51,7 @@ let to_filepath {root; _} ~suffix =
 (** Generate the JSON [key] from immediately available metadata. *)
 let make_key path ~source_digest : JSON.json_value =
   `O [ "path", `A (List.map (fun s -> `String s) path)
-     ; "source_digest", `String (Digest.to_hex source_digest)
+     ; "source_digest", `String source_digest
      ]
 
 let replace_cache {cache; _} path ~source_digest value =
