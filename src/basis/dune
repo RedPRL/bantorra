@@ -1,0 +1,4 @@
+(library
+ (name Basis)
+ (public_name bantorra.basis)
+ (libraries ezjsonm ezgzip))

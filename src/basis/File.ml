@@ -30,3 +30,15 @@ let rec ensure_dir path =
     let parent = Filename.dirname path in
     ensure_dir parent;
     Unix.mkdir path 0o777
+
+let protect_cwd f =
+  let dir = Sys.getcwd () in
+  match f dir with
+  | ans -> Sys.chdir dir; ans
+  | exception ext -> Sys.chdir dir; raise ext
+
+let is_existing_and_regular p =
+  try (Unix.stat p).st_kind = S_REG with _ -> false
+
+let split_path p =
+  Filename.dirname p, Filename.basename p

@@ -1,4 +1,4 @@
 (library
  (name Cache)
  (public_name bantorra.cache)
- (libraries ezjsonm ezgzip))
+ (libraries bantorra.basis))
