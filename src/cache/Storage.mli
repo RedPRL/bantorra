@@ -1,7 +1,7 @@
 (**
    The type of JSON values. Please consult the {{:https://www.json.org/json-en.html} JSON standard} and the {{: https://opam.ocaml.org/packages/jsonm/} OCaml package jsonm} for limitations.
 
-    This is intended to be compatible with the {{:https://opam.ocaml.org/packages/ezjsonm/} OCaml package ezjsonm}.
+   This is intended to be compatible with the {{:https://opam.ocaml.org/packages/ezjsonm/} OCaml package ezjsonm}.
 *)
 type json_value =
   [ `Null
