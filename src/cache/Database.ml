@@ -5,8 +5,8 @@ let state_file = "state"
 let data_subdir = "data"
 
 type t =
-  { root: string
-  ; state: State.t
+  { root : string
+  ; state : State.t
   }
 
 let read_state ~root =
