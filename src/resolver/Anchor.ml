@@ -1,4 +1,4 @@
-open Basis.JSON
+open Basis.YamlIO
 
 let version = "1.0.0"
 
@@ -18,28 +18,28 @@ let default_cache_subdir = "_cache"
 
 let default = {name = None; use_cache = None; libraries = []}
 
-let path_of_json : json_value -> path = list_of_json string_of_json
+let path_of_yaml : yaml -> path = list_of_yaml string_of_yaml
 
 (* XXX this does not detect duplicate or useless keys *)
-let library_of_json_ ms =
+let library_of_yaml_ ms =
   match
     List.assoc_opt "name" ms,
     List.assoc_opt "version" ms,
     List.assoc_opt "mount_point" ms
   with
   | Some name, version, Some mount_point ->
-    path_of_json mount_point,
-    { name = string_of_json name
-    ; version = Option.bind version ostring_of_json
+    path_of_yaml mount_point,
+    { name = string_of_yaml name
+    ; version = Option.bind version ostring_of_yaml
     }
   | _ -> raise IllFormed
 
-let library_of_json =
+let library_of_yaml =
   function
-  | `O ms -> library_of_json_ ms
+  | `O ms -> library_of_yaml_ ms
   | _ -> raise IllFormed
 
-let use_cache_of_json : json_value -> [ `No | `Yes of string option ] option =
+let use_cache_of_yaml : yaml -> [ `No | `Yes of string option ] option =
   function
   | `Null -> None
   | `Bool false -> Some `No
@@ -54,7 +54,7 @@ let check_libraries libs =
   ()
 
 (* XXX this does not detect duplicate or useless keys *)
-let of_json_ (ms : (string * json_value) list) : t =
+let of_yaml_ (ms : (string * yaml) list) : t =
   match
     List.assoc_opt "format" ms,
     List.assoc_opt "name" ms,
@@ -62,21 +62,21 @@ let of_json_ (ms : (string * json_value) list) : t =
     List.assoc_opt "libraries" ms
   with
   | Some (`String format_version), name, use_cache, libraries when format_version = version ->
-    let libraries = Option.fold ~none:[] ~some:(list_of_json library_of_json) libraries in
+    let libraries = Option.fold ~none:[] ~some:(list_of_yaml library_of_yaml) libraries in
     check_libraries libraries;
-    { name = Option.bind name ostring_of_json
-    ; use_cache = Option.bind use_cache use_cache_of_json
+    { name = Option.bind name ostring_of_yaml
+    ; use_cache = Option.bind use_cache use_cache_of_yaml
     ; libraries
     }
   | _ -> raise IllFormed
 
-let of_json : json -> t =
+let of_yaml : yaml -> t =
   function
-  | `O ms -> of_json_ ms
+  | `O ms -> of_yaml_ ms
   | _ -> raise IllFormed
 
 let read archor =
-  try of_json @@ read_plain archor with _ -> default (* XXX some warning here *)
+  try of_yaml @@ read_plain archor with _ -> default (* XXX some warning here *)
 
 let cache_root {use_cache; _} =
   match use_cache with

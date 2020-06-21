@@ -1,4 +1,4 @@
-open Basis.JSON
+open Basis.YamlIO
 
 type path = string list
 type t
@@ -9,15 +9,15 @@ val save_cache : t -> unit
 val iter_deps : (Anchor.lib_name -> unit) -> t -> unit
 
 val to_local_filepath : t -> path -> suffix:string -> string
-val replace_local_cache : t -> path -> source_digest:Digest.t -> json -> Digest.t
-val find_local_cache_opt : t -> path -> source_digest:Digest.t -> cache_digest:Digest.t option -> json option
+val replace_local_cache : t -> path -> source_digest:Digest.t -> yaml -> Digest.t
+val find_local_cache_opt : t -> path -> source_digest:Digest.t -> cache_digest:Digest.t option -> yaml option
 
 val to_filepath :
   global:(Anchor.lib_name -> path -> suffix:string -> string) ->
   t -> path -> suffix:string -> string
 val replace_cache :
-  global:(Anchor.lib_name -> path -> source_digest:Digest.t -> json -> Digest.t) ->
-  t -> path -> source_digest:Digest.t -> json -> Digest.t
+  global:(Anchor.lib_name -> path -> source_digest:Digest.t -> yaml -> Digest.t) ->
+  t -> path -> source_digest:Digest.t -> yaml -> Digest.t
 val find_cache_opt :
-  global:(Anchor.lib_name -> path -> source_digest:Digest.t -> cache_digest:Digest.t option -> json option) ->
-  t -> path -> source_digest:Digest.t -> cache_digest:Digest.t option -> json option
+  global:(Anchor.lib_name -> path -> source_digest:Digest.t -> cache_digest:Digest.t option -> yaml option) ->
+  t -> path -> source_digest:Digest.t -> cache_digest:Digest.t option -> yaml option
