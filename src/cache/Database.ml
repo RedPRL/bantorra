@@ -10,19 +10,22 @@ type t =
   }
 
 let read_state ~root =
-  try State.of_json @@ JSON.readfile (root/state_file) with _ -> State.init ()
+  try State.of_json @@ JSON.read_gzip (root/state_file) with _ -> State.init ()
 
 let init ~root =
   ensure_dir (root/data_subdir);
   {root; state = read_state ~root}
 
 let save {root; state} =
-  JSON.writefile (root/state_file) @@ State.to_json state
+  JSON.write_gzip (root/state_file) @@ State.to_json state
+
+let digest_of_item ~key:_ ~value =
+  Digest.string @@ JSON.to_gzip value
 
 let replace_item {root; state} ~key ~value =
   let key = JSON.digest_of_value key
   and value = JSON.to_gzip value in
-  writefile (root/data_subdir/key) value;
+  writefile_noerr (root/data_subdir/key) value;
   State.update_atime state ~key;
   Digest.string value
 

@@ -1,7 +1,5 @@
 open Basis.JSON
 
-exception IllFormed
-
 type t
 
 val init : unit -> t

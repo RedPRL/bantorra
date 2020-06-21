@@ -13,6 +13,7 @@ bug-reports: "https://github.com/favonia/bantorra/issues"
 dev-repo: "git+https://github.com/favonia/bantorra.git"
 depends: [
   "dune" {>= "2.5"}
+  "ocaml" {>= "4.08.0"}
   "ezjsonm" {>= "1.1.0"}
   "ezgzip" {>= "0.2.3"}
 ]

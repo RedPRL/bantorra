@@ -12,6 +12,8 @@ val init : root:string -> t
 (** [save db] saves the state of the database back to the disk. *)
 val save : t -> unit
 
+val digest_of_item : key:json_value -> value:json -> Digest.t
+
 (** [replace_item db ~key ~value] saves the content on disk and return a digest that
     can be used in [find_item_opt]. It overwrites the content indexed by the same [key]. *)
 val replace_item : t -> key:json_value -> value:json -> Digest.t

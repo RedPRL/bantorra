@@ -1,4 +1,8 @@
-let (/) = Filename.concat
+let (/) p q =
+  if Filename.is_relative q then
+    Filename.concat p q
+  else
+    q
 
 (** Write a string to a file. *)
 let writefile p s =
@@ -9,6 +13,9 @@ let writefile p s =
   with Sys_error _ as e ->
     close_out_noerr ch;
     raise e
+
+let writefile_noerr p s =
+  try writefile p s with _ -> ()
 
 (** Read the entire file as a string. *)
 let readfile p =
@@ -39,6 +46,3 @@ let protect_cwd f =
 
 let is_existing_and_regular p =
   try (Unix.stat p).st_kind = S_REG with _ -> false
-
-let split_path p =
-  Filename.dirname p, Filename.basename p
