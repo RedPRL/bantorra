@@ -12,16 +12,15 @@ type t =
 
 let default_cache_subdir = "_cache"
 
-let init ~root ~anchor =
+let init ~anchor ~root =
   let anchor = Anchor.read @@ root / anchor
   and cache = D.init ~root:(root / default_cache_subdir) in
   {root; anchor; cache}
 
-let save_cache {cache; _} =
-  D.save cache
+let save_state {cache; _} =
+  D.save_state cache
 
-(** @param suffix The suffix should include the dot. *)
-let locate_anchor_and_init ~anchor ~suffix filepath =
+let locate_anchor ~anchor ~suffix filepath =
   if not @@ Sys.file_exists filepath then
     invalid_arg @@ "init_from_filepath: " ^ filepath ^ " does not exist";
   match Filename.chop_suffix_opt ~suffix @@ Filename.basename filepath with
@@ -29,7 +28,7 @@ let locate_anchor_and_init ~anchor ~suffix filepath =
   | Some basename ->
     let rec find_root cwd unitpath_acc =
       if is_existing_and_regular anchor then
-        init ~root:cwd ~anchor, unitpath_acc
+        cwd, unitpath_acc
       else
         let parent = Filename.dirname cwd in
         if parent = cwd then
@@ -56,9 +55,6 @@ let to_local_filepath {root; _} path ~suffix =
   | [] -> invalid_arg "to_rel_filepath: empty unit path"
   | path -> root / String.concat Filename.dir_sep path ^ suffix
 
-(** @param suffix The suffix should include the dot. *)
-let to_filepath = dispatch_path to_local_filepath
-
 (** Generate the JSON [key] from immediately available metadata. *)
 let make_local_key path ~source_digest : Marshal.value =
   `O [ "path", `A (List.map (fun s -> `String s) path)
@@ -73,5 +69,7 @@ let find_local_cache_opt {cache; _} path ~source_digest ~cache_digest =
   let key = make_local_key path ~source_digest in
   D.find_item_opt cache ~key ~digest:cache_digest
 
+(** @param suffix The suffix should include the dot. *)
+let to_filepath = dispatch_path to_local_filepath
 let replace_cache = dispatch_path replace_local_cache
 let find_cache_opt = dispatch_path find_local_cache_opt

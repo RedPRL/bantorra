@@ -14,11 +14,16 @@ let check_dep config =
     (* XXX better error message with version *)
     failwith ("Library "^dep.name^" with a correct version cannot be found.")
 
-let locate_anchor_and_init ~app_name ~anchor ~suffix path =
+let init ~app_name ~anchor ~root =
   let config = Config.init ~app_name in
-  let cur_lib, path = Library.locate_anchor_and_init ~anchor ~suffix path in
+  let cur_lib = Library.init ~anchor ~root in
   check_dep config cur_lib;
-  {anchor; cur_lib; config; loaded_libs = Hashtbl.create @@ Config.length_libs config}, path
+  let loaded_libs = Hashtbl.create @@ Config.length_libs config in
+  Hashtbl.replace loaded_libs root cur_lib;
+  {anchor; cur_lib; config; loaded_libs}
+
+let save_state {loaded_libs; _} =
+  Hashtbl.iter (fun _ lib -> Library.save_state lib) loaded_libs
 
 let rec_resolver f lm =
   let rec global name =
@@ -36,5 +41,6 @@ let rec_resolver f lm =
   in
   f ~global lm.cur_lib
 
+let to_filepath = rec_resolver Library.to_filepath
 let replace_cache = rec_resolver Library.replace_cache
 let find_cache_opt = rec_resolver Library.find_cache_opt
