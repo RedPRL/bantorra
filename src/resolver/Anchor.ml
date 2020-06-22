@@ -10,13 +10,10 @@ type lib_name =
 
 type t =
   { name : string option
-  ; use_cache : [ `No | `Yes of string option ] option
   ; libraries : (path * lib_name) list
   }
 
-let default_cache_subdir = "_cache"
-
-let default = {name = None; use_cache = None; libraries = []}
+let default = {name = None; libraries = []}
 
 let to_path : Marshal.value -> path = Marshal.to_list Marshal.to_string
 
@@ -39,14 +36,6 @@ let to_library =
   | `O ms -> to_library_ ms
   | _ -> raise Marshal.IllFormed
 
-let use_cache_of_yaml : Marshal.value -> [ `No | `Yes of string option ] option =
-  function
-  | `Null -> None
-  | `Bool false -> Some `No
-  | `Bool true -> Some (`Yes None)
-  | `String s -> Some (`Yes (Some s))
-  | _ -> raise Marshal.IllFormed
-
 let check_libraries libs =
   let mount_points = List.map (fun (mp, _) -> mp) libs in
   if List.exists ((=) []) mount_points then raise Marshal.IllFormed;
@@ -58,14 +47,12 @@ let of_yaml_ (ms : (string * Marshal.value) list) : t =
   match
     List.assoc_opt "format" ms,
     List.assoc_opt "name" ms,
-    List.assoc_opt "use_cache" ms,
     List.assoc_opt "libraries" ms
   with
-  | Some (`String format_version), name, use_cache, libraries when format_version = version ->
+  | Some (`String format_version), name, libraries when format_version = version ->
     let libraries = Option.fold ~none:[] ~some:(Marshal.to_list to_library) libraries in
     check_libraries libraries;
     { name = Option.bind name Marshal.to_ostring
-    ; use_cache = Option.bind use_cache use_cache_of_yaml
     ; libraries
     }
   | _ -> raise Marshal.IllFormed
@@ -77,12 +64,6 @@ let deserialize : Marshal.value -> t =
 
 let read archor =
   try deserialize @@ Marshal.read_plain archor with _ -> default (* XXX some warning here *)
-
-let cache_root {use_cache; _} =
-  match use_cache with
-  | None -> Some default_cache_subdir
-  | Some `No -> None
-  | Some `Yes r -> Some (Option.value r ~default:default_cache_subdir)
 
 let iter_lib_names f {libraries; _} =
   List.iter (fun (_, lib_name) -> f lib_name) libraries

@@ -8,19 +8,19 @@ type t =
   { root : string
   ; anchor_path : string
   ; anchor : Anchor.t
-  ; cache : D.t option
+  ; cache : D.t
   }
+
+let default_cache_subdir = "_cache"
 
 let init ~root ~anchor_path =
   let anchor_path = root / anchor_path in
-  let anchor = Anchor.read anchor_path in
-  let cache = Anchor.cache_root anchor |> Option.map @@ fun cache_root ->
-    D.init ~root:(root / cache_root)
-  in
+  let anchor = Anchor.read anchor_path
+  and cache = D.init ~root:(root / default_cache_subdir) in
   {root; anchor_path; anchor; cache}
 
 let save_cache {cache; _} =
-  Option.fold ~none:() ~some:D.save cache
+  D.save cache
 
 (** @param suffix The suffix should include the dot. *)
 let locate_anchor_and_init ~anchor_path ~suffix filepath =
@@ -71,13 +71,9 @@ let make_local_key path ~source_digest : Marshal.value =
 
 let replace_local_cache {cache; _} path ~source_digest value =
   let key = make_local_key path ~source_digest in
-  match cache with
-  | None -> D.digest_of_item ~key ~value
-  | Some cache ->
-    D.replace_item cache ~key ~value
+  D.replace_item cache ~key ~value
 
 let find_local_cache_opt {cache; _} path ~source_digest ~cache_digest =
-  Option.bind cache @@ fun cache ->
   let key = make_local_key path ~source_digest in
   D.find_item_opt cache ~key ~digest:cache_digest
 
