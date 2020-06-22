@@ -6,34 +6,30 @@ type path = string list
 
 type t =
   { root : string
-  ; anchor_path : string
   ; anchor : Anchor.t
   ; cache : D.t
   }
 
 let default_cache_subdir = "_cache"
 
-let init ~root ~anchor_path =
-  let anchor_path = root / anchor_path in
-  let anchor = Anchor.read anchor_path
+let init ~root ~anchor =
+  let anchor = Anchor.read @@ root / anchor
   and cache = D.init ~root:(root / default_cache_subdir) in
-  {root; anchor_path; anchor; cache}
+  {root; anchor; cache}
 
 let save_cache {cache; _} =
   D.save cache
 
 (** @param suffix The suffix should include the dot. *)
-let locate_anchor_and_init ~anchor_path ~suffix filepath =
+let locate_anchor_and_init ~anchor ~suffix filepath =
   if not @@ Sys.file_exists filepath then
     invalid_arg @@ "init_from_filepath: " ^ filepath ^ " does not exist";
-  if not @@ Filename.is_relative anchor_path then
-    invalid_arg @@ "init_from_filepath: " ^ anchor_path ^ " should be a relative path";
   match Filename.chop_suffix_opt ~suffix @@ Filename.basename filepath with
   | None -> invalid_arg @@ "init_from_filepath: " ^ filepath ^ " does not have suffix " ^ suffix
   | Some basename ->
     let rec find_root cwd unitpath_acc =
-      if is_existing_and_regular anchor_path then
-        init ~root:cwd ~anchor_path, unitpath_acc
+      if is_existing_and_regular anchor then
+        init ~root:cwd ~anchor, unitpath_acc
       else
         let parent = Filename.dirname cwd in
         if parent = cwd then

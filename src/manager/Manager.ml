@@ -1,24 +1,38 @@
 open BantorraLibrary
 
 type t =
-  { cur_lib : Library.t
-  ; global_libs : (Anchor.lib_name, Library.t) Hashtbl.t
+  { anchor : string
+  ; cur_lib : Library.t
+  ; config : Config.t
+  ; loaded_libs : (string, Library.t) Hashtbl.t
   }
 type path = string list
 
-(* TODO global library mapping *)
-let locate_anchor_and_init ~anchor_path ~suffix path =
-  let cur_lib, path = Library.locate_anchor_and_init ~anchor_path ~suffix path
-  and global_libs = Hashtbl.create 0 in
-  Library.iter_deps (fun _ -> failwith "No global libraries") cur_lib;
-  { cur_lib
-  ; global_libs
-  },
-  path
+let check_dep config =
+  Library.iter_deps @@ fun dep ->
+  if not @@ Config.mem_libs config dep then
+    (* XXX better error message with version *)
+    failwith ("Library "^dep.name^" with a correct version cannot be found.")
+
+let locate_anchor_and_init ~app_name ~anchor ~suffix path =
+  let config = Config.init ~app_name in
+  let cur_lib, path = Library.locate_anchor_and_init ~anchor ~suffix path in
+  check_dep config cur_lib;
+  {anchor; cur_lib; config; loaded_libs = Hashtbl.create @@ Config.length_libs config}, path
 
 let rec_resolver f lm =
   let rec global name =
-    f ~global @@ Hashtbl.find lm.global_libs name
+    let lib_root = Config.find_libs lm.config name in
+    let lib =
+      match Hashtbl.find_opt lm.loaded_libs lib_root with
+      | Some lib -> lib
+      | None ->
+        let lib = Library.init ~root:lib_root ~anchor:lm.anchor in
+        check_dep lm.config lib;
+        Hashtbl.replace lm.loaded_libs lib_root lib;
+        lib
+    in
+    f ~global lib
   in
   f ~global lm.cur_lib
 

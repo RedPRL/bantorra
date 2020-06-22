@@ -2,8 +2,8 @@ open BantorraBasis
 
 type path = string list
 type t
-val init : root:string -> anchor_path:string -> t
-val locate_anchor_and_init : anchor_path:string -> suffix:string -> string -> t * path
+val init : root:string -> anchor:string -> t
+val locate_anchor_and_init : anchor:string -> suffix:string -> string -> t * path
 val save_cache : t -> unit
 
 val iter_deps : (Anchor.lib_name -> unit) -> t -> unit
