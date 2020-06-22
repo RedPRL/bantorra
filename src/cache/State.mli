@@ -1,9 +1,9 @@
-open Basis.YamlIO
+open Basis
 
 type t
 
 val init : unit -> t
-val of_yaml : yaml -> t
-val to_yaml : t -> yaml
+val deserialize : Marshal.t -> t
+val serialize : t -> Marshal.t
 
 val update_atime : t -> key:string -> unit

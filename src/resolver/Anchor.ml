@@ -1,4 +1,4 @@
-open Basis.YamlIO
+open Basis
 
 let version = "1.0.0"
 
@@ -18,43 +18,43 @@ let default_cache_subdir = "_cache"
 
 let default = {name = None; use_cache = None; libraries = []}
 
-let path_of_yaml : yaml -> path = list_of_yaml string_of_yaml
+let to_path : Marshal.value -> path = Marshal.to_list Marshal.to_string
 
 (* XXX this does not detect duplicate or useless keys *)
-let library_of_yaml_ ms =
+let to_library_ ms =
   match
     List.assoc_opt "name" ms,
     List.assoc_opt "version" ms,
     List.assoc_opt "mount_point" ms
   with
   | Some name, version, Some mount_point ->
-    path_of_yaml mount_point,
-    { name = string_of_yaml name
-    ; version = Option.bind version ostring_of_yaml
+    to_path mount_point,
+    { name = Marshal.to_string name
+    ; version = Option.bind version Marshal.to_ostring
     }
-  | _ -> raise IllFormed
+  | _ -> raise Marshal.IllFormed
 
-let library_of_yaml =
+let to_library =
   function
-  | `O ms -> library_of_yaml_ ms
-  | _ -> raise IllFormed
+  | `O ms -> to_library_ ms
+  | _ -> raise Marshal.IllFormed
 
-let use_cache_of_yaml : yaml -> [ `No | `Yes of string option ] option =
+let use_cache_of_yaml : Marshal.value -> [ `No | `Yes of string option ] option =
   function
   | `Null -> None
   | `Bool false -> Some `No
   | `Bool true -> Some (`Yes None)
   | `String s -> Some (`Yes (Some s))
-  | _ -> raise IllFormed
+  | _ -> raise Marshal.IllFormed
 
 let check_libraries libs =
   let mount_points = List.map (fun (mp, _) -> mp) libs in
-  if List.exists ((=) []) mount_points then raise IllFormed;
-  if Basis.Util.has_duplication mount_points then raise IllFormed;
+  if List.exists ((=) []) mount_points then raise Marshal.IllFormed;
+  if Basis.Util.has_duplication mount_points then raise Marshal.IllFormed;
   ()
 
 (* XXX this does not detect duplicate or useless keys *)
-let of_yaml_ (ms : (string * yaml) list) : t =
+let of_yaml_ (ms : (string * Marshal.value) list) : t =
   match
     List.assoc_opt "format" ms,
     List.assoc_opt "name" ms,
@@ -62,21 +62,21 @@ let of_yaml_ (ms : (string * yaml) list) : t =
     List.assoc_opt "libraries" ms
   with
   | Some (`String format_version), name, use_cache, libraries when format_version = version ->
-    let libraries = Option.fold ~none:[] ~some:(list_of_yaml library_of_yaml) libraries in
+    let libraries = Option.fold ~none:[] ~some:(Marshal.to_list to_library) libraries in
     check_libraries libraries;
-    { name = Option.bind name ostring_of_yaml
+    { name = Option.bind name Marshal.to_ostring
     ; use_cache = Option.bind use_cache use_cache_of_yaml
     ; libraries
     }
-  | _ -> raise IllFormed
+  | _ -> raise Marshal.IllFormed
 
-let of_yaml : yaml -> t =
+let deserialize : Marshal.value -> t =
   function
   | `O ms -> of_yaml_ ms
-  | _ -> raise IllFormed
+  | _ -> raise Marshal.IllFormed
 
 let read archor =
-  try of_yaml @@ read_plain archor with _ -> default (* XXX some warning here *)
+  try deserialize @@ Marshal.read_plain archor with _ -> default (* XXX some warning here *)
 
 let cache_root {use_cache; _} =
   match use_cache with

@@ -64,7 +64,7 @@ let to_local_filepath {root; _} path ~suffix =
 let to_filepath = dispatch_path to_local_filepath
 
 (** Generate the JSON [key] from immediately available metadata. *)
-let make_local_key path ~source_digest : YamlIO.yaml =
+let make_local_key path ~source_digest : Marshal.value =
   `O [ "path", `A (List.map (fun s -> `String s) path)
      ; "source_digest", `String source_digest
      ]
