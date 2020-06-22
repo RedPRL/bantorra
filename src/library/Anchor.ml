@@ -1,4 +1,4 @@
-open Basis
+open BantorraBasis
 
 let version = "1.0.0"
 
@@ -39,7 +39,7 @@ let to_library =
 let check_libraries libs =
   let mount_points = List.map (fun (mp, _) -> mp) libs in
   if List.exists ((=) []) mount_points then raise Marshal.IllFormed;
-  if Basis.Util.has_duplication mount_points then raise Marshal.IllFormed;
+  if BantorraBasis.Util.has_duplication mount_points then raise Marshal.IllFormed;
   ()
 
 (* XXX this does not detect duplicate or useless keys *)

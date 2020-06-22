@@ -1,3 +1,5 @@
+open BantorraLibrary
+
 type t =
   { cur_lib : Library.t
   ; global_libs : (Anchor.lib_name, Library.t) Hashtbl.t

@@ -1,4 +1,4 @@
-open Cache
+open BantorraCache
 let () = print_endline "Testing the database located at /tmp/bantorra/testing"
 let db = Database.init ~root:"/tmp/bantorra/testing"
 let () = print_endline "Adding an item..."

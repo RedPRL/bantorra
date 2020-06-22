@@ -1,4 +1,4 @@
-open Basis
+open BantorraBasis
 
 type t
 type path = string list

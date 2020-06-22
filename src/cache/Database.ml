@@ -1,5 +1,5 @@
-open Basis
-open Basis.File
+open BantorraBasis
+open BantorraBasis.File
 
 let state_file = "state"
 let data_subdir = "data"
