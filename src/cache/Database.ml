@@ -16,7 +16,7 @@ let init ~root =
   ensure_dir (root/data_subdir);
   {root; state = read_state ~root}
 
-let save {root; state} =
+let save_state {root; state} =
   Marshal.write_gzip (root/state_file) @@ State.serialize state
 
 let digest_of_item ~key:_ ~value =

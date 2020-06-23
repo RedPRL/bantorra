@@ -9,8 +9,8 @@ type t
 *)
 val init : root:string -> t
 
-(** [save db] saves the state of the database back to the disk. *)
-val save : t -> unit
+(** [save_state db] saves the state of the database back to the disk. *)
+val save_state : t -> unit
 
 val digest_of_item : key:Marshal.value -> value:Marshal.t -> Digest.t
 

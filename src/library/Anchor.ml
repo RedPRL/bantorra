@@ -15,51 +15,54 @@ type t =
 
 let default = {name = None; libraries = []}
 
-let to_path : Marshal.value -> path = Marshal.to_list Marshal.to_string
-
-(* XXX this does not detect duplicate or useless keys *)
-let to_library_ ms =
-  match
-    List.assoc_opt "name" ms,
-    List.assoc_opt "version" ms,
-    List.assoc_opt "mount_point" ms
-  with
-  | Some name, version, Some mount_point ->
-    to_path mount_point,
-    { name = Marshal.to_string name
-    ; version = Option.bind version Marshal.to_ostring
-    }
-  | _ -> raise Marshal.IllFormed
-
-let to_library =
-  function
-  | `O ms -> to_library_ ms
-  | _ -> raise Marshal.IllFormed
-
 let check_libraries libs =
   let mount_points = List.map (fun (mp, _) -> mp) libs in
   if List.exists ((=) []) mount_points then raise Marshal.IllFormed;
   if BantorraBasis.Util.has_duplication mount_points then raise Marshal.IllFormed;
   ()
 
-(* XXX this does not detect duplicate or useless keys *)
-let of_yaml_ (ms : (string * Marshal.value) list) : t =
-  match
-    List.assoc_opt "format" ms,
-    List.assoc_opt "name" ms,
-    List.assoc_opt "libraries" ms
-  with
-  | Some (`String format_version), name, libraries when format_version = version ->
-    let libraries = Option.fold ~none:[] ~some:(Marshal.to_list to_library) libraries in
-    check_libraries libraries;
-    { name = Option.bind name Marshal.to_ostring
-    ; libraries
-    }
-  | _ -> raise Marshal.IllFormed
+module M =
+struct
+  let to_path : Marshal.value -> path = Marshal.to_list Marshal.to_string
+
+  (* XXX this does not detect duplicate or useless keys *)
+  let to_library_ ms =
+    match
+      List.assoc_opt "name" ms,
+      List.assoc_opt "version" ms,
+      List.assoc_opt "mount_point" ms
+    with
+    | Some name, version, Some mount_point ->
+      to_path mount_point,
+      { name = Marshal.to_string name
+      ; version = Option.bind version Marshal.to_ostring
+      }
+    | _ -> raise Marshal.IllFormed
+
+  let to_library =
+    function
+    | `O ms -> to_library_ ms
+    | _ -> raise Marshal.IllFormed
+end
 
 let deserialize : Marshal.value -> t =
   function
-  | `O ms -> of_yaml_ ms
+  | `O ms ->
+    begin
+      (* XXX this does not detect duplicate or useless keys *)
+      match
+        List.assoc_opt "format" ms,
+        List.assoc_opt "name" ms,
+        List.assoc_opt "libraries" ms
+      with
+      | Some (`String format_version), name, libraries when format_version = version ->
+        let libraries = Option.fold ~none:[] ~some:(Marshal.to_list M.to_library) libraries in
+        check_libraries libraries;
+        { name = Option.bind name Marshal.to_ostring
+        ; libraries
+        }
+      | _ -> raise Marshal.IllFormed
+    end
   | _ -> raise Marshal.IllFormed
 
 let read archor =

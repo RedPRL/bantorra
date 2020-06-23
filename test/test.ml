@@ -18,5 +18,5 @@ let () =
   match Database.find_item_opt db ~key:`Null ~digest:(Some "123") with
   | None -> ()
   | _ -> assert false
-let () = print_endline "Saving the database meta information..."
-let () = Database.save db
+let () = print_endline "Saving the database state..."
+let () = Database.save_state db
