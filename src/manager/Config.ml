@@ -33,7 +33,7 @@ let serialize ({libraries} : t) : Marshal.value =
   `O ["format", `String version; "libraries", `A libraries]
 
 let config_filepath ~app_name =
-  let app_config_home = OS.get_config_home () / app_name in
+  let app_config_home = Xdg.get_config_home ~app_name in
   File.ensure_dir app_config_home;
   app_config_home / "libraries"
 
