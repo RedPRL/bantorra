@@ -1,6 +1,6 @@
 open BantorraBasis
 
-(** This library is intended to be used by the library manager. *)
+(** This library can be used with or without library managers. *)
 
 (** {1 Types} *)
 
@@ -36,7 +36,21 @@ val save_state : t -> unit
 val iter_deps : (Anchor.lib_ref -> unit) -> t -> unit
 (** Save the current state into disk. *)
 
-(** {1 Hooks for Library Management} *)
+(** {2 Accessors that Ignore Dependencies} *)
+
+val to_local_filepath : t -> unitpath -> suffix:string -> string
+(** [to_local_filepath lib unitpath ~suffix] turns a unit path into a file path appended with [suffix]. *)
+
+val replace_local_cache : t -> unitpath -> source_digest:Digest.t -> Marshal.t -> Digest.t
+(** [replace_local_cache lib unitpath ~source_digest value] replaces the cached content associated with [unitpath] and
+    [source_digest] with [value]. It returns the digest of the stored cache. *)
+
+val find_local_cache_opt : t -> unitpath -> source_digest:Digest.t -> cache_digest:Digest.t option -> Marshal.t option
+(** [find_local_cache_opt m unitpath ~source_digest ~cache_digest value] finds the cached content associated with [unitpath] and
+    [source_digest]. If [cache_digest] is [None], it means the digest checking is skipped. One should use the digest
+    returned by [replace_cache] whenever possible. *)
+
+(** {1 Hooks for Library Managers} *)
 
 (** The following API is for a library manager to chain all the libraries together.
     Please use the high-level API in {{:../../Bantorra/Manager/index.html}BantorraManager.Manager} instead. *)
@@ -52,7 +66,7 @@ val to_filepath :
 val replace_cache :
   global:(cur_root:string -> Anchor.lib_ref -> unitpath -> source_digest:Digest.t -> Marshal.t -> Digest.t) ->
   t -> unitpath -> source_digest:Digest.t -> Marshal.t -> Digest.t
-(** [replace_cache ~global lib unitpath ~source_digest value] replaces the cache associated with [unitpath] and
+(** [replace_cache ~global lib unitpath ~source_digest value] replaces the cached content associated with [unitpath] and
     [source_digest] with [value]. It returns the digest of the stored cache.
 
     @param global The global cache replacer for unit paths pointing to other libraries.
@@ -62,7 +76,7 @@ val replace_cache :
 val find_cache_opt :
   global:(cur_root:string -> Anchor.lib_ref -> unitpath -> source_digest:Digest.t -> cache_digest:Digest.t option -> Marshal.t option) ->
   t -> unitpath -> source_digest:Digest.t -> cache_digest:Digest.t option -> Marshal.t option
-(** [find_cache ~global lib unitpath ~source_digest ~cache_digest value] finds the cache associated with [unitpath] and
+(** [find_cache_opt ~global lib unitpath ~source_digest ~cache_digest value] finds the cached content associated with [unitpath] and
     [source_digest]. If [cache_digest] is [None], it means the digest checking is skipped. One should use the digest
     returned by [replace_cache] whenever possible.
 
