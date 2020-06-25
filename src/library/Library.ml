@@ -2,7 +2,7 @@ open BantorraBasis
 open BantorraBasis.File
 module S = BantorraCache.Store
 
-type path = string list
+type unitpath = Anchor.unitpath
 
 type t =
   { root : string
@@ -29,7 +29,7 @@ let locate_anchor ~anchor ~suffix filepath =
     let root, unitpath = locate_anchor ~anchor @@ File.normalize_dir @@ Filename.dirname filepath in
     root, unitpath @ [basename]
 
-let iter_deps f {anchor; _} = Anchor.iter_lib_refs f anchor
+let iter_deps f {anchor; _} = Anchor.iter_deps f anchor
 
 let dispatch_path local ~global lib path =
   match Anchor.dispatch_path lib.anchor path with

@@ -1,16 +1,40 @@
 open BantorraBasis
 
 type t
+(** The type of anchors. An anchor marks the root of a library
+    and records dependencies on other libraries. See {!val:read}. *)
 
-type path = string list
-type info = Marshal.value
+type unitpath = string list
+(** The type of unit paths. *)
+
+type res_args = Marshal.value
+(** The type of arguments sent to the library resolver. *)
+
 type lib_ref =
-  { resolver : string
-  ; info : info
+  { resolver : string (** The name of the library resolver. *)
+  ; res_args : res_args (** The arguments to the library resolver. *)
   }
+(** The type of library references to be resolved. *)
 
 val read : string -> t
+(** [read path] read the content of an anchor file.
 
-val iter_lib_refs : (lib_ref -> unit) -> t -> unit
+    Here is a sample anchor file:
+    {v
+formats: "1.0.0"
+deps:
+  - mount_point: [lib, num]
+    resolver: builtin
+    res_args: number
+    v}
 
-val dispatch_path : t -> path -> (lib_ref * path) option
+    The argument format [res_args] is determined by the resolver "[builtin]".
+*)
+
+val iter_deps : (lib_ref -> unit) -> t -> unit
+(** [iter_lib_refs f a] runs [f] on each dependency listed in the anchor [a]. *)
+
+val dispatch_path : t -> unitpath -> (lib_ref * unitpath) option
+(** [dispatch_path a p] resolves the unit path [p] to [Some (ref, p')] if it points to
+    another unit in another library referenced by [ref] and [p'],
+    or [None] if it is a local unit path. *)
