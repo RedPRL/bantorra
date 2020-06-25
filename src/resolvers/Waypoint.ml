@@ -29,7 +29,7 @@ let deserialize : Marshal.value -> t =
   | _ -> raise Marshal.IllFormed
 
 (* XXX errors are not handled *)
-let rec lookup_waypoint_ ~landmark cur_root lib_name k =
+let rec lookup_waypoint ~landmark cur_root lib_name k =
   let waypoints = deserialize @@ Marshal.read_plain @@ cur_root / landmark in
   match Hashtbl.find_opt waypoints lib_name with
   | None -> k ()
@@ -37,20 +37,20 @@ let rec lookup_waypoint_ ~landmark cur_root lib_name k =
   | Some Indirect {next; rename} ->
     let cur_root = File.join @@ cur_root :: next in
     let lib_name = Option.value rename ~default:lib_name in
-    lookup_waypoint_ ~landmark cur_root lib_name @@ fun () -> raise Not_found
+    lookup_waypoint ~landmark cur_root lib_name @@ fun () -> raise Not_found
 
-let rec lookup_waypoint ~landmark cur_root lib_name =
+let rec lookup_waypoint_in_ancestors ~landmark cur_root lib_name =
   let cur_root, _ = File.locate_anchor ~anchor:landmark cur_root in
-  lookup_waypoint_ ~landmark cur_root lib_name @@ fun () ->
-  lookup_waypoint ~landmark (Filename.dirname cur_root) lib_name
+  lookup_waypoint ~landmark cur_root lib_name @@ fun () ->
+  lookup_waypoint_in_ancestors ~landmark (Filename.dirname cur_root) lib_name
 
 let resolver ~strict_checking ~landmark =
   let fast_checker ~cur_root r =
     if strict_checking then
-      try ignore @@ lookup_waypoint ~landmark cur_root @@ Marshal.to_string r; true with _ -> false
+      try ignore @@ lookup_waypoint_in_ancestors ~landmark cur_root @@ Marshal.to_string r; true with _ -> false
     else
       try ignore @@ Marshal.to_string r; true with _ -> false
   and resolver ~cur_root r =
-    try Option.some @@ lookup_waypoint ~landmark cur_root @@ Marshal.to_string r with _ -> None
+    try Option.some @@ lookup_waypoint_in_ancestors ~landmark cur_root @@ Marshal.to_string r with _ -> None
   in
   Resolver.make ~fast_checker resolver
