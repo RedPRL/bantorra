@@ -45,7 +45,7 @@ let rec lookup_waypoint ~landmark cur_root lib_name =
   lookup_waypoint ~landmark (Filename.dirname cur_root) lib_name
 
 let resolver ~strict_checking ~landmark =
-  let checker ~cur_root r =
+  let fast_checker ~cur_root r =
     if strict_checking then
       try ignore @@ lookup_waypoint ~landmark cur_root @@ Marshal.to_string r; true with _ -> false
     else
@@ -53,4 +53,4 @@ let resolver ~strict_checking ~landmark =
   and resolver ~cur_root r =
     try Option.some @@ lookup_waypoint ~landmark cur_root @@ Marshal.to_string r with _ -> None
   in
-  Resolver.make ~checker resolver
+  Resolver.make ~fast_checker resolver

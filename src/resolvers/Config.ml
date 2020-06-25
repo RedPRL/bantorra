@@ -60,7 +60,7 @@ let init ~app_name =
 
 let resolver ~app_name =
   let config = init ~app_name in
-  let checker ~cur_root:_ r = try Hashtbl.mem config.dict @@ M.to_info r with _ -> false
+  let fast_checker ~cur_root:_ r = try Hashtbl.mem config.dict @@ M.to_info r with _ -> false
   and resolver ~cur_root:_ r = try Hashtbl.find_opt config.dict @@ M.to_info r with _ -> None
   in
-  Resolver.make ~checker resolver
+  Resolver.make ~fast_checker resolver

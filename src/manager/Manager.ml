@@ -13,7 +13,7 @@ let check_dep resolvers root =
   match Hashtbl.find_opt resolvers resolver with
   | None -> failwith ("Unknown resolver: "^resolver)
   | Some r ->
-    if not (Resolver.check r ~cur_root:root info) then
+    if not (Resolver.fast_check r ~cur_root:root info) then
       failwith ("Library "^Resolver.dump_info r ~cur_root:root info^" could not be found.")
 
 let init ~resolvers ~anchor ~root =
