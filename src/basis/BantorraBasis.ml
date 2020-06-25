@@ -1,3 +1,5 @@
+(** This library implements basic routines used by other libraries. *)
+
 module File = File
 (** Routines to handle file paths and basic I/O. *)
 
