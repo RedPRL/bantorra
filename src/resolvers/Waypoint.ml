@@ -8,6 +8,8 @@ type info = Direct of {at: string list} | Indirect of {next: string list; rename
 
 type t = (string, info) Hashtbl.t
 
+let cache : (string, t) Hashtbl.t = Hashtbl.create 10
+
 module M =
 struct
   let to_info : Marshal.value -> info =
@@ -28,9 +30,20 @@ let deserialize : Marshal.value -> t =
     Hashtbl.of_seq @@ Seq.map (fun (n, i) -> n, M.to_info i) @@ List.to_seq dict
   | _ -> raise Marshal.IllFormed
 
+let get_waypoints ~landmark root =
+  match Hashtbl.find_opt cache root with
+  | Some waypoints -> waypoints
+  | None ->
+    let waypoints = deserialize @@ Marshal.read_plain @@ root / landmark in
+    Hashtbl.replace cache root waypoints;
+    waypoints
+
+let clear_cached_waypoints () =
+  Hashtbl.clear cache
+
 (* XXX errors are not handled *)
 let rec lookup_waypoint ~landmark cur_root lib_name k =
-  let waypoints = deserialize @@ Marshal.read_plain @@ cur_root / landmark in
+  let waypoints = get_waypoints ~landmark cur_root in
   match Hashtbl.find_opt waypoints lib_name with
   | None -> k ()
   | Some Direct {at} -> File.join @@ cur_root :: at
