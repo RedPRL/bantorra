@@ -4,6 +4,8 @@ let (/) p q =
   else
     q
 
+let join = List.fold_left (/) Filename.current_dir_name
+
 (** Write a string to a file. *)
 let writefile p s =
   let ch = open_out_bin p in
@@ -44,5 +46,42 @@ let protect_cwd f =
   | ans -> Sys.chdir dir; ans
   | exception ext -> Sys.chdir dir; raise ext
 
+let normalize_dir dir =
+  protect_cwd @@ fun _ -> Sys.chdir dir; Sys.getcwd ()
+
 let is_existing_and_regular p =
   try (Unix.stat p).st_kind = S_REG with _ -> false
+
+let locate_anchor ~anchor start =
+  let rec find_root cwd unitpath_acc =
+    if is_existing_and_regular anchor then
+      cwd, unitpath_acc
+    else
+      let parent = Filename.dirname cwd in
+      if parent = cwd then
+        raise Not_found
+      else begin
+        Sys.chdir parent;
+        find_root parent @@ Filename.basename cwd :: unitpath_acc
+      end
+  in
+  protect_cwd @@ fun _ ->
+  Sys.chdir @@ Filename.dirname start;
+  find_root (Sys.getcwd ()) []
+
+let locate_anchor_ ~anchor start =
+  let rec find_root cwd =
+    if is_existing_and_regular anchor then
+      cwd
+    else
+      let parent = Filename.dirname cwd in
+      if parent = cwd then
+        raise Not_found
+      else begin
+        Sys.chdir parent;
+        find_root parent
+      end
+  in
+  protect_cwd @@ fun _ ->
+  Sys.chdir @@ Filename.dirname start;
+  find_root (Sys.getcwd ())

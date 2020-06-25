@@ -26,21 +26,8 @@ let locate_anchor ~anchor ~suffix filepath =
   match Filename.chop_suffix_opt ~suffix @@ Filename.basename filepath with
   | None -> invalid_arg @@ "init_from_filepath: " ^ filepath ^ " does not have suffix " ^ suffix
   | Some basename ->
-    let rec find_root cwd unitpath_acc =
-      if is_existing_and_regular anchor then
-        cwd, unitpath_acc
-      else
-        let parent = Filename.dirname cwd in
-        if parent = cwd then
-          raise Not_found
-        else begin
-          Sys.chdir parent;
-          find_root parent @@ Filename.basename cwd :: unitpath_acc
-        end
-    in
-    protect_cwd @@ fun _ ->
-    Sys.chdir @@ Filename.dirname filepath;
-    find_root (Sys.getcwd ()) [basename]
+    let root, unitpath = locate_anchor ~anchor @@ File.normalize_dir @@ Filename.dirname filepath in
+    root, unitpath @ [basename]
 
 let iter_deps f {anchor; _} = Anchor.iter_lib_refs f anchor
 
@@ -53,7 +40,7 @@ let dispatch_path local ~global lib path =
 let to_local_filepath {root; _} path ~suffix =
   match path with
   | [] -> invalid_arg "to_rel_filepath: empty unit path"
-  | path -> root / String.concat Filename.dir_sep path ^ suffix
+  | path -> File.join (root :: path) ^ suffix
 
 (** Generate the JSON [key] from immediately available metadata. *)
 let make_local_key path ~source_digest : Marshal.value =
