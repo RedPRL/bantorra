@@ -16,12 +16,12 @@ let check_dep resolvers root =
     if not (Resolver.fast_check r ~cur_root:root info) then
       failwith ("Library "^Resolver.dump_info r ~cur_root:root info^" could not be found.")
 
-let init ~resolvers ~anchor ~root =
-  let cur_lib = Library.init ~anchor ~root in
+let init ~resolvers ~anchor ~cur_root =
+  let cur_lib = Library.init ~anchor ~root:cur_root in
   let resolvers = Hashtbl.of_seq @@ List.to_seq resolvers in
-  check_dep resolvers root cur_lib;
+  check_dep resolvers cur_root cur_lib;
   let loaded_libs = Hashtbl.create 10 in
-  Hashtbl.replace loaded_libs root cur_lib;
+  Hashtbl.replace loaded_libs cur_root cur_lib;
   {anchor; cur_lib; resolvers; loaded_libs}
 
 let save_state {loaded_libs; _} =
