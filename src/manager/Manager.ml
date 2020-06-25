@@ -3,37 +3,40 @@ open BantorraLibrary
 type t =
   { anchor : string
   ; cur_lib : Library.t
-  ; config : Config.t
+  ; resolvers : (string, Resolver.t) Hashtbl.t
   ; loaded_libs : (string, Library.t) Hashtbl.t
   }
 type path = string list
 
-let check_dep config =
-  Library.iter_deps @@ fun dep ->
-  if not @@ Config.mem_libs config dep then
-    (* XXX better error message with version *)
-    failwith ("Library "^dep.name^" with a correct version cannot be found.")
+let check_dep resolvers root =
+  Library.iter_deps @@ fun {resolver; info} ->
+  match Hashtbl.find_opt resolvers resolver with
+  | None -> failwith ("Unknown resolver: "^resolver)
+  | Some r ->
+    if not (Resolver.fast_check r ~cur_root:root info) then
+      failwith ("Library "^Resolver.dump_info r ~cur_root:root info^" could not be found.")
 
-let init ~app_name ~anchor ~root =
-  let config = Config.init ~app_name in
-  let cur_lib = Library.init ~anchor ~root in
-  check_dep config cur_lib;
-  let loaded_libs = Hashtbl.create @@ Config.length_libs config in
-  Hashtbl.replace loaded_libs root cur_lib;
-  {anchor; cur_lib; config; loaded_libs}
+let init ~resolvers ~anchor ~cur_root =
+  let cur_lib = Library.init ~anchor ~root:cur_root in
+  let resolvers = Hashtbl.of_seq @@ List.to_seq resolvers in
+  check_dep resolvers cur_root cur_lib;
+  let loaded_libs = Hashtbl.create 10 in
+  Hashtbl.replace loaded_libs cur_root cur_lib;
+  {anchor; cur_lib; resolvers; loaded_libs}
 
 let save_state {loaded_libs; _} =
   Hashtbl.iter (fun _ lib -> Library.save_state lib) loaded_libs
 
 let rec_resolver f lm =
-  let rec global name =
-    let lib_root = Config.find_libs lm.config name in
+  let rec global ~cur_root ({resolver; info} : Anchor.lib_ref) =
+    let resolver = Hashtbl.find lm.resolvers resolver in
+    let lib_root = Resolver.resolve resolver ~cur_root info in
     let lib =
       match Hashtbl.find_opt lm.loaded_libs lib_root with
       | Some lib -> lib
       | None ->
         let lib = Library.init ~root:lib_root ~anchor:lm.anchor in
-        check_dep lm.config lib;
+        check_dep lm.resolvers lib_root lib;
         Hashtbl.replace lm.loaded_libs lib_root lib;
         lib
     in

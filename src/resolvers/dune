@@ -1,0 +1,4 @@
+(library
+ (name BantorraBuiltInPlugins)
+ (public_name bantorra.plugins)
+ (libraries findlib bantorra.basis bantorra))

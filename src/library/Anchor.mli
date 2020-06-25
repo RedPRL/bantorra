@@ -1,13 +1,16 @@
+open BantorraBasis
+
 type t
 
 type path = string list
-type lib_name =
-  { name : string
-  ; version : string option
+type info = Marshal.value
+type lib_ref =
+  { resolver : string
+  ; info : info
   }
 
 val read : string -> t
 
-val iter_lib_names : (lib_name -> unit) -> t -> unit
+val iter_lib_refs : (lib_ref -> unit) -> t -> unit
 
-val dispatch_path : t -> path -> (lib_name * path) option
+val dispatch_path : t -> path -> (lib_ref * path) option

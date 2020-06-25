@@ -3,7 +3,7 @@ open BantorraBasis
 type t
 type path = string list
 
-val init : app_name:string -> anchor:string -> root:string -> t
+val init : resolvers:(string * Resolver.t) list -> anchor:string -> cur_root:string -> t
 val save_state : t -> unit
 
 val to_filepath : t -> path -> suffix:string -> string

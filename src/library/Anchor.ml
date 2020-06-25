@@ -3,14 +3,15 @@ open BantorraBasis
 let version = "1.0.0"
 
 type path = string list
-type lib_name =
-  { name : string
-  ; version : string option
+type info = Marshal.value
+type lib_ref =
+  { resolver : string
+  ; info : info
   }
 
 type t =
   { name : string option
-  ; libraries : (path * lib_name) list
+  ; libraries : (path * lib_ref) list
   }
 
 let default = {name = None; libraries = []}
@@ -18,7 +19,7 @@ let default = {name = None; libraries = []}
 let check_libraries libs =
   let mount_points = List.map (fun (mp, _) -> mp) libs in
   if List.exists ((=) []) mount_points then raise Marshal.IllFormed;
-  if BantorraBasis.Util.has_duplication mount_points then raise Marshal.IllFormed;
+  if Util.has_duplication mount_points then raise Marshal.IllFormed;
   ()
 
 module M =
@@ -28,14 +29,14 @@ struct
   (* XXX this does not detect duplicate or useless keys *)
   let to_library_ ms =
     match
-      List.assoc_opt "name" ms,
-      List.assoc_opt "version" ms,
+      List.assoc_opt "resolver" ms,
+      List.assoc_opt "info" ms,
       List.assoc_opt "mount_point" ms
     with
-    | Some name, version, Some mount_point ->
+    | Some resolver, Some info, Some mount_point ->
       to_path mount_point,
-      { name = Marshal.to_string name
-      ; version = Option.bind version Marshal.to_ostring
+      { resolver = Marshal.to_string resolver
+      ; info
       }
     | _ -> raise Marshal.IllFormed
 
@@ -68,7 +69,7 @@ let deserialize : Marshal.value -> t =
 let read archor =
   try deserialize @@ Marshal.read_plain archor with _ -> default (* XXX some warning here *)
 
-let iter_lib_names f {libraries; _} =
+let iter_lib_refs f {libraries; _} =
   List.iter (fun (_, lib_name) -> f lib_name) libraries
 
 let rec match_prefix nmatched prefix path k =
