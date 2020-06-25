@@ -1,0 +1,4 @@
+(library
+ (name BantorraBuiltInPlugins)
+ (public_name bantorra.plugins)
+ (libraries bantorra.basis bantorra.library bantorra))

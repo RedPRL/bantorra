@@ -42,7 +42,7 @@ let locate_anchor ~anchor ~suffix filepath =
     Sys.chdir @@ Filename.dirname filepath;
     find_root (Sys.getcwd ()) [basename]
 
-let iter_deps f {anchor; _} = Anchor.iter_lib_names f anchor
+let iter_deps f {anchor; _} = Anchor.iter_lib_refs f anchor
 
 let dispatch_path local ~global lib path =
   match Anchor.dispatch_path lib.anchor path with
