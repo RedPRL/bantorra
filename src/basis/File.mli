@@ -1,7 +1,3 @@
-(** {1 Overview} *)
-
-(** This module provides common routines to deal with file names and basic I/O. *)
-
 (** {1 Pure Filename Calculation} *)
 
 val (/) : string -> string -> string

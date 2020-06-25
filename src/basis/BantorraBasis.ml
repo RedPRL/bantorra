@@ -1,5 +1,5 @@
 module File = File
-(** Routines to handle file names and basic I/O. *)
+(** Routines to handle file paths and basic I/O. *)
 
 module Marshal = Marshal
 (** Routines for serialization. *)
