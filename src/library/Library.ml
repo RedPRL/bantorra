@@ -1,24 +1,24 @@
 open BantorraBasis
 open BantorraBasis.File
-module D = BantorraCache.Database
+module S = BantorraCache.Store
 
 type path = string list
 
 type t =
   { root : string
   ; anchor : Anchor.t
-  ; cache : D.t
+  ; cache : S.t
   }
 
 let default_cache_subdir = "_cache"
 
 let init ~anchor ~root =
   let anchor = Anchor.read @@ root / anchor
-  and cache = D.init ~root:(root / default_cache_subdir) in
+  and cache = S.init ~root:(root / default_cache_subdir) in
   {root; anchor; cache}
 
 let save_state {cache; _} =
-  D.save_state cache
+  S.save_state cache
 
 let locate_anchor ~anchor ~suffix filepath =
   if not @@ Sys.file_exists filepath then
@@ -63,11 +63,11 @@ let make_local_key path ~source_digest : Marshal.value =
 
 let replace_local_cache {cache; _} path ~source_digest value =
   let key = make_local_key path ~source_digest in
-  D.replace_item cache ~key ~value
+  S.replace_item cache ~key ~value
 
 let find_local_cache_opt {cache; _} path ~source_digest ~cache_digest =
   let key = make_local_key path ~source_digest in
-  D.find_item_opt cache ~key ~digest:cache_digest
+  S.find_item_opt cache ~key ~digest:cache_digest
 
 (** @param suffix The suffix should include the dot. *)
 let to_filepath = dispatch_path to_local_filepath
