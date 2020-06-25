@@ -1,3 +1,3 @@
-# Bantorra: Library Management for Source-Based Data
+# Bantorra: Extensible Library Management for Source-Based Data
 
-_Bantorra_ is an OCaml package to manage libraries of source-based data. Please consult the [documentation](https://favonia.org/bantorra) (not much there now).
+_Bantorra_ is an OCaml package for managing user libraries. Please consult the [documentation](https://favonia.org/bantorra).

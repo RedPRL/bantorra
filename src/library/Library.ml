@@ -17,6 +17,15 @@ let init ~anchor ~root =
   and cache = S.init ~root:(root / default_cache_subdir) in
   {root; anchor; cache}
 
+let locate_anchor ~anchor ~suffix filepath =
+  if not @@ Sys.file_exists filepath then
+    invalid_arg @@ "locate_anchor: " ^ filepath ^ " does not exist";
+  match Filename.chop_suffix_opt ~suffix @@ Filename.basename filepath with
+  | None -> invalid_arg @@ "locate_anchor: " ^ filepath ^ " does not have suffix " ^ suffix
+  | Some basename ->
+    let root, unitpath = File.locate_anchor ~anchor @@ File.normalize_dir @@ Filename.dirname filepath in
+    root, unitpath @ [basename]
+
 let save_state {cache; _} =
   S.save_state cache
 
