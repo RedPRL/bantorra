@@ -25,7 +25,7 @@ val read : string -> t
 
     Here is a sample anchor file:
     {v
-formats: "1.0.0"
+format: "1.0.0"
 deps:
   - mount_point: [lib, num]
     resolver: builtin

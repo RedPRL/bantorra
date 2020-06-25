@@ -7,7 +7,7 @@
 
    To access the units in other libraries, an anchor can {e mount} a library in the tree, just like how partitions are mounted in POSIX-compliant systems. Here is a sample anchor file:
    {v
-formats: "1.0.0"
+format: "1.0.0"
 deps:
   - mount_point: [lib, num]
     resolver: builtin
