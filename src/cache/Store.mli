@@ -1,7 +1,11 @@
 open BantorraBasis
 
+(** {1 Types} *)
+
 type t
 (** The type of cache stores. *)
+
+(** {1 Initialization} *)
 
 val init : root:string -> t
 (** [init ~root] initialize the store rooted at [root]. It assumes it has exclusive control
@@ -12,6 +16,8 @@ val init : root:string -> t
 
 val save_state : t -> unit
 (** [save_state s] saves the current state of the cache back to the disk. *)
+
+(** {1 Accessors} *)
 
 val replace_item : t -> key:Marshal.value -> value:Marshal.t -> Digest.t
 (** [replace_item s ~key ~value] saves the content to disk and return a digest that

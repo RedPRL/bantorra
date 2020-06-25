@@ -1,10 +1,11 @@
 open BantorraBasis
+open BantorraLibrary
 
-type info = Marshal.value
+type res_args = Anchor.res_args
 type t =
-  { fast_checker: cur_root:string -> info -> bool
-  ; resolver: cur_root:string -> info -> string option
-  ; args_dumper: cur_root:string -> info -> string
+  { fast_checker: cur_root:string -> res_args -> bool
+  ; resolver: cur_root:string -> res_args -> string option
+  ; args_dumper: cur_root:string -> res_args -> string
   }
 
 let make ?fast_checker ?args_dumper resolver =
@@ -14,6 +15,6 @@ let make ?fast_checker ?args_dumper resolver =
   {fast_checker; resolver; args_dumper}
 
 let resolve_opt {resolver; _} = resolver
-let resolve {resolver; _} ~cur_root info = Option.get @@ resolver ~cur_root info
+let resolve {resolver; _} ~cur_root res_args = Option.get @@ resolver ~cur_root res_args
 let fast_check {fast_checker; _} = fast_checker
 let dump_args {args_dumper; _} = args_dumper

@@ -20,15 +20,6 @@ let init ~anchor ~root =
 let save_state {cache; _} =
   S.save_state cache
 
-let locate_anchor ~anchor ~suffix filepath =
-  if not @@ Sys.file_exists filepath then
-    invalid_arg @@ "init_from_filepath: " ^ filepath ^ " does not exist";
-  match Filename.chop_suffix_opt ~suffix @@ Filename.basename filepath with
-  | None -> invalid_arg @@ "init_from_filepath: " ^ filepath ^ " does not have suffix " ^ suffix
-  | Some basename ->
-    let root, unitpath = locate_anchor ~anchor @@ File.normalize_dir @@ Filename.dirname filepath in
-    root, unitpath @ [basename]
-
 let iter_deps f {anchor; _} = Anchor.iter_deps f anchor
 
 let dispatch_path local ~global lib path =

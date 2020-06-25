@@ -13,7 +13,7 @@ let read_state ~root =
   try State.deserialize @@ Marshal.read_gzip (root/state_file) with _ -> State.init ()
 
 let init ~root =
-  ensure_dir (root/data_subdir);
+  ensure_dir @@ root / data_subdir;
   {root; state = read_state ~root}
 
 let save_state {root; state} =

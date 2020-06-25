@@ -1,30 +1,30 @@
 open BantorraBasis
 
+(** {1 Types} *)
+
 type unitpath = Anchor.unitpath
 (** The type of unit paths. *)
 
 type t
 (** The type of libraries. *)
 
+(** {1 Initialization} *)
+
 val init : anchor:string -> root:string -> t
 (** Initite a library rooted at [root] where the name of the anchor file is [anchor]. *)
-
-val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpath
-(** [locate_anchor ~anchor ~suffix path] assumes the unit at [path] resides in some library
-    and tries to find the root of the library by locating the file [anchor]. It returns
-    the root of the found library and a unit path within the library that could point
-    to the input unit.
-
-    Note that the returned unit paths did not consider the dependencies that could be
-    mounted on the path. That is, if the unit path is [["a"; "b"]] but there is a dependency
-    mounted at [["a"]], then the original unit is not accessible.
-*)
 
 val save_state : t -> unit
 (** Save the current state into disk. *)
 
+(** {1 Accessor} *)
+
 val iter_deps : (Anchor.lib_ref -> unit) -> t -> unit
 (** Save the current state into disk. *)
+
+(** {1 Hooks for Library Management} *)
+
+(** The following API is for a library manager to chain all the libraries together.
+    Please use the high-level API in {{:../../Bantorra/Manager/index.html}BantorraManager.Manager} instead. *)
 
 val to_filepath :
   global:(cur_root:string -> Anchor.lib_ref -> unitpath -> suffix:string -> string) ->

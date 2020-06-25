@@ -1,5 +1,7 @@
 open BantorraBasis
 
+(** {1 Types} *)
+
 type t
 (** The type of anchors. An anchor marks the root of a library
     and records dependencies on other libraries. See {!val:read}. *)
@@ -16,6 +18,8 @@ type lib_ref =
   }
 (** The type of library references to be resolved. *)
 
+(** {1 Initialization} *)
+
 val read : string -> t
 (** [read path] read the content of an anchor file.
 
@@ -30,6 +34,8 @@ deps:
 
     The argument format [res_args] is determined by the resolver "[builtin]".
 *)
+
+(** {1 Accessors} *)
 
 val iter_deps : (lib_ref -> unit) -> t -> unit
 (** [iter_lib_refs f a] runs [f] on each dependency listed in the anchor [a]. *)

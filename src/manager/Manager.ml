@@ -1,3 +1,4 @@
+open BantorraBasis
 open BantorraLibrary
 
 type t =
@@ -6,7 +7,7 @@ type t =
   ; resolvers : (string, Resolver.t) Hashtbl.t
   ; loaded_libs : (string, Library.t) Hashtbl.t
   }
-type path = string list
+type unitpath = Anchor.unitpath
 
 let check_dep resolvers root =
   Library.iter_deps @@ fun {resolver; res_args} ->
@@ -23,6 +24,15 @@ let init ~resolvers ~anchor ~cur_root =
   let loaded_libs = Hashtbl.create 10 in
   Hashtbl.replace loaded_libs cur_root cur_lib;
   {anchor; cur_lib; resolvers; loaded_libs}
+
+let locate_anchor ~anchor ~suffix filepath =
+  if not @@ Sys.file_exists filepath then
+    invalid_arg @@ "init_from_filepath: " ^ filepath ^ " does not exist";
+  match Filename.chop_suffix_opt ~suffix @@ Filename.basename filepath with
+  | None -> invalid_arg @@ "init_from_filepath: " ^ filepath ^ " does not have suffix " ^ suffix
+  | Some basename ->
+    let root, unitpath = File.locate_anchor ~anchor @@ File.normalize_dir @@ Filename.dirname filepath in
+    root, unitpath @ [basename]
 
 let save_state {loaded_libs; _} =
   Hashtbl.iter (fun _ lib -> Library.save_state lib) loaded_libs
