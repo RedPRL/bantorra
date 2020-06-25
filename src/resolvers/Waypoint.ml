@@ -30,12 +30,12 @@ let deserialize : Marshal.value -> t =
 
 (* XXX errors are not handled *)
 let rec lookup_waypoint_ ~landmark cur_root lib_name k =
-  let waypoints = deserialize @@ Marshal.read_plain (cur_root/landmark) in
+  let waypoints = deserialize @@ Marshal.read_plain @@ cur_root / landmark in
   match Hashtbl.find_opt waypoints lib_name with
   | None -> k ()
-  | Some Direct {at} -> File.join (cur_root :: at)
+  | Some Direct {at} -> File.join @@ cur_root :: at
   | Some Indirect {next; rename} ->
-    let cur_root = File.join (cur_root :: next) in
+    let cur_root = File.join @@ cur_root :: next in
     let lib_name = Option.value rename ~default:lib_name in
     lookup_waypoint_ ~landmark cur_root lib_name @@ fun () -> raise Not_found
 
