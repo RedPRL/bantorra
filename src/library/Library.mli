@@ -9,11 +9,11 @@ val save_state : t -> unit
 val iter_deps : (Anchor.lib_ref -> unit) -> t -> unit
 
 val to_filepath :
-  global:(Anchor.lib_ref -> path -> suffix:string -> string) ->
+  global:(cur_root:string -> Anchor.lib_ref -> path -> suffix:string -> string) ->
   t -> path -> suffix:string -> string
 val replace_cache :
-  global:(Anchor.lib_ref -> path -> source_digest:Digest.t -> Marshal.t -> Digest.t) ->
+  global:(cur_root:string -> Anchor.lib_ref -> path -> source_digest:Digest.t -> Marshal.t -> Digest.t) ->
   t -> path -> source_digest:Digest.t -> Marshal.t -> Digest.t
 val find_cache_opt :
-  global:(Anchor.lib_ref -> path -> source_digest:Digest.t -> cache_digest:Digest.t option -> Marshal.t option) ->
+  global:(cur_root:string -> Anchor.lib_ref -> path -> source_digest:Digest.t -> cache_digest:Digest.t option -> Marshal.t option) ->
   t -> path -> source_digest:Digest.t -> cache_digest:Digest.t option -> Marshal.t option

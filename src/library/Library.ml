@@ -47,7 +47,7 @@ let iter_deps f {anchor; _} = Anchor.iter_lib_refs f anchor
 let dispatch_path local ~global lib path =
   match Anchor.dispatch_path lib.anchor path with
   | None -> local lib path
-  | Some (lib_name, path) -> global lib_name path
+  | Some (lib_name, path) -> global ~cur_root:lib.root lib_name path
 
 (** @param suffix The suffix should include the dot. *)
 let to_local_filepath {root; _} path ~suffix =

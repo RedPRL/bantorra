@@ -4,12 +4,12 @@ type info = Marshal.value
 type t
 
 val make :
-  ?checker:(info -> bool) ->
-  ?info_dumper:(info -> string) ->
-  (info -> string option) ->
+  ?checker:(cur_root:string -> info -> bool) ->
+  ?info_dumper:(cur_root:string -> info -> string) ->
+  (cur_root:string -> info -> string option) ->
   t
 
-val resolve : t -> info -> string
-val resolve_opt : t -> info -> string option
-val check : t -> info -> bool
-val dump_info : t -> info -> string
+val resolve : t -> cur_root:string -> info -> string
+val resolve_opt : t -> cur_root:string -> info -> string option
+val check : t -> cur_root:string -> info -> bool
+val dump_info : t -> cur_root:string -> info -> string
