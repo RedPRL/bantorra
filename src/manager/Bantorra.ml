@@ -13,7 +13,7 @@ deps:
     resolver: builtin
     res_args: number
     v}
-   The above anchor file mounts the built-in library [number] at [lib.num]. With this, the unit path [lib.num.types], for example, will be understood as the unit path [types] within the built-in library [number]. The [builtin] resolver here is responsible for locating the root of this [number] library. The resolution is recursive because the depended library may depend on yet another library.
+   The above anchor file mounts the library [number] at [lib.num] via the [builtin] resolver. With this, the unit path [lib.num.types], for example, will be understood as the unit path [types] within the library [number]. The [builtin] resolver here is responsible for locating the root of this [number] library. The resolution is recursive because the depended library may depend on yet another library.
 
    The application can specify an arbitrary mapping from labels such as [builtin] to resolvers, possibly including new ones created for the application. There are a few basic resolvers in {{:../BantorraResolvers/index.html}BantorraResolvers}.
 

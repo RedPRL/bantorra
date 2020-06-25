@@ -36,7 +36,7 @@ val save_state : t -> unit
 val iter_deps : (Anchor.lib_ref -> unit) -> t -> unit
 (** Save the current state into disk. *)
 
-(** {2 Accessors that Ignore Dependencies} *)
+(** {2 Accessors that Ignore Dependencies in Anchors} *)
 
 val to_local_filepath : t -> unitpath -> suffix:string -> string
 (** [to_local_filepath lib unitpath ~suffix] turns a unit path into a file path appended with [suffix]. *)
