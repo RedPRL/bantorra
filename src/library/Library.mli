@@ -29,9 +29,9 @@ val iter_deps : (Anchor.lib_ref -> unit) -> t -> unit
 (** The following API is for a library manager to chain all the libraries together.
     Please use the high-level API in {!module:Manager} instead. *)
 
-val to_filepath :
-  global:(cur_root:string -> Anchor.lib_ref -> unitpath -> suffix:string -> string) ->
-  t -> unitpath -> suffix:string -> string
+val resolve :
+  global:(cur_root:string -> Anchor.lib_ref -> unitpath -> suffix:string -> t * string) ->
+  t -> unitpath -> suffix:string -> t * string
 (** [to_filepath ~global lib unitpath ~suffix] turns a unit path into a file path appended with [suffix].
 
     @param global The global resolver for unit paths pointing to other libraries.

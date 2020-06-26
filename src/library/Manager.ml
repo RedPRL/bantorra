@@ -4,6 +4,7 @@ type t =
   ; resolvers : (string, Resolver.t) Hashtbl.t
   ; loaded_libs : (string, Library.t) Hashtbl.t
   }
+type library = Library.t
 type unitpath = Anchor.unitpath
 
 let check_dep resolvers root =
@@ -20,7 +21,7 @@ let init ~resolvers ~anchor ~cur_root =
   check_dep resolvers cur_root cur_lib;
   let loaded_libs = Hashtbl.create 10 in
   Hashtbl.replace loaded_libs cur_root cur_lib;
-  {anchor; cur_lib; resolvers; loaded_libs}
+  {anchor; cur_lib; resolvers; loaded_libs}, cur_lib
 
 let locate_anchor = Library.locate_anchor
 
@@ -42,8 +43,8 @@ let rec_resolver f lm =
     in
     f ~global lib
   in
-  f ~global lm.cur_lib
+  f ~global
 
-let to_filepath = rec_resolver Library.to_filepath
+let resolve = rec_resolver Library.resolve
 let replace_cache = rec_resolver Library.replace_cache
 let find_cache_opt = rec_resolver Library.find_cache_opt
