@@ -32,9 +32,10 @@ val iter_deps : (Anchor.lib_ref -> unit) -> t -> unit
 val resolve :
   global:(cur_root:string -> Anchor.lib_ref -> unitpath -> suffix:string -> t * string) ->
   t -> unitpath -> suffix:string -> t * string
-(** [to_filepath ~global lib unitpath ~suffix] turns a unit path into a file path appended with [suffix].
+(** [resolve ~global lib unitpath ~suffix] resolves [unitpath] and returns the eventual library where the unit belong and the underlying file path of the unit.
 
     @param global The global resolver for unit paths pointing to other libraries.
+    @param suffix The suffix shared by all the units in the file system.
 *)
 
 val replace_cache :

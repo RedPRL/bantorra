@@ -1,6 +1,5 @@
 type t =
   { anchor : string
-  ; cur_lib : Library.t
   ; resolvers : (string, Resolver.t) Hashtbl.t
   ; loaded_libs : (string, Library.t) Hashtbl.t
   }
@@ -15,13 +14,19 @@ let check_dep resolvers root =
     if not (Resolver.fast_check r ~cur_root:root res_args) then
       failwith ("Library "^Resolver.dump_args r ~cur_root:root res_args^" could not be found.")
 
-let init ~resolvers ~anchor ~cur_root =
-  let cur_lib = Library.init ~anchor ~root:cur_root in
+let init ~resolvers ~anchor =
   let resolvers = Hashtbl.of_seq @@ List.to_seq resolvers in
-  check_dep resolvers cur_root cur_lib;
   let loaded_libs = Hashtbl.create 10 in
-  Hashtbl.replace loaded_libs cur_root cur_lib;
-  {anchor; cur_lib; resolvers; loaded_libs}, cur_lib
+  {anchor; resolvers; loaded_libs}
+
+let load_library lm lib_root =
+  match Hashtbl.find_opt lm.loaded_libs lib_root with
+  | Some lib -> lib
+  | None ->
+    let lib = Library.init ~root:lib_root ~anchor:lm.anchor in
+    check_dep lm.resolvers lib_root lib;
+    Hashtbl.replace lm.loaded_libs lib_root lib;
+    lib
 
 let locate_anchor = Library.locate_anchor
 
@@ -32,15 +37,7 @@ let rec_resolver f lm =
   let rec global ~cur_root ({resolver; res_args} : Anchor.lib_ref) =
     let resolver = Hashtbl.find lm.resolvers resolver in
     let lib_root = Resolver.resolve resolver ~cur_root res_args in
-    let lib =
-      match Hashtbl.find_opt lm.loaded_libs lib_root with
-      | Some lib -> lib
-      | None ->
-        let lib = Library.init ~root:lib_root ~anchor:lm.anchor in
-        check_dep lm.resolvers lib_root lib;
-        Hashtbl.replace lm.loaded_libs lib_root lib;
-        lib
-    in
+    let lib = load_library lm lib_root in
     f ~global lib
   in
   f ~global

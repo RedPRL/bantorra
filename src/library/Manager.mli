@@ -13,8 +13,8 @@ type unitpath = string list
 
 (** {1 Initialization} *)
 
-val init : resolvers:(string * Resolver.t) list -> anchor:string -> cur_root:string -> t * library
-(** [init ~resolvers ~anchor ~cur_root] initiates a library manager.
+val init : resolvers:(string * Resolver.t) list -> anchor:string -> t
+(** [init ~resolvers ~anchor ~cur_root] initiates a library manager. It returns the pair of
 
     @param resolvers An associated list of available global resolvers. See {!module:Resolver}.
     @param anchor The file name of the library anchors.
@@ -24,29 +24,37 @@ val init : resolvers:(string * Resolver.t) list -> anchor:string -> cur_root:str
 val save_state : t -> unit
 (** Save the current state into disk. *)
 
+(** {1 Library Loading} *)
+
+val load_library : t -> string -> library
+(** [load_lib manager root] loads the library at [root]. *)
+
 val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpath
 (** [locate_anchor ~anchor ~suffix path] assumes the unit at [path] resides in some library
     and tries to find the root of the library by locating the file [anchor]. It returns
     the root of the found library and a unit path within the library that could point
     to the input unit.
 
-    This is a helper function to prepare the arguments to {!val:init}.
+    This is a helper function to prepare the arguments to {!val:load_lib}.
 
     Note that the returned unit paths did not consider the dependencies that could be
     mounted on the path. That is, if the unit path is [["a"; "b"]] but there is a dependency
     mounted at [["a"]], then the original unit is not accessible.
 *)
 
-(** {1 Accessors} *)
+(** {1 Accessors}
+
+    These accessors will automatically load the dependencies.
+*)
 
 val resolve : t -> library -> unitpath -> suffix:string -> library * string
-(** [to_filepath m unitpath ~suffix] turns a unit path into a file path appended with [suffix]. *)
+(** [resolver manager lib unitpath ~suffix] resolves [unitpath] in the library [lib] and returns the eventual library where the unit belong and the underlying file path of the unit.
+
+    @param suffix The suffix shared by all the units in the file system.
+*)
 
 val replace_cache : t -> library -> unitpath -> source_digest:Digest.t -> Marshal.t -> Digest.t
-(** [replace_cache m unitpath ~source_digest value] replaces the cached content associated with [unitpath] and
-    [source_digest] with [value]. It returns the digest of the stored cache. *)
+(** [replace_cache manager lib unitpath ~source_digest value] replaces the cached content associated with [unitpath] in the library [lib] and [source_digest] with [value]. It returns the digest of the stored cache. *)
 
 val find_cache_opt : t -> library -> unitpath -> source_digest:Digest.t -> cache_digest:Digest.t option -> Marshal.t option
-(** [find_cache_opt m unitpath ~source_digest ~cache_digest value] finds the cached content associated with [unitpath] and
-    [source_digest]. If [cache_digest] is [None], it means the digest checking is skipped. One should use the digest
-    returned by [replace_cache] whenever possible. *)
+(** [find_cache_opt manager lib unitpath ~source_digest ~cache_digest value] finds the cached content associated with [unitpath] in the library [lib] and [source_digest]. If [cache_digest] is [None], it means the digest checking is skipped. One should use the digest returned by [replace_cache] whenever possible. *)
