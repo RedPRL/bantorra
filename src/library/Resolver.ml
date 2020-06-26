@@ -1,5 +1,4 @@
 open BantorraBasis
-open BantorraLibrary
 
 type res_args = Anchor.res_args
 type t =

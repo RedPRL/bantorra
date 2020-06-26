@@ -21,7 +21,7 @@ deps:
 *)
 
 module Manager = Manager
-(** Library managers: the entry points. *)
+(** Library managers. *)
 
 module Resolver = Resolver
-(** Types of library resolvers. *)
+(** Library resolvers. *)

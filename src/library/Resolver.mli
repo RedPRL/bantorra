@@ -1,11 +1,9 @@
-open BantorraLibrary
-
 (** {1 Types} *)
 
 type t
 (** The type of library resolvers. *)
 
-type res_args = Anchor.res_args
+type res_args = BantorraBasis.Marshal.value
 (** The type of arguments to resolvers. *)
 
 (** {1 Builders} *)

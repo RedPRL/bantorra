@@ -1,5 +1,3 @@
-open BantorraLibrary
-
 type t =
   { anchor : string
   ; cur_lib : Library.t
@@ -24,7 +22,7 @@ let init ~resolvers ~anchor ~cur_root =
   Hashtbl.replace loaded_libs cur_root cur_lib;
   {anchor; cur_lib; resolvers; loaded_libs}
 
-let locate_anchor = BantorraLibrary.Library.locate_anchor
+let locate_anchor = Library.locate_anchor
 
 let save_state {loaded_libs; _} =
   Hashtbl.iter (fun _ lib -> Library.save_state lib) loaded_libs

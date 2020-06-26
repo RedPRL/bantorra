@@ -22,8 +22,17 @@ val save_state : t -> unit
 (** Save the current state into disk. *)
 
 val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpath
-(** Reexported {!val:BantorraLibrary.Library.locate_anchor} for convenience. It locates the
-    root of the current library for initializing a library manager. *)
+(** [locate_anchor ~anchor ~suffix path] assumes the unit at [path] resides in some library
+    and tries to find the root of the library by locating the file [anchor]. It returns
+    the root of the found library and a unit path within the library that could point
+    to the input unit.
+
+    This is a helper function to prepare the arguments to {!val:init}.
+
+    Note that the returned unit paths did not consider the dependencies that could be
+    mounted on the path. That is, if the unit path is [["a"; "b"]] but there is a dependency
+    mounted at [["a"]], then the original unit is not accessible.
+*)
 
 (** {1 Accessors} *)
 
