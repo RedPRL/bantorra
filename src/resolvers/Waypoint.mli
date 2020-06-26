@@ -28,7 +28,7 @@ cool.basis:
     A complete landmark file looks like this:
     {v
 format: "1.0.0"
-waypoints
+waypoints:
   cool.basis:
     next: [cool]
     rename: basis
