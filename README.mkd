@@ -1,3 +1,11 @@
 # Bantorra: Extensible Library Management for Source-Based Data
 
-_Bantorra_ is an OCaml package for managing user libraries. Please consult the [documentation](https://favonia.org/bantorra).
+_Bantorra_ is an OCaml package for managing user libraries. It supports many resolution strategies found in other programming language tools. Please consult the [generated documentation](https://favonia.org/bantorra).
+
+## Installation
+
+You need OCaml 4.08.0 or newer. You can check out the source repository and install the latest version in development:
+```
+git clone https://github.com/favonia/bantorra.git
+opam install ./bantorra
+```
