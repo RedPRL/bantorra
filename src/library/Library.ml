@@ -23,7 +23,7 @@ let locate_anchor ~anchor ~suffix filepath =
   match Filename.chop_suffix_opt ~suffix @@ Filename.basename filepath with
   | None -> invalid_arg @@ "locate_anchor: " ^ filepath ^ " does not have suffix " ^ suffix
   | Some basename ->
-    let root, unitpath = File.locate_anchor ~anchor @@ File.normalize_dir @@ Filename.dirname filepath in
+    let root, unitpath = File.locate_anchor ~anchor @@ Filename.dirname filepath in
     root, unitpath @ [basename]
 
 let save_state {cache; _} =
@@ -44,8 +44,8 @@ let to_local_filepath {root; _} path ~suffix =
 
 (** Generate the JSON [key] from immediately available metadata. *)
 let make_local_key path ~source_digest : Marshal.value =
-  `O [ "path", `A (List.map (fun s -> `String s) path)
-     ; "source_digest", `String source_digest
+  `O [ "path", Marshal.of_list Marshal.of_string path
+     ; "source_digest", Marshal.of_string source_digest
      ]
 
 let replace_local_cache {cache; _} path ~source_digest value =

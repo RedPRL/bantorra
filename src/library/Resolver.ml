@@ -1,6 +1,6 @@
 open BantorraBasis
 
-type res_args = Anchor.res_args
+type res_args = Marshal.value
 type t =
   { fast_checker: cur_root:string -> res_args -> bool
   ; resolver: cur_root:string -> res_args -> string option

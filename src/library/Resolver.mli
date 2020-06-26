@@ -16,7 +16,7 @@ val make :
 (** [make ?fast_checker ?args_dumper resolver] creates a new resolver
     that can be used in {!val:Manager.init}.
 
-    @param fast_checker An alternative validity checker for arguments. Some library resolution could be expensive (e.g., involving downloading the sources from the server) and a fast validity checker might be desired. If absent, a full resolution is conducted as the checker.
+    @param fast_checker An alternative validity checker for arguments. Some library resolution could be expensive (e.g., involving downloading the sources from the server) and a faster, less precise validity checker might be desired. If absent, full resolution will be used as the checker.
     @param args_dumper A hack to dump the arguments as a string for ugly-printing. This will be replaced by proper pretty-printing in the future. If absent, {!val:BantorraBasis.Marshal.dump} is used.
 *)
 

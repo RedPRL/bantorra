@@ -3,7 +3,7 @@ open BantorraBasis
 let version = "1.0.0"
 
 type unitpath = string list
-type res_args = Marshal.value
+type res_args = Resolver.res_args
 type lib_ref =
   { resolver : string
   ; res_args : res_args

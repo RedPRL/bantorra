@@ -1,5 +1,3 @@
-open BantorraBasis
-
 (** {1 Types} *)
 
 type t
@@ -9,12 +7,9 @@ type t
 type unitpath = string list
 (** The type of unit paths. *)
 
-type res_args = Marshal.value
-(** The type of arguments sent to the library resolver. *)
-
 type lib_ref =
   { resolver : string (** The name of the library resolver. *)
-  ; res_args : res_args (** The arguments to the library resolver. *)
+  ; res_args : Resolver.res_args (** The arguments to the library resolver. *)
   }
 (** The type of library references to be resolved. *)
 
