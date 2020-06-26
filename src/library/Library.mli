@@ -21,7 +21,7 @@ val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpat
 val save_state : t -> unit
 (** Save the current state into disk. *)
 
-(** {1 Accessor} *)
+(** {1 Accessors} *)
 
 val iter_deps : (Anchor.lib_ref -> unit) -> t -> unit
 (** Save the current state into disk. *)
