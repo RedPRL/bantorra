@@ -27,7 +27,7 @@ val save_state : t -> unit
 (** {1 Library Loading} *)
 
 val load_library : t -> string -> library
-(** [load_lib manager root] loads the library at [root]. *)
+(** [load_library manager root] loads the library at [root]. *)
 
 val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpath
 (** [locate_anchor ~anchor ~suffix path] assumes the unit at [path] resides in some library
