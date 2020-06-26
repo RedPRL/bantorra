@@ -1,7 +1,5 @@
 open BantorraBasis
 
-(** This library can be used with or without library managers. *)
-
 (** {1 Types} *)
 
 type unitpath = Anchor.unitpath
@@ -21,24 +19,10 @@ val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpat
 val save_state : t -> unit
 (** Save the current state into disk. *)
 
-(** {1 Accessors} *)
+(** {1 Accessor} *)
 
 val iter_deps : (Anchor.lib_ref -> unit) -> t -> unit
 (** Iterate over all dependencies listed in the anchor. *)
-
-(** {2 Accessors that Ignore Dependencies in Anchors} *)
-
-val to_local_filepath : t -> unitpath -> suffix:string -> string
-(** [to_local_filepath lib unitpath ~suffix] turns a unit path into a file path appended with [suffix]. *)
-
-val replace_local_cache : t -> unitpath -> source_digest:Digest.t -> Marshal.t -> Digest.t
-(** [replace_local_cache lib unitpath ~source_digest value] replaces the cached content associated with [unitpath] and
-    [source_digest] with [value]. It returns the digest of the stored cache. *)
-
-val find_local_cache_opt : t -> unitpath -> source_digest:Digest.t -> cache_digest:Digest.t option -> Marshal.t option
-(** [find_local_cache_opt m unitpath ~source_digest ~cache_digest value] finds the cached content associated with [unitpath] and
-    [source_digest]. If [cache_digest] is [None], it means the digest checking is skipped. One should use the digest
-    returned by [replace_cache] whenever possible. *)
 
 (** {1 Hooks for Library Managers} *)
 
