@@ -21,7 +21,7 @@ libraries:
       `O ["name", `String name; "version", `Null]
     ]}
 
-    Versions are compared using structural equality. [null] only matches with [null], not any string. There is no smart comparison or ordering between versions. However, one could have multiple entries as follows:
+    Versions are compared using structural equality. There is no smart comparison or ordering between versions. Each version is completely independent of each other; [null] only matches [null], not any string. However, one could have multiple entries as follows to dispatch on versions:
     {v
 format: "1.0.0"
 libraries:
@@ -51,4 +51,7 @@ libraries:
     {1 The Builder}
 *)
 val resolver : app_name:string -> config:string -> Bantorra.Resolver.t
-(** [resolver ~app_name ~config] constructs a resolver based on the user configuration. The location of the user configuration is given by {!val:BantorraBasis.Xdg.get_config_home}. All paths will be normalized and turned into absolute paths using {!val:BantorraBasis.File.normalize_dir}. *)
+(** [resolver ~app_name ~config] constructs a resolver that reads the user configuration. The location of the user configuration is given by {!val:BantorraBasis.Xdg.get_config_home}. All paths are normalized and turned into absolute paths using {!val:BantorraBasis.File.normalize_dir}.
+
+    The confugiration file will only be read once during the construction. There is currentnly no way to force existing resolvers to re-read the user configuration files.
+*)

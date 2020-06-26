@@ -13,4 +13,4 @@
 *)
 
 val resolver : package_name:string -> dict:(string * string) list -> Bantorra.Resolver.t
-(** [resolver ~package_name ~dict] constructs a resolver based on the package directory given by the [ocamlfind] tool and the mapping [dict]. All paths will be normalized and turned into absolute paths using {!val:BantorraBasis.File.normalize_dir}. *)
+(** [resolver ~package_name ~dict] constructs a resolver based on the package directory given by the [ocamlfind] tool and the mapping [dict]. All paths are normalized and turned into absolute paths using {!val:BantorraBasis.File.normalize_dir}. *)

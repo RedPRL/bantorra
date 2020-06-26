@@ -1,17 +1,19 @@
 (**
-   {1 A Collection of Simple Resolvers}
+   {1 Introduction}
 
-   These are some examples of library resolvers.
+   Here are some examples of library resolvers.
+
+   {1 Resolvers}
 *)
 
 module FixedTable = FixedTable
-(* Resolver based on a fixed table of absolute paths. *)
+(** Resolver based on a fixed table of libraries. *)
 
 module OCamlFind = OCamlFind
-(* Resolver based on a fixed table of paths relative to the package directory given by the ocamlfind tool. *)
+(** Resolver based on the [ocamlfind] tool. *)
 
 module Waypoint = Waypoint
-(* Resolver based on local waypoints. *)
+(** Resolver based on local waypoints. *)
 
 module UserConfig = UserConfig
-(* Resolver based on per-user configurations. *)
+(** Resolver based on per-user configurations. *)

@@ -10,22 +10,22 @@
 
     A waypoint is either {e direct} or {e indirect}. A direct waypoint points to the library root directly. Its YAML representation is as follows:
     {v
-- cool:
-    at: [mylib, cool]
+cool:
+  at: [mylib, cool]
     v}
     This means the root of the [cool] library is at [mylib/cool]. An indect waypoint is pointing to another waypoint, possibly with a new library name to look up. Its YAML representation is:
     {v
-- cool:
-    next: [mylib]
+cool:
+  next: [mylib]
     v}
     This means one should look for the landmark file under the [mylib] directory for further instructions. One can also specify the [rename] field in case a new library name should be used:
     {v
-- cool.basis:
-    next: [cool]
-    rename: basis
+cool.basis:
+  next: [cool]
+  rename: basis
     v}
 
-    A complete landmark file contains several waypoints like this:
+    A complete landmark file looks like this:
     {v
 format: "1.0.0"
 waypoints
@@ -49,5 +49,4 @@ val resolver : strict_checking:bool -> landmark:string -> Bantorra.Resolver.t
 *)
 
 val clear_cached_landmarks : unit -> unit
-(** Landmark files are all cached to save I/O, but perhaps you are writing some tool to modify landmark files.
-    In this case, one should use this function to clear the cache after the modification. *)
+(** Landmark files are all cached to save I/O, but perhaps you are writing some tool to modify landmark files. In this case, one should use this function to clear the cache after the modification. *)

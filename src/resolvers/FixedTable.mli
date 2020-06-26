@@ -13,4 +13,4 @@
 *)
 
 val resolver : dict:(string * string) list -> Bantorra.Resolver.t
-(** [resolver ~dict] construct a resolver based on the mapping [dict]. All paths in [dict] will be normalized and turned into absolute paths using {!val:BantorraBasis.File.normalize_dir}. *)
+(** [resolver ~dict] construct a resolver based on the mapping [dict]. All paths in [dict] are normalized and turned into absolute paths using {!val:BantorraBasis.File.normalize_dir}. *)
