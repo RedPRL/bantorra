@@ -22,7 +22,8 @@ val save_state : t -> unit
 (** Save the current state into disk. *)
 
 val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpath
-(** Reexported {!val:BantorraLibrary.Library.locate_anchor for convenience}. *)
+(** Reexported {!val:BantorraLibrary.Library.locate_anchor} for convenience. It locates the
+    root of the current library for initializing a library manager. *)
 
 (** {1 Accessors} *)
 
