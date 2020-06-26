@@ -29,14 +29,16 @@
     {v
 format: "1.0.0"
 waypoints
-- cool.basis:
+  cool.basis:
     next: [cool]
     rename: basis
-- hello:
+  hello:
     at: [misc, hello]
     v}
 
-    The resolver starts from the root of the library which imports another library, going up in the file system tree until it finds a landmark file with an applicable waypoint. It will then follow the waypoints until the root of the target library is found. Note that the resolver only climbs up the file system tree once, at the beginning. The resolution immediately fails if an indirect waypoint points to a landmark file with no applicable waypoint. This would prevent unintentional infinite looping due to simple typos.
+    The resolver starts from the root of the library that imports the target library, going up in the file system tree until it finds a landmark file with an applicable waypoint. It will then follow the waypoints until the root of the target library is found. Note that the resolver only climbs up the file system tree once, at the beginning. The resolution immediately fails if an indirect waypoint points to a landmark file with no applicable waypoint. This would prevent unintentional infinite looping due to simple typos.
+
+    {1 The Builder}
 *)
 
 val resolver : strict_checking:bool -> landmark:string -> Bantorra.Resolver.t

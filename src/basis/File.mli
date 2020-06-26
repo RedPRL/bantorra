@@ -46,8 +46,8 @@ val protect_cwd : (string -> 'a) -> 'a
 val normalize_dir : string -> string
 (**
    [normalize_dir dir] uses [Sys.chdir] and [Sys.getcwd] to normalize a path. Symbolic links and special
-   directories such as [.] and [..] will be resolved and normalized on many systems. The current
-   working directory will be restored after the computation.
+   directories such as [.] and [..] will be resolved and the result will be an absolute path on many systems.
+   The current working directory will be restored after the computation.
 *)
 
 (** {1 Locating Files} *)
