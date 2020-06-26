@@ -1,4 +1,0 @@
-(library
- (name Bantorra)
- (public_name bantorra)
- (libraries bantorra.basis bantorra.library))

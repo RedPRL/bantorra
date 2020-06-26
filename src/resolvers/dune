@@ -1,4 +1,4 @@
 (library
- (name BantorraBuiltInPlugins)
- (public_name bantorra.plugins)
+ (name BantorraResolvers)
+ (public_name bantorra.resolvers)
  (libraries findlib bantorra.basis bantorra))

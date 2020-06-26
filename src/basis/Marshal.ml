@@ -6,7 +6,7 @@ type t = Ezjsonm.t
 
 exception IllFormed
 
-let digest v = try v |> Yaml.to_string_exn |> Digest.string |> Digest.to_hex with _ -> raise IllFormed
+let digest v = try v |> Yaml.to_string_exn |> Digest.string with _ -> raise IllFormed
 
 (* Ezjsonm is needed because yaml failed to reconstruct quoted keywords such as ["true"]. *)
 let of_gzip z = try z |> Ezgzip.decompress |> Result.get_ok |> Ezjsonm.from_string with _ -> raise IllFormed

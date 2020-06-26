@@ -27,18 +27,20 @@ end
 let deserialize : Marshal.value -> t =
   function
   | `O ["format", `String v; "waypoints", `O dict] when v = version ->
+    let lib_names = List.map (fun (n, _) -> n) dict in
+    if Util.has_duplication lib_names then failwith "Duplicate library names in the landmark file";
     Hashtbl.of_seq @@ Seq.map (fun (n, i) -> n, M.to_info i) @@ List.to_seq dict
   | _ -> raise Marshal.IllFormed
 
 let get_waypoints ~landmark root =
-  match Hashtbl.find_opt cache root with
+  match Hashtbl.find_opt cache @@ root / landmark with
   | Some waypoints -> waypoints
   | None ->
     let waypoints = deserialize @@ Marshal.read_plain @@ root / landmark in
     Hashtbl.replace cache root waypoints;
     waypoints
 
-let clear_cached_waypoints () =
+let clear_cached_landmarks () =
   Hashtbl.clear cache
 
 (* XXX errors are not handled *)
