@@ -24,7 +24,7 @@ val save_state : t -> unit
 (** {1 Accessors} *)
 
 val iter_deps : (Anchor.lib_ref -> unit) -> t -> unit
-(** Save the current state into disk. *)
+(** Iterate over all dependencies listed in the anchor. *)
 
 (** {2 Accessors that Ignore Dependencies in Anchors} *)
 
