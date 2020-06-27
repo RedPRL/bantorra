@@ -1,10 +1,8 @@
-let (/) p q =
-  if Filename.is_relative q then
-    Filename.concat p q
-  else
-    q
+open StdLabels
 
-let join = List.fold_left (/) Filename.current_dir_name
+let (/) = Filename.concat
+
+let join = List.fold_left ~f:(/) ~init:Filename.current_dir_name
 
 (** Write a string to a file. *)
 let writefile p s =
@@ -38,7 +36,7 @@ let rec ensure_dir path =
   | exception Sys_error _ ->
     let parent = Filename.dirname path in
     ensure_dir parent;
-    Unix.mkdir path 0o777
+    UnixLabels.mkdir ~perm:0o777 path
 
 let protect_cwd f =
   let dir = Sys.getcwd () in
@@ -50,7 +48,10 @@ let normalize_dir dir =
   protect_cwd @@ fun _ -> Sys.chdir dir; Sys.getcwd ()
 
 let is_existing_and_regular p =
-  try (Unix.stat p).st_kind = S_REG with _ -> false
+  try (UnixLabels.stat p).st_kind = S_REG with _ -> false
+
+let is_executable p =
+  (UnixLabels.stat p).st_perm land 0o001 <> 0
 
 let locate_anchor ~anchor start =
   let rec find_root cwd unitpath_acc =
@@ -85,3 +86,12 @@ let locate_anchor_ ~anchor start =
   protect_cwd @@ fun _ ->
   Sys.chdir @@ Filename.dirname start;
   find_root (Sys.getcwd ())
+
+let which cmd =
+  if Sys.win32 then
+    (* One needs to add the implicit ".exe" and skip the "is_executable" checking. *)
+    failwith "Please make a PR to improve Windows support."
+  else
+    let search_dirs = String.split_on_char ~sep:':' @@ Option.value ~default:"" @@ Sys.getenv_opt "PATH" in
+    let possible_paths = List.map ~f:(fun d -> d / cmd) search_dirs in
+    List.find ~f:(fun p -> is_existing_and_regular p && is_executable p) possible_paths

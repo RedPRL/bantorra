@@ -28,4 +28,4 @@ let serialize s =
   `O ["format", `String version; "atime", `O logs]
 
 let update_atime s ~key =
-  Hashtbl.replace s key @@ Unix.time ();
+  Hashtbl.replace s key @@ UnixLabels.time ();
