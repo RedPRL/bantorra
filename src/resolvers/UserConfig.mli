@@ -70,7 +70,7 @@ libraries:
     {1 The Builder}
 *)
 val resolver : app_name:string -> config:string -> Bantorra.Resolver.t
-(** [resolver ~app_name ~config] constructs a resolver that reads the user configuration. The location of the user configuration is given by {!val:BantorraBasis.Xdg.get_config_home}. All paths are normalized and turned into absolute paths using {!val:BantorraBasis.File.normalize_dir} .
+(** [resolver ~app_name ~config] constructs a resolver that reads the user configuration. The location of the user configuration is given by {!val:BantorraBasis.Xdg.get_config_home}. All paths are normalized and turned into absolute paths with respect to the current working directory using {!val:BantorraBasis.File.normalize_dir} .
 *)
 
 val clear_cached_configs : unit -> unit
