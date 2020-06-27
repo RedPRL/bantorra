@@ -2,8 +2,7 @@
 
 val (/) : string -> string -> string
 (**
-   [p / q] concatenates paths [p] and [q]. If [q] is an absolute path, then [p] is dropped.
-   The intention is to capture the semantics of [q] as if the current working directory was [p].
+   [p / q] concatenates paths [p] and [q]. The path [q] is assumed to be a relative path.
 *)
 
 val join : string list -> string
@@ -49,6 +48,11 @@ val normalize_dir : string -> string
    directories such as [.] and [..] will be resolved and the result will be an absolute path on many systems.
    The current working directory will be restored after the computation.
 *)
+
+(** {1 Which} *)
+
+val which : string -> string
+(** A hacky implementation inspired by the "which" tool on GNU/Linux systems. *)
 
 (** {1 Locating Files} *)
 

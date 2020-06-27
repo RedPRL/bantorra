@@ -10,7 +10,7 @@ type scheme = MacOS | Linux | Windows
 let uname_s =
   lazy begin
     try
-      let ic = UnixLabels.open_process_args_in "uname" [|"-s"|] in
+      let ic = UnixLabels.open_process_args_in (which "uname") [|"-s"|] in
       try
         let res = String.trim @@ input_line ic in
         ignore @@ UnixLabels.close_process_in ic;
