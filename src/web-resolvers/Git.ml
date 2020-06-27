@@ -78,6 +78,7 @@ let load_git_repo ~crate:{root; known_ids} {url; ref; path} =
   let id = G.resolve_ref ~url ~ref in
   if Option.fold ~none:false ~some:((<>) id) @@ Hashtbl.find_opt known_ids url_digest then
     failwith @@ "Inconsistent commit IDs for the repo "^url^" (or very unlikely URL hash collision)";
+  Hashtbl.replace known_ids url_digest id;
   let git_root = root / git_subdir / url_digest in
   G.reset_repo ~git_root ~url ~ref;
   normalize_dir @@ git_root / path
@@ -85,7 +86,10 @@ let load_git_repo ~crate:{root; known_ids} {url; ref; path} =
 let init_crate ~root =
   match Hashtbl.find_opt loaded_crates root with
   | Some c -> c
-  | None -> {root; known_ids = Hashtbl.create 10}
+  | None ->
+    let crate = {root; known_ids = Hashtbl.create 10} in
+    Hashtbl.replace loaded_crates root crate;
+    crate
 
 let resolver ~root =
   let root = normalize_dir root in
