@@ -13,11 +13,11 @@ let uname_s =
       let ic = UnixLabels.open_process_args_in "uname" [|"-s"|] in
       try
         let res = String.trim @@ input_line ic in
-        close_in_noerr ic;
+        ignore @@ UnixLabels.close_process_in ic;
         Some res
       with
       | _ ->
-        close_in_noerr ic;
+        ignore @@ UnixLabels.close_process_in ic;
         None
     with
     | _ ->
