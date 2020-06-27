@@ -49,4 +49,4 @@ val resolver : strict_checking:bool -> landmark:string -> Bantorra.Resolver.t
 *)
 
 val clear_cached_landmarks : unit -> unit
-(** Landmark files are all cached to save I/O, but perhaps you are writing some tool to modify landmark files. In this case, one should use this function to clear the cache after the modification. *)
+(** Landmark files are all cached to reduce I/O load, but perhaps you are writing some tool to modify landmark files. In this case, one should call this function to reload all landmark files. *)

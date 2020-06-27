@@ -16,7 +16,7 @@ exception IllFormed
 (** {1 Digest} *)
 
 val digest : value -> string
-(** A function to generate the digest of a value. *)
+(** A function to generate the hexadecimal representation of the digest of a value. It can be used as filenames on all major platforms. *)
 
 (** {1 Compressed Serialization} *)
 

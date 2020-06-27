@@ -20,7 +20,7 @@ end
 let deserialize : Marshal.t -> t =
   function
   | `O ["format", `String v; "atime", `O logs] when v = version ->
-    Hashtbl.of_seq @@ Seq.map M.to_access @@ List.to_seq logs
+    Util.Hashtbl.of_unique_seq @@ Seq.map M.to_access @@ List.to_seq logs
   | _ -> raise Marshal.IllFormed
 
 let serialize s =

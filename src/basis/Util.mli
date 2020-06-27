@@ -1,3 +1,5 @@
-val has_duplication : 'a list -> bool
-(** [has_duplication l] returns true if and only if there are duplicated items in [l].
-    Equality is determined by the built-in [Stdlib.(=)] operator. *)
+module Hashtbl :
+sig
+  val of_unique_seq : ('a * 'b) Seq.t -> ('a, 'b) Hashtbl.t
+  (** This is similar to [Hashtbl.of_seq] except that it will abort when there are duplicate keys. *)
+end
