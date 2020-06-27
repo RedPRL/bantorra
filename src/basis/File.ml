@@ -38,7 +38,7 @@ let rec ensure_dir path =
   | exception Sys_error _ ->
     let parent = Filename.dirname path in
     ensure_dir parent;
-    Unix.mkdir path 0o777
+    UnixLabels.mkdir ~perm:0o777 path
 
 let protect_cwd f =
   let dir = Sys.getcwd () in
@@ -50,7 +50,7 @@ let normalize_dir dir =
   protect_cwd @@ fun _ -> Sys.chdir dir; Sys.getcwd ()
 
 let is_existing_and_regular p =
-  try (Unix.stat p).st_kind = S_REG with _ -> false
+  try (UnixLabels.stat p).st_kind = S_REG with _ -> false
 
 let locate_anchor ~anchor start =
   let rec find_root cwd unitpath_acc =
