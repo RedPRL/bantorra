@@ -77,15 +77,15 @@ let load_git_repo ~crate:{root; known_ids} {url; ref; path} =
   let url_digest = Marshal.digest @@ `String url in
   let id = G.resolve_ref ~url ~ref in
   if Option.fold ~none:false ~some:((<>) id) @@ Hashtbl.find_opt known_ids url_digest then
-    failwith @@ "Inconsistent commit IDs for the repo "^url^" (or hash collisions of URLs)";
+    failwith @@ "Inconsistent commit IDs for the repo "^url^" (or very unlikely URL hash collision)";
   let git_root = root / git_subdir / url_digest in
   G.reset_repo ~git_root ~url ~ref;
   normalize_dir @@ git_root / path
 
 let init_crate ~root =
   match Hashtbl.find_opt loaded_crates root with
-  | None -> {root; known_ids = Hashtbl.create 10}
   | Some c -> c
+  | None -> {root; known_ids = Hashtbl.create 10}
 
 let resolver ~root =
   let root = normalize_dir root in
