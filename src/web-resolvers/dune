@@ -1,0 +1,4 @@
+(library
+ (name BantorraWebResolvers)
+ (public_name bantorra-web-resolvers)
+ (libraries bantorra.basis bantorra))

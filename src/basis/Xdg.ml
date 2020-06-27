@@ -10,18 +10,9 @@ type scheme = MacOS | Linux | Windows
 let uname_s =
   lazy begin
     try
-      let ic = UnixLabels.open_process_args_in (which "uname") [|"-s"|] in
-      try
-        let res = String.trim @@ input_line ic in
-        ignore @@ UnixLabels.close_process_in ic;
-        Some res
-      with
-      | _ ->
-        ignore @@ UnixLabels.close_process_in ic;
-        None
-    with
-    | _ ->
-      None
+      Exec.with_system_in ~prog:"uname" ~args:["-s"] @@ fun ic ->
+      Some (String.trim @@ input_line ic)
+    with _ -> None
   end
 
 let guess_scheme =
