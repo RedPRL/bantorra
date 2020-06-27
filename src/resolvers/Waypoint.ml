@@ -53,7 +53,7 @@ let rec lookup_waypoint ~landmark cur_root lib_name k =
   | Some Direct {at} -> File.join @@ cur_root :: at
   | Some Indirect {next; rename} ->
     let cur_root = File.join @@ cur_root :: next in
-    let lib_name = Option.value rename ~default:lib_name in
+    let lib_name = Option.value ~default:lib_name rename in
     lookup_waypoint ~landmark cur_root lib_name @@ fun () -> raise Not_found
 
 let rec lookup_waypoint_in_ancestors ~landmark cur_root lib_name =
