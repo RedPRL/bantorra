@@ -5,12 +5,11 @@ open Bantorra
 
 type url = string
 
-let default_crate_subdir = "_crate"
 let git_subdir = "_git"
 
 type t =
   { root : string
-  ; known_ids : (string, string) Hashtbl.t
+  ; commit_id : (string, string) Hashtbl.t
   }
 
 type info =
@@ -23,11 +22,12 @@ let loaded_crates : (string, t) Hashtbl.t = Hashtbl.create 5
 
 module G =
 struct
-  let resolve_ref ~url ~ref =
-    Exec.with_system_in ~prog:"git" ~args:["ls-remote"; "--heads"; "--tags"; url; ref] @@ fun ic ->
-    match String.split_on_char ~sep:'\t' @@ String.trim @@ input_line ic with
-    | [ref; _] -> ref
-    | _ -> failwith "git ls-remote failed"
+  let head_commit_id ~git_root =
+    File.protect_cwd @@ fun _ ->
+    File.ensure_dir git_root;
+    Sys.chdir git_root;
+    Exec.with_system_in ~prog:"git" ~args:["rev-parse"; "HEAD"] @@ fun ic ->
+    String.trim @@ input_line ic
 
   let reset_repo ~url ~ref ~git_root =
     try
@@ -73,27 +73,31 @@ struct
     | _ -> raise Marshal.IllFormed
 end
 
-let load_git_repo ~crate:{root; known_ids} {url; ref; path} =
+let load_git_repo ~crate:{root; commit_id} {url; ref; path} =
   let url_digest = Marshal.digest @@ `String url in
-  let id = G.resolve_ref ~url ~ref in
-  if Option.fold ~none:false ~some:((<>) id) @@ Hashtbl.find_opt known_ids url_digest then
-    failwith @@ "Inconsistent commit IDs for the repo "^url^" (or very unlikely URL hash collision)";
-  Hashtbl.replace known_ids url_digest id;
   let git_root = root / git_subdir / url_digest in
   G.reset_repo ~git_root ~url ~ref;
+  let id = G.head_commit_id ~git_root in
+  begin
+    match Hashtbl.find_opt commit_id url_digest with
+    | None -> Hashtbl.replace commit_id url_digest id
+    | Some id' ->
+      if id <> id' then failwith @@
+        "Inconsistent commit IDs for the repo "^url^" (or very unlikely URL hash collision)"
+  end;
   normalize_dir @@ git_root / path
 
-let init_crate ~root =
-  match Hashtbl.find_opt loaded_crates root with
+let init_crate ~crate_root =
+  match Hashtbl.find_opt loaded_crates crate_root with
   | Some c -> c
   | None ->
-    let crate = {root; known_ids = Hashtbl.create 10} in
-    Hashtbl.replace loaded_crates root crate;
+    let crate = {root = crate_root; commit_id = Hashtbl.create 5} in
+    Hashtbl.replace loaded_crates crate_root crate;
     crate
 
-let resolver ~root =
-  let root = normalize_dir root in
-  let crate = init_crate ~root in
+let resolver ~crate_root =
+  let crate_root = normalize_dir crate_root in
+  let crate = init_crate ~crate_root in
   let fast_checker ~cur_root:_ _ = true
   and resolver ~cur_root:_ arg =
     try Option.some @@ load_git_repo ~crate @@ M.to_info arg with _ -> None
