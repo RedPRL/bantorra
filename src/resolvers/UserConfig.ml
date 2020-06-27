@@ -19,7 +19,7 @@ struct
     function
     | `O ["name", name; "version", version; "at", root] ->
       {name = Marshal.to_string name; version = Marshal.to_ostring version},
-      BantorraBasis.File.normalize_dir @@ Marshal.to_string root
+      File.normalize_dir @@ Marshal.to_string root
     | _ -> raise Marshal.IllFormed
 
   let of_entry (({name; version} : info), root) =
@@ -35,8 +35,7 @@ end
 let deserialize : Marshal.value -> t =
   function
   | `O ["format", `String v; "libraries", `A dict] when v = version ->
-    (* XXX should detect duplicate libraries *)
-    {dict = Hashtbl.of_seq @@ Seq.map M.to_entry @@ List.to_seq dict}
+    {dict = Util.Hashtbl.of_unique_seq @@ Seq.map M.to_entry @@ List.to_seq dict}
   | _ -> raise Marshal.IllFormed
 
 let serialize ({dict} : t) : Marshal.value =

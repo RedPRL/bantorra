@@ -14,22 +14,24 @@ module M =
 struct
   let to_info : Marshal.value -> info =
     function
-    | `O ["at", at] ->
-      Direct {at = Marshal.(to_list to_string at)}
-    | `O ["next", next] ->
-      Indirect {next = Marshal.(to_list to_string next); rename = None}
-    | `O ["rename", `String rename; "next", next]
-    | `O ["next", next; "rename", `String rename] ->
-      Indirect {next = Marshal.(to_list to_string next); rename = Some rename}
+    | `O ms ->
+      begin
+        match List.sort Stdlib.compare ms with
+        | ["at", at] ->
+          Direct {at = Marshal.(to_list to_string at)}
+        | ["next", next] ->
+          Indirect {next = Marshal.(to_list to_string next); rename = None}
+        | ["next", next; "rename", `String rename] ->
+          Indirect {next = Marshal.(to_list to_string next); rename = Some rename}
+        | _ -> raise Marshal.IllFormed
+      end
     | _ -> raise Marshal.IllFormed
 end
 
 let deserialize : Marshal.value -> t =
   function
   | `O ["format", `String v; "waypoints", `O dict] when v = version ->
-    let lib_names = List.map (fun (n, _) -> n) dict in
-    if Util.has_duplication lib_names then failwith "Duplicate library names in the landmark file";
-    Hashtbl.of_seq @@ Seq.map (fun (n, i) -> n, M.to_info i) @@ List.to_seq dict
+    Util.Hashtbl.of_unique_seq @@ Seq.map (fun (n, i) -> n, M.to_info i) @@ List.to_seq dict
   | _ -> raise Marshal.IllFormed
 
 let get_waypoints ~landmark root =

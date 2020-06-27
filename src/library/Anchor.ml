@@ -10,29 +10,21 @@ type lib_ref =
   }
 
 type t =
-  { deps : (unitpath * lib_ref) list
+  { deps : (unitpath, lib_ref) Hashtbl.t
   }
 
-let default = {deps = []}
+let default () = {deps = Hashtbl.create 1}
 
 let check_deps libs =
-  let mount_points = List.map (fun (mp, _) -> mp) libs in
-  if List.exists ((=) []) mount_points then raise Marshal.IllFormed;
-  if Util.has_duplication mount_points then raise Marshal.IllFormed;
-  ()
+  if Hashtbl.mem libs [] then raise Marshal.IllFormed
 
 module M =
 struct
   let to_path : Marshal.value -> unitpath = Marshal.to_list Marshal.to_string
 
-  (* XXX this does not detect duplicate or useless keys *)
   let to_dep_ ms =
-    match
-      List.assoc_opt "resolver" ms,
-      List.assoc_opt "res_args" ms,
-      List.assoc_opt "mount_point" ms
-    with
-    | Some resolver, Some res_args, Some mount_point ->
+    match List.sort Stdlib.compare ms with
+    | ["mount_point", mount_point; "res_args", res_args; "resolver", resolver] ->
       to_path mount_point,
       { resolver = Marshal.to_string resolver
       ; res_args
@@ -49,13 +41,11 @@ let deserialize : Marshal.value -> t =
   function
   | `O ms ->
     begin
-      (* XXX this does not detect duplicate or useless keys *)
-      match
-        List.assoc_opt "format" ms,
-        List.assoc_opt "deps" ms
-      with
-      | Some (`String format_version), deps when format_version = version ->
-        let deps = Option.fold ~none:[] ~some:(Marshal.to_list M.to_dep) deps in
+      match List.sort Stdlib.compare ms with
+      | ["format", `String format_version] when format_version = version ->
+        { deps = Hashtbl.create 0 }
+      | ["deps", deps; "format", `String format_version] when format_version = version ->
+        let deps = Util.Hashtbl.of_unique_seq @@ List.to_seq @@ Marshal.to_list M.to_dep deps in
         check_deps deps;
         { deps }
       | _ -> raise Marshal.IllFormed
@@ -63,10 +53,10 @@ let deserialize : Marshal.value -> t =
   | _ -> raise Marshal.IllFormed
 
 let read archor =
-  try deserialize @@ Marshal.read_plain archor with _ -> default (* XXX some warning here *)
+  try deserialize @@ Marshal.read_plain archor with _ -> default () (* XXX some warning here *)
 
 let iter_deps f {deps; _} =
-  List.iter (fun (_, lib_name) -> f lib_name) deps
+  Hashtbl.iter (fun _ lib_name -> f lib_name) deps
 
 let rec match_prefix nmatched prefix unitpath k =
   match prefix, unitpath with
@@ -75,14 +65,13 @@ let rec match_prefix nmatched prefix unitpath k =
   | (id :: prefix), (id' :: unitpath) ->
     if id = id' then match_prefix (nmatched + 1) prefix unitpath k else None
 
-let maximum_assoc : (int * 'a) list -> 'a option =
-  let max (n0, p0) (n1, p1) = if n0 > n1 then n0, p0 else n1, p1 in
-  function
-  | [] -> None
-  | x :: l -> Some (let _, v = List.fold_left max x l in v)
+let max_match x y =
+  match x, y with
+  | Some (n0, _), (n1, _) when n0 >= n1 -> x
+  | _ -> Some y
 
 let dispatch_path {deps; _} unitpath =
-  maximum_assoc begin
-    deps |> List.filter_map @@ fun (mount_point, lib) ->
+  Option.map (fun (_, r) -> r) @@ Seq.fold_left max_match None begin
+    Hashtbl.to_seq deps |> Seq.filter_map @@ fun (mount_point, lib) ->
     match_prefix 0 mount_point unitpath @@ fun unitpath -> lib, unitpath
   end

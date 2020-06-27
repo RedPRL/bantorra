@@ -1,3 +1,5 @@
+open BantorraBasis
+
 type t =
   { anchor : string
   ; resolvers : (string, Resolver.t) Hashtbl.t
@@ -15,7 +17,7 @@ let check_dep resolvers root =
       failwith ("Library "^Resolver.dump_args r ~cur_root:root res_args^" could not be found.")
 
 let init ~resolvers ~anchor =
-  let resolvers = Hashtbl.of_seq @@ List.to_seq resolvers in
+  let resolvers = Util.Hashtbl.of_unique_seq @@ List.to_seq resolvers in
   let loaded_libs = Hashtbl.create 10 in
   {anchor; resolvers; loaded_libs}
 
