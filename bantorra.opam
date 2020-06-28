@@ -1,9 +1,9 @@
 opam-version: "2.0"
 name: "bantorra"
 version: "~dev"
-synopsis: "Library Management for Source-Based Data"
+synopsis: "Extensible Library Management and Path Resolution"
 description: """
-This package is developed for managing libraries of source-based data.
+This package is developed for managing libraries and resolving unit paths within them.
 """
 maintainer: "favonia <favonia@gmail.com>"
 authors: "favonia <favonia@gmail.com>"
