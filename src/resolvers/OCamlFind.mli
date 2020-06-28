@@ -1,11 +1,16 @@
 
-(** {1 Introduction}
+(**
+   This is a resolver similar to the fixed-table resolver {!module:FixedTable} except that each path is relative the package directory given by the OCaml library {{:http://projects.camlcity.org/projects/findlib.html}findlib}. The package directory is used by the [ocamlfind] tool as part of the standard OCaml toolchain.
+*)
 
-    This is a resolver similar to the fixed-table resolver {!module:FixedTable} except that each path is relative the package directory given by the OCaml library {{:http://projects.camlcity.org/projects/findlib.html}findlib}. The package directory is used by the [ocamlfind] tool as part of the standard OCaml toolchain.
+(**
+   {1 Argument Format}
 
-    The resolver accepts simple YAML strings as library names.
+   The resolver accepts simple YAML strings as library names.
+*)
 
-    {1 The Builder}
+(**
+   {1 Builder}
 *)
 
 val resolver : package_name:string -> dict:(string * string) list -> Bantorra.Resolver.t
