@@ -61,7 +61,7 @@ val resolver : app_name:string -> config:string -> Bantorra.Resolver.t
 *)
 
 val clear_cached_configs : unit -> unit
-(** Configuration files are all cached to reduce I/O load, but perhaps you are bypassing this module to modify them. In this case, one should call this function to force rereading configuration files. *)
+(** Configuration files are all cached to reduce I/O load, but perhaps you are bypassing this module to modify them. In that case, one should call this function to force rereading configuration files. *)
 
 (** {1 Configuration I/O} *)
 
