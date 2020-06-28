@@ -50,9 +50,6 @@ let normalize_dir dir =
 let is_existing_and_regular p =
   try (UnixLabels.stat p).st_kind = S_REG with _ -> false
 
-let is_executable p =
-  (UnixLabels.stat p).st_perm land 0o001 <> 0
-
 let locate_anchor ~anchor start =
   let rec find_root cwd unitpath_acc =
     if is_existing_and_regular anchor then
@@ -86,12 +83,3 @@ let locate_anchor_ ~anchor start =
   protect_cwd @@ fun _ ->
   Sys.chdir @@ Filename.dirname start;
   find_root (Sys.getcwd ())
-
-let which cmd =
-  if Sys.win32 then
-    (* One needs to add the implicit ".exe" and skip the "is_executable" checking. *)
-    failwith "Please make a PR to improve Windows support."
-  else
-    let search_dirs = String.split_on_char ~sep:':' @@ Option.value ~default:"" @@ Sys.getenv_opt "PATH" in
-    let possible_paths = List.map ~f:(fun d -> d / cmd) search_dirs in
-    List.find ~f:(fun p -> is_existing_and_regular p && is_executable p) possible_paths

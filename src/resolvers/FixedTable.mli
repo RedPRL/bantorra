@@ -3,11 +3,7 @@
 
     A fixed-table resolver contains a fixed table from library names to paths to library roots.
 
-    The resolver argument format is
-    {[
-      `String name
-    ]}
-    or, in terms of YAML, a simple string.
+    The resolver accepts simple YAML strings as library names.
 
     {1 The Builder}
 *)

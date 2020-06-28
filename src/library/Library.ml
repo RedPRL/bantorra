@@ -13,8 +13,10 @@ type t =
 let default_cache_subdir = "_cache"
 
 let init ~anchor ~root =
-  let anchor = Anchor.read @@ root / anchor
-  and cache = S.init ~root:(root / default_cache_subdir) in
+  let anchor = Anchor.read @@ root / anchor in
+  let cache_root = root / default_cache_subdir in
+  ensure_dir cache_root;
+  let cache = S.init ~root:(root / default_cache_subdir) in
   {root; anchor; cache}
 
 let locate_anchor ~anchor ~suffix filepath =

@@ -11,7 +11,7 @@ val init : root:string -> t
 (** [init ~root] initialize the store rooted at [root]. It assumes it has exclusive control
     over the files and directories under [root].
 
-    @param root The root directory of the cache store. If not existing, it will be created.
+    @param root The root directory of the cache store. It is assumed that the directory already exists.
 *)
 
 val save_state : t -> unit

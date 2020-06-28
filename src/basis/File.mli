@@ -49,17 +49,12 @@ val normalize_dir : string -> string
    The current working directory will be restored after the computation.
 *)
 
-(** {1 Which} *)
-
-val which : string -> string
-(** A hacky implementation inspired by the "which" tool on GNU/Linux systems. *)
-
 (** {1 Locating Files} *)
 
 val is_existing_and_regular : string -> bool
 (**
-   [is_existing_and_regular path] tests whether there is a regular file (in particular, not a directory)
-   at [path]. Symbolic links are followed before the testing.
+   [is_existing_and_regular path] tests whether [p] points to a regular file (in particular, not a directory).
+   Symbolic links are followed before the testing.
 *)
 
 val locate_anchor : anchor:string -> string -> string * string list
