@@ -40,4 +40,4 @@ let to_float =
   | `Float f -> f
   | _ -> raise IllFormed
 
-let dump = Ezjsonm.value_to_string ~minify:true
+let dump v = Result.get_ok @@ Yaml.to_string ~layout_style:`Flow v
