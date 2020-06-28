@@ -91,6 +91,7 @@ let load_git_repo ~crate:{root; commit_id} {url; ref; path} =
   normalize_dir @@ join @@ git_root :: path
 
 let init_crate ~crate_root =
+  let crate_root = normalize_dir crate_root in
   match Hashtbl.find_opt loaded_crates crate_root with
   | Some c -> c
   | None ->
@@ -99,7 +100,6 @@ let init_crate ~crate_root =
     crate
 
 let resolver ~crate_root =
-  let crate_root = normalize_dir crate_root in
   let crate = init_crate ~crate_root in
   let fast_checker ~cur_root:_ _ = true
   and resolver ~cur_root:_ arg =
