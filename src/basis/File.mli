@@ -57,9 +57,6 @@ val is_existing_and_regular : string -> bool
    Symbolic links are followed before the testing.
 *)
 
-val is_executable : string -> bool
-(** [is_executable p] checks whether the file at [p] is executable. Does not work on Windows (yet). *)
-
 val locate_anchor : anchor:string -> string -> string * string list
 (**
    [locate_anchor ~anchor dir] finds the closest regular file named [anchor] in [dir] or its ancestors

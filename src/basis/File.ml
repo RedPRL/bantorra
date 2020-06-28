@@ -50,13 +50,6 @@ let normalize_dir dir =
 let is_existing_and_regular p =
   try (UnixLabels.stat p).st_kind = S_REG with _ -> false
 
-let is_executable p : bool =
-  if Sys.win32 then
-    (* One needs to check PATHEXT. *)
-    failwith "Please make a PR to improve Windows support."
-  else
-    try UnixLabels.access p ~perm:[UnixLabels.X_OK]; true with _ -> false
-
 let locate_anchor ~anchor start =
   let rec find_root cwd unitpath_acc =
     if is_existing_and_regular anchor then
