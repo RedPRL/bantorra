@@ -24,7 +24,6 @@ module G =
 struct
   let head_commit_id ~git_root =
     File.protect_cwd @@ fun _ ->
-    File.ensure_dir git_root;
     Sys.chdir git_root;
     Exec.with_system_in ~prog:"git" ~args:["rev-parse"; "HEAD"] @@ fun ic ->
     String.trim @@ input_line ic
