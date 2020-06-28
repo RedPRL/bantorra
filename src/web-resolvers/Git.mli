@@ -1,6 +1,6 @@
 (** {1 Introduction}
 
-    The git resolver takes an URL that the [git] tool can understand, clones the repository and return the library root within the repository.
+    The git resolver takes a URL that the [git] tool can understand, clones the repository and returns the library root within the local copy.
 
     The resolver argument in YAML can use one of the following formats:
     {v
