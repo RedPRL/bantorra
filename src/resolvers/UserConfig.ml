@@ -73,7 +73,8 @@ let read ~app_name ~config =
   {dict = List.of_seq @@ Hashtbl.to_seq dict}
 
 (* XXX expensive List -> Hashtbl -> List conversion *)
-let write ~app_name ~config {dict} =
+(* XXX Yaml.of_string does not quote strings properly *)
+let unsafe_write ~app_name ~config {dict} =
   let filepath = config_filepath ~app_name ~config in
   let conf : t = {dict = Util.Hashtbl.of_unique_seq @@ List.to_seq dict} in
   Marshal.write_plain filepath @@ serialize conf;

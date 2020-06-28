@@ -13,7 +13,7 @@ verson: null
     {v
 name: "bantorra"
     v}
-    A missing version is understood as the version [null]. Therefore, the last two specifications are identical. Versions are compared using structural equality. There is no smart comparison, version globbing, or ordering between versions. Each version is completely independent of each other; the version [null] only matches [null], not any string version.
+    A missing version is understood as the version [null]. Therefore, the last two specifications are identical. Versions are compared using structural equality. There is no smart comparison, version globbing, or ordering between versions. Each version is completely independent of each other; the version [null] only matches [null], not any string version. Not even the string ["null"].
 
     However, one could have multiple versions of the same library registered in the user configuration file, as long as the versions {e in use} all point to the same library on disk. (For example, one may have both versions ["1.0"] and ["1"] pointing to [/usr/lib/hello/1.0], which means they can be used interchangeably.) Any attempt to load incompatible versions during the program execution would abort the library resolution.
 
@@ -36,7 +36,7 @@ libraries:
   at: "/usr/lib/something/tcp21"
    v}
 
-   Multiple versions of the same library can be registered so that we can dispatch on different version expressions. Right now, no globbing or smart comparison is supported, so one has to list every possible version of a library that can be used, including the [null] version.
+   Multiple versions of the same library name can be registered to enable dispatching on different versions. Right now, no globbing or smart comparison is supported, so one has to list every possible version of a library in use, including the [null] version. The following is a more complicated configuration file using this dispatching feature:
 
    {v
 format: "1.0.0"
@@ -63,6 +63,8 @@ libraries:
   version: "2.1"
   at: "/usr/lib/something/tcp21"
     v}
+
+   Given this configuration file, versions ["2"] and ["2.5"] of the library [num] are compatible because they point to the same library on disk. Versions [null] and ["2"] of the library ["num"] are not compatible because they point to different libraries. Incompatible libraries cannot be loaded at the same time. Note that there is no version [null] registered for the library [tcp], so one has to specify a string version (either ["2"] or ["2.1"]) for it. The philosophy is that all entries must be explicitly listed.
 *)
 
 (** {1 Builder} *)
@@ -101,9 +103,11 @@ val read_opt : app_name:string -> config:string -> config option
    @param config The file name of the configuration file.
 *)
 
-val write : app_name:string -> config:string -> config -> unit
+val unsafe_write : app_name:string -> config:string -> config -> unit
 (**
-   Write the configuration file. The cache within this module will be updated upon successful writing. See {!val:clear_cached_configs}.
+   Write the configuration file. Do not use this function unless you know what you are doing. Due to some questionable design of the underlying OCaml YAML library [yaml], strings such as ["1.0"] and ["null"] will not be serialized correctly. It is thus recommended to edit the configuration files directly before the library [yaml] is either fixed or replaced. See the {{:https://github.com/avsm/ocaml-yaml/issues/39}issue on GitHub}.
+
+   The cache within this module will be updated upon successful writing. See {!val:clear_cached_configs}. However, the caveat in the library [yaml] means the written configuration file might be broken or different upon rereading.
 
    @param app_name The application name for generating a suitable directory to put the configuration file.
    @param config The file name of the configuration file.
