@@ -3,11 +3,7 @@
 
     This is a resolver similar to the fixed-table resolver {!module:FixedTable} except that each path is relative the package directory given by the OCaml library {{:http://projects.camlcity.org/projects/findlib.html}findlib}. The package directory is used by the [ocamlfind] tool as part of the standard OCaml toolchain.
 
-    The resolver argument format is
-    {[
-      `String name
-    ]}
-    or, in terms of YAML, a simple string.
+    The resolver argument format in YAML is a simple string.
 
     {1 The Builder}
 *)

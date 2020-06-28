@@ -3,8 +3,6 @@ open BantorraBasis
 open BantorraBasis.File
 open Bantorra
 
-type url = string
-
 let git_subdir = "_git"
 
 type t =
@@ -15,7 +13,7 @@ type t =
 type info =
   { url : string
   ; ref : string
-  ; path : string
+  ; path : string list
   }
 
 let loaded_crates : (string, t) Hashtbl.t = Hashtbl.create 5
@@ -50,29 +48,31 @@ struct
         | ["url", url] ->
           { url = Marshal.to_string url
           ; ref = "HEAD"
-          ; path = "."
+          ; path = []
           }
         | ["ref", ref; "url", url] ->
           { url = Marshal.to_string url
           ; ref = Marshal.to_string ref
-          ; path = "."
+          ; path = []
           }
         | ["path", path; "url", url] ->
           { url = Marshal.to_string url
           ; ref = "HEAD"
-          ; path = Marshal.to_string path
+          ; path = Marshal.to_list Marshal.to_string path
           }
         | ["path", path; "ref", ref; "url", url] ->
           { url = Marshal.to_string url
           ; ref = Marshal.to_string ref
-          ; path = Marshal.to_string path
+          ; path = Marshal.to_list Marshal.to_string path
           }
         | _ -> raise Marshal.IllFormed
       end
     | _ -> raise Marshal.IllFormed
 end
 
+(* more checking about [ref] *)
 let load_git_repo ~crate:{root; commit_id} {url; ref; path} =
+  if url = "origin" then invalid_arg "load_git_repo: url = \"origin\"";
   let url_digest = Marshal.digest @@ `String url in
   let git_root = root / git_subdir / url_digest in
   G.reset_repo ~git_root ~url ~ref;
@@ -80,11 +80,15 @@ let load_git_repo ~crate:{root; commit_id} {url; ref; path} =
   begin
     match Hashtbl.find_opt commit_id url_digest with
     | None -> Hashtbl.replace commit_id url_digest id
-    | Some id' ->
-      if id <> id' then failwith @@
-        "Inconsistent commit IDs for the repo "^url^" (or very unlikely URL hash collision)"
+    | Some old_id ->
+      if id <> old_id then begin
+        (* Attempt to restore the old commit ID. *)
+        (* XXX is there a way to reliably parse IDs without cloning? [git ls-remote] cannot parse ref *)
+        begin try G.reset_repo ~git_root ~url ~ref:old_id with _ -> () end;
+        failwith @@ "Inconsistent commit IDs for the repo "^url^" (or very unlikely URL hash collision)"
+      end
   end;
-  normalize_dir @@ git_root / path
+  normalize_dir @@ join @@ git_root :: path
 
 let init_crate ~crate_root =
   match Hashtbl.find_opt loaded_crates crate_root with

@@ -12,33 +12,19 @@ libraries:
   at: "/usr/lib/something/tcp21"
     v}
 
-    The resolver argument format is either
-    {[
-      `O ["name", `String "bantorra"; "version", `String "1.0.0"]
-    ]}
-    or
-    {[
-      `O ["name", `String "bantorra"; "version", `Null]
-    ]}
-    or
-    {[
-      `O ["name", `String "bantorra"]
-    ]}
-    In YAML, it should be
+    The resolver argument format in YAML is one of the following:
     {v
-name: name
-verson: version
+name: "bantorra"
+verson: "0.1.0"
     v}
-    or
     {v
-name: name
+name: "bantorra"
 verson: null
     v}
-    or
     {v
-name: name
+name: "bantorra"
     v}
-    A missing version is understood as the version [null].
+    A missing version is understood as the version [null]. Therefore, the last two specifications are identical.
 
     Versions are compared using structural equality. There is no smart comparison or ordering between versions. Each version is completely independent of each other; [null] only matches [null], not any string. However, one could have multiple entries as follows to dispatch on versions:
     {v
