@@ -14,7 +14,7 @@ type unitpath = string list
 (** {1 Initialization} *)
 
 val init : resolvers:(string * Resolver.t) list -> anchor:string -> t
-(** [init ~resolvers ~anchor ~cur_root] initiates a library manager. It returns the pair of
+(** [init ~resolvers ~anchor ~cur_root] initiates a library manager.
 
     @param resolvers An associated list of available global resolvers. See {!module:Resolver}.
     @param anchor The file name of the library anchors.
