@@ -1,5 +1,5 @@
 (**
-   A Bantorra library manager in the Bantorra framework maintains a tree of units that can be accessed via unit paths from the root. The framework maps each unit path to the underlying file path through a flexible resolution process that supports many existing mechanisms found in other library management systems. It also supports caching of compiled results.
+   A Bantorra library manager in the Bantorra framework maintains a tree of units that can be accessed via unit paths from the root. The framework maps each unit path to the underlying file path through a flexible resolution process that supports many existing mechanisms found in other library management systems.
 
    In the simplest case, there is a one-to-one correspondence between units and files under a directory: the unit path [a.b.c] corresponds to the file [a/b/c.suffix] where [suffix] is specified by the application. The root directory is marked by the existence of a special file with a name specified by the application. For example, the existence of the [dune] file means there is an OCaml library in the eyes of the [dune] building tool. These files are called {e anchors} in the Bantorra framework, each marking the root of a collection of units that forms a {e library}.
 

@@ -1,4 +1,4 @@
 (library
  (name Bantorra)
  (public_name bantorra)
- (libraries bantorra.basis bantorra.cache))
+ (libraries bantorra.basis))

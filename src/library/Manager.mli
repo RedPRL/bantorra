@@ -1,5 +1,3 @@
-open BantorraBasis
-
 (** {1 Types} *)
 
 type t
@@ -20,9 +18,6 @@ val init : resolvers:(string * Resolver.t) list -> anchor:string -> t
     @param anchor The file name of the library anchors.
 *)
 
-val save_state : t -> unit
-(** Save the current state into disk. *)
-
 (** {1 Library Loading} *)
 
 val load_library : t -> string -> library
@@ -41,7 +36,7 @@ val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpat
     but there is a dependency mounted at [["a"]], then the original unit is actually not accessible by that path.
 *)
 
-(** {1 Accessors}
+(** {1 Resolver}
 
     These accessors will automatically load the dependencies.
 *)
@@ -51,9 +46,3 @@ val resolve : t -> library -> unitpath -> suffix:string -> library * string
 
     @param suffix The suffix shared by all the units in the file system.
 *)
-
-val replace_cache : t -> library -> unitpath -> source_digest:Digest.t -> Marshal.t -> Digest.t
-(** [replace_cache manager lib unitpath ~source_digest value] replaces the cached content associated with [unitpath] in the library [lib] and [source_digest] with [value]. It returns the digest of the stored cache. *)
-
-val find_cache_opt : t -> library -> unitpath -> source_digest:Digest.t -> cache_digest:Digest.t option -> Marshal.t option
-(** [find_cache_opt manager lib unitpath ~source_digest ~cache_digest value] finds the cached content associated with [unitpath] in the library [lib] and [source_digest]. If [cache_digest] is [None], it means the digest checking is skipped. One should use the digest returned by [replace_cache] whenever possible. *)
