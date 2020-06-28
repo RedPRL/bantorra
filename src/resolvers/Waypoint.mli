@@ -2,7 +2,7 @@
 
     The waypoint resolver walks around the file system to resolve the library name. It tries to find special files (called {e landmarks}) that contain waypoints. Landmarks all have the same file name specified by the argument given to {!val:resolver}, which are similar to anchors of libraries.
 
-    The resolver argument format in YAML is a simple string.
+    The resolver accepts simple YAML strings as library names.
 
     A waypoint is either {e direct} or {e indirect}. A direct waypoint points to the library root directly. Its YAML representation is as follows:
     {v

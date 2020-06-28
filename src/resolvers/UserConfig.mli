@@ -12,7 +12,7 @@ libraries:
   at: "/usr/lib/something/tcp21"
     v}
 
-    The resolver argument in YAML can use one of the following formats:
+    The resolver takes YAML arguments in one of the following formats:
     {v
 name: "bantorra"
 verson: "0.1.0"
