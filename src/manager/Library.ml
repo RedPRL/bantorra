@@ -28,11 +28,17 @@ let dispatch_path local ~global lib path =
   | None -> local lib path
   | Some (lib_name, path) -> global ~cur_root:lib.root lib_name path
 
-(** @param suffix The suffix should include the dot. *)
-let resolve_local lib path ~suffix =
+let to_local_unitpath lib path =
   match path with
-  | [] -> invalid_arg "to_rel_filepath: empty unit path"
+  | [] -> invalid_arg "to_unitpath: empty unit path"
+  | path -> lib, path
+
+(** @param suffix The suffix should include the dot. *)
+let to_local_filepath lib path ~suffix =
+  match path with
+  | [] -> invalid_arg "resolve: empty unit path"
   | path -> lib, File.join (lib.root :: path) ^ suffix
 
 (** @param suffix The suffix should include the dot. *)
-let resolve = dispatch_path resolve_local
+let to_unitpath = dispatch_path to_local_unitpath
+let to_filepath = dispatch_path to_local_filepath

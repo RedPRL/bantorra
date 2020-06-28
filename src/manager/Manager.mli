@@ -21,7 +21,7 @@ val init : resolvers:(string * Resolver.t) list -> anchor:string -> t
 (** {1 Library Loading} *)
 
 val load_library : t -> string -> library
-(** [load_library manager root] loads the library at [root]. *)
+(** [load_library manager root] explicitly loads the library at [root]. *)
 
 val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpath
 (** [locate_anchor ~anchor ~suffix path] assumes the unit at [path] resides in some library
@@ -36,13 +36,19 @@ val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpat
     but there is a dependency mounted at [["a"]], then the original unit is actually not accessible by that path.
 *)
 
-(** {1 Resolver}
+(** {1 Accessors}
 
     These accessors will automatically load the dependencies.
 *)
 
-val resolve : t -> library -> unitpath -> suffix:string -> library * string
-(** [resolver manager lib unitpath ~suffix] resolves [unitpath] in the library [lib] and returns the eventual library where the unit belong and the underlying file path of the unit.
+val to_unitpath : t -> library -> unitpath -> library * unitpath
+(** [to_unitpath manager lib unitpath ~suffix] resolves [unitpath] and returns the eventual library where the unit belongs and the local unit path pointing to the unit.
+
+    @param global The global resolver for unit paths pointing to other libraries.
+*)
+
+val to_filepath : t -> library -> unitpath -> suffix:string -> library * string
+(** [resolver manager lib unitpath ~suffix] resolves [unitpath] in the library [lib] and returns the eventual library where the unit belongs and the underlying file path of the unit. It is similar to {!val:to_unitpath} but returns a file path instead of a unit path.
 
     @param suffix The suffix shared by all the units in the file system.
 *)

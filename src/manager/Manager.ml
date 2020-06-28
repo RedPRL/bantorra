@@ -41,4 +41,5 @@ let rec_resolver f lm =
   in
   f ~global
 
-let resolve = rec_resolver Library.resolve
+let to_unitpath = rec_resolver Library.to_unitpath
+let to_filepath = rec_resolver Library.to_filepath
