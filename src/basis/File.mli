@@ -18,11 +18,6 @@ val writefile : string -> string -> unit
    If there was already a file at [path], it will be overwritten.
 *)
 
-val writefile_noerr : string -> string -> unit
-(**
-   [writefile_noerr path str] is similar to [writefile path str] except that all exceptions are caught and ignored.
-*)
-
 val readfile : string -> string
 (**
    [readfile path] reads the content of string [str] the file at [path] (in binary mode).
@@ -51,12 +46,6 @@ val normalize_dir : string -> string
 
 (** {1 Locating Files} *)
 
-val is_existing_and_regular : string -> bool
-(**
-   [is_existing_and_regular path] tests whether [p] points to a regular file (in particular, not a directory).
-   Symbolic links are followed before the testing.
-*)
-
 val locate_anchor : anchor:string -> string -> string * string list
 (**
    [locate_anchor ~anchor dir] finds the closest regular file named [anchor] in [dir] or its ancestors
@@ -69,10 +58,4 @@ val locate_anchor : anchor:string -> string -> string * string list
     [/usr/lib/gcc/] and [/usr/lib/], but there is such a file under [/usr/].
     [locate_anchor ~anchor:"anchor.txt" "/usr/lib/gcc"] will return ["/usr", ["lib"; "gcc"]]
     and [locate_anchor ~anchor:"anchor.txt" "/usr"] will return ["/usr", []].
-*)
-
-val locate_anchor_ : anchor:string -> string -> string
-(**
-   [locate_anchor_ ~anchor dir] is the same as [locate_anchor ~anchor dir] except that the second component
-    of the returned value is dropped. In other words, only the found directory is returned.
 *)

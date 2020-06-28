@@ -1,24 +1,15 @@
 open File
 
-type value = Ezjsonm.value
-type yaml = Yaml.yaml
-type t = Ezjsonm.t
+type value = Yaml.value
 
 exception IllFormed
 
-let digest v = try v |> Yaml.to_string_exn |> Digest.string |> Digest.to_hex with _ -> raise IllFormed
+(* Even though the package yaml still has issues, it is important to have user-friendly syntax. *)
+let of_yaml p = try p |> Yaml.of_string_exn with _ -> raise IllFormed
+let read_yaml path = of_yaml @@ readfile path
 
-(* Ezjsonm is needed because yaml failed to reconstruct quoted keywords such as ["true"]. *)
-let of_gzip z = try z |> Ezgzip.decompress |> Result.get_ok |> Ezjsonm.from_string with _ -> raise IllFormed
-let to_gzip j = try j |> Ezjsonm.to_string ~minify:true |> Ezgzip.compress with _ -> raise IllFormed
-let write_gzip path j = writefile path @@ to_gzip j
-let read_gzip path = of_gzip @@ readfile path
-
-(* Even though yaml still has issues, it is important to have user-friendly syntax. *)
-let of_plain p = try p |> Yaml.of_string_exn with _ -> raise IllFormed
-let to_plain j = try j |> Yaml.to_string_exn ~layout_style:`Block with _ -> raise IllFormed
-let write_plain path j = writefile path @@ to_plain j
-let read_plain path = of_plain @@ readfile path
+let unsafe_to_yaml j = try j |> Yaml.to_string_exn ~layout_style:`Block with _ -> raise IllFormed
+let unsafe_write_yaml path j = writefile path @@ unsafe_to_yaml j
 
 let of_string s = `String s
 let to_string : value -> string =
@@ -49,4 +40,4 @@ let to_float =
   | `Float f -> f
   | _ -> raise IllFormed
 
-let dump = Ezjsonm.value_to_string ~minify:true
+let dump v = Result.get_ok @@ Yaml.to_string ~layout_style:`Flow v

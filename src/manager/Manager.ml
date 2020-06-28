@@ -32,9 +32,6 @@ let load_library lm lib_root =
 
 let locate_anchor = Library.locate_anchor
 
-let save_state {loaded_libs; _} =
-  Hashtbl.iter (fun _ lib -> Library.save_state lib) loaded_libs
-
 let rec_resolver f lm =
   let rec global ~cur_root ({resolver; res_args} : Anchor.lib_ref) =
     let resolver = Hashtbl.find lm.resolvers resolver in
@@ -44,6 +41,5 @@ let rec_resolver f lm =
   in
   f ~global
 
-let resolve = rec_resolver Library.resolve
-let replace_cache = rec_resolver Library.replace_cache
-let find_cache_opt = rec_resolver Library.find_cache_opt
+let to_unitpath = rec_resolver Library.to_unitpath
+let to_filepath = rec_resolver Library.to_filepath

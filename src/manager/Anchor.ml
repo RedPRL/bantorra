@@ -13,8 +13,6 @@ type t =
   { deps : (unitpath, lib_ref) Hashtbl.t
   }
 
-let default () = {deps = Hashtbl.create 1}
-
 let check_deps libs =
   if Hashtbl.mem libs [] then raise Marshal.IllFormed
 
@@ -39,6 +37,7 @@ end
 
 let deserialize : Marshal.value -> t =
   function
+  | `Null -> { deps = Hashtbl.create 0 }
   | `O ms ->
     begin
       match List.sort Stdlib.compare ms with
@@ -52,8 +51,8 @@ let deserialize : Marshal.value -> t =
     end
   | _ -> raise Marshal.IllFormed
 
-let read archor =
-  try deserialize @@ Marshal.read_plain archor with _ -> default () (* XXX some warning here *)
+let read anchor =
+  try deserialize @@ Marshal.read_yaml anchor with _ -> failwith @@ anchor ^ ": not found or ill-formatted"
 
 let iter_deps f {deps; _} =
   Hashtbl.iter (fun _ lib_name -> f lib_name) deps

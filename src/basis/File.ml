@@ -14,9 +14,6 @@ let writefile p s =
     close_out_noerr ch;
     raise e
 
-let writefile_noerr p s =
-  try writefile p s with _ -> ()
-
 (** Read the entire file as a string. *)
 let readfile p =
   let ch = open_in_bin p in
@@ -66,20 +63,3 @@ let locate_anchor ~anchor start =
   protect_cwd @@ fun _ ->
   Sys.chdir @@ Filename.dirname start;
   find_root (Sys.getcwd ()) []
-
-let locate_anchor_ ~anchor start =
-  let rec find_root cwd =
-    if is_existing_and_regular anchor then
-      cwd
-    else
-      let parent = Filename.dirname cwd in
-      if parent = cwd then
-        raise Not_found
-      else begin
-        Sys.chdir parent;
-        find_root parent
-      end
-  in
-  protect_cwd @@ fun _ ->
-  Sys.chdir @@ Filename.dirname start;
-  find_root (Sys.getcwd ())

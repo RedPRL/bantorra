@@ -73,7 +73,7 @@ end
 (* more checking about [ref] *)
 let load_git_repo ~crate:{root; commit_id} {url; ref; path} =
   if url = "origin" then invalid_arg "load_git_repo: url = \"origin\"";
-  let url_digest = Marshal.digest @@ `String url in
+  let url_digest = Digest.to_hex @@ Digest.string url in
   let git_root = root / git_subdir / url_digest in
   G.reset_repo ~git_root ~url ~ref;
   let id = G.head_commit_id ~git_root in

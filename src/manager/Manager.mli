@@ -1,5 +1,3 @@
-open BantorraBasis
-
 (** {1 Types} *)
 
 type t
@@ -20,13 +18,10 @@ val init : resolvers:(string * Resolver.t) list -> anchor:string -> t
     @param anchor The file name of the library anchors.
 *)
 
-val save_state : t -> unit
-(** Save the current state into disk. *)
-
 (** {1 Library Loading} *)
 
 val load_library : t -> string -> library
-(** [load_library manager root] loads the library at [root]. *)
+(** [load_library manager root] explicitly loads the library at [root]. The dependencies are not loaded eagerly. *)
 
 val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpath
 (** [locate_anchor ~anchor ~suffix path] assumes the unit at [path] resides in some library
@@ -41,19 +36,19 @@ val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpat
     but there is a dependency mounted at [["a"]], then the original unit is actually not accessible by that path.
 *)
 
-(** {1 Accessors}
+(** {1 Resolvers}
 
-    These accessors will automatically load the dependencies.
+    These functions will automatically load the dependencies.
 *)
 
-val resolve : t -> library -> unitpath -> suffix:string -> library * string
-(** [resolver manager lib unitpath ~suffix] resolves [unitpath] in the library [lib] and returns the eventual library where the unit belong and the underlying file path of the unit.
+val to_unitpath : t -> library -> unitpath -> library * unitpath
+(** [to_unitpath manager lib unitpath] resolves [unitpath] and returns the eventual library where the unit belongs and the local unit path pointing to the unit.
+
+    @param global The global resolver for unit paths pointing to other libraries.
+*)
+
+val to_filepath : t -> library -> unitpath -> suffix:string -> library * string
+(** [resolver manager lib unitpath ~suffix] resolves [unitpath] in the library [lib] and returns the eventual library where the unit belongs and the underlying file path of the unit. It is similar to {!val:to_unitpath} but returns a file path instead of a unit path.
 
     @param suffix The suffix shared by all the units in the file system.
 *)
-
-val replace_cache : t -> library -> unitpath -> source_digest:Digest.t -> Marshal.t -> Digest.t
-(** [replace_cache manager lib unitpath ~source_digest value] replaces the cached content associated with [unitpath] in the library [lib] and [source_digest] with [value]. It returns the digest of the stored cache. *)
-
-val find_cache_opt : t -> library -> unitpath -> source_digest:Digest.t -> cache_digest:Digest.t option -> Marshal.t option
-(** [find_cache_opt manager lib unitpath ~source_digest ~cache_digest value] finds the cached content associated with [unitpath] in the library [lib] and [source_digest]. If [cache_digest] is [None], it means the digest checking is skipped. One should use the digest returned by [replace_cache] whenever possible. *)

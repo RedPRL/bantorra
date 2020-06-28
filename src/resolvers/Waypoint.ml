@@ -38,7 +38,7 @@ let get_waypoints ~landmark root =
   match Hashtbl.find_opt cache @@ root / landmark with
   | Some waypoints -> waypoints
   | None ->
-    let waypoints = deserialize @@ Marshal.read_plain @@ root / landmark in
+    let waypoints = deserialize @@ Marshal.read_yaml @@ root / landmark in
     Hashtbl.replace cache root waypoints;
     waypoints
 

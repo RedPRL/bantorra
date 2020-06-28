@@ -1,9 +1,9 @@
 opam-version: "2.0"
 name: "bantorra"
 version: "~dev"
-synopsis: "Library Management for Source-Based Data"
+synopsis: "Extensible Library Management and Path Resolution"
 description: """
-This package is developed for managing libraries of source-based data.
+This package is developed for managing libraries and resolving unit paths within them.
 """
 maintainer: "favonia <favonia@gmail.com>"
 authors: "favonia <favonia@gmail.com>"
@@ -16,8 +16,6 @@ depends: [
   "ocaml" {>= "4.08.0"}
   "ocamlfind" {>= "1.8.1"}
   "yaml" {>= "2.1.0"}
-  "ezgzip" {>= "0.2.3"}
-  "ezjsonm" {>= "1.1.0"}
 ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]
