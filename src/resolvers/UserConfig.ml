@@ -63,7 +63,7 @@ let read_ ~app_name ~config =
   match Hashtbl.find_opt cache filepath with
   | Some conf -> conf
   | None ->
-    let conf = try deserialize @@ Marshal.read_plain filepath with _ -> default () in
+    let conf = try deserialize @@ Marshal.read_yaml filepath with _ -> default () in
     Hashtbl.replace cache filepath conf;
     conf
 
@@ -77,7 +77,7 @@ let read ~app_name ~config =
 let unsafe_write ~app_name ~config {dict} =
   let filepath = config_filepath ~app_name ~config in
   let conf : t = {dict = Util.Hashtbl.of_unique_seq @@ List.to_seq dict} in
-  Marshal.write_plain filepath @@ serialize conf;
+  Marshal.unsafe_write_yaml filepath @@ serialize conf;
   Hashtbl.replace cache filepath conf
 
 let clear_cached_configs () =

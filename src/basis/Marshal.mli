@@ -1,60 +1,30 @@
 (** {1 Types} *)
 
-type value = Ezjsonm.value
+type value = Yaml.value
 (** The type suitable for marshalling. This is the universal type to exchange information
     within the framework. *)
-
-type yaml = Yaml.yaml
-(** The type with access to more YAML features. Currently unused. *)
-
-type t = Ezjsonm.t
-(** The type represnting valid JSON documents, which is more restricted than {!type:value}. *)
 
 exception IllFormed
 (** The exception indicating errors during encoding, decoding, or I/O. *)
 
-(** {1 Digest} *)
-
-val digest : value -> string
-(** A function to generate the hexadecimal representation of the digest of a value. It can be used as filenames on all major platforms. *)
-
-(** {1 Compressed Serialization} *)
-
-(** These are functions to store and retrieve something of type [value] on disk. The file format on disk
-    is not human-readable. *)
-
-val to_gzip : t -> string
-(** A function that serializes a JSON document. *)
-
-val of_gzip : string -> t
-(** A function that deserializes a JSON document. *)
-
-val write_gzip : string -> t -> unit
-(** [write_gzip path v] writes the serialization of [v] into the file at [path]. *)
-
-val read_gzip : string -> t
-(** [read_gzip path v] reads and deserializes the content of the file at [path]. *)
-
 (** {1 Human-Readable Serialization} *)
 
-(** These are functions to store and retrieve something of type [value] on disk
-    that is in a human-readable format (YAML). For this reason, the type does not
-    need to be a valid JSON document---we can use the type [value] instead of [t].
+(** These are functions to retrieve the data of type [value] in a human-readable format (YAML).
+    They are suitable for reading configuration files created by users. *)
 
-    They are suitable for reading or generating configuration files
-    that can be later modified by normal users. *)
-
-val to_plain : value -> string
-(** A function that serializes a value. *)
-
-val of_plain : string -> value
+val of_yaml : string -> value
 (** A function that deserializes a value. *)
 
-val write_plain : string -> value -> unit
-(** [write_plain path v] writes the serialization of [v] into the file at [path]. *)
+val read_yaml : string -> value
+(** [read_yaml path v] reads and deserializes the content of the file at [path]. *)
 
-val read_plain : string -> value
-(** [read_plain path v] reads and deserializes the content of the file at [path]. *)
+(** {2 Unsafe API} *)
+
+val unsafe_to_yaml : value -> string
+(** A function that serializes a value. This function does not quote strings properly due to the bug in the [yaml] package. *)
+
+val unsafe_write_yaml : string -> value -> unit
+(** [write_yaml path v] writes the serialization of [v] into the file at [path]. This function does not quote strings properly due to the bug in the [yaml] package. *)
 
 (** {1 Helper Functions} *)
 

@@ -19,7 +19,7 @@ val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpat
 val iter_deps : (Anchor.lib_ref -> unit) -> t -> unit
 (** Iterate over all dependencies listed in the anchor. *)
 
-(** {1 Hooks for Library Managers} *)
+(** {1 Hook for Library Managers} *)
 
 (** The following API is for a library manager to chain all the libraries together.
     Please use the high-level API in {!module:Manager} instead. *)
