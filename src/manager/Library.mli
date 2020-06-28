@@ -27,7 +27,7 @@ val iter_deps : (Anchor.lib_ref -> unit) -> t -> unit
 val to_unitpath :
   global:(cur_root:string -> Anchor.lib_ref -> unitpath -> t * unitpath) ->
   t -> unitpath -> t * unitpath
-(** [to_unitpath ~global lib unitpath ~suffix] resolves [unitpath] and returns the eventual library where the unit belongs and the local unit path pointing to the unit.
+(** [to_unitpath ~global lib unitpath] resolves [unitpath] and returns the eventual library where the unit belongs and the local unit path pointing to the unit.
 
     @param global The global resolver for unit paths pointing to other libraries.
 *)

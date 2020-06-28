@@ -42,7 +42,7 @@ val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpat
 *)
 
 val to_unitpath : t -> library -> unitpath -> library * unitpath
-(** [to_unitpath manager lib unitpath ~suffix] resolves [unitpath] and returns the eventual library where the unit belongs and the local unit path pointing to the unit.
+(** [to_unitpath manager lib unitpath] resolves [unitpath] and returns the eventual library where the unit belongs and the local unit path pointing to the unit.
 
     @param global The global resolver for unit paths pointing to other libraries.
 *)
