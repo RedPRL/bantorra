@@ -19,7 +19,7 @@ path: [src, library]
     {v
 url: "git@github.com:favonia/bantorra.git"
     v}
-    The [ref] field can be a commit ID, a branch name, a tag name, or anything accepted by your [git fetch] command. (The old [git] before 2015 would not accept commit IDs, but please upgrade it already.) The field [path] is the relative path pointing to the root of the library. If the [path] field is missing, then the tool assumes the library is at the root of the repository. If [ref] is missing, then ["HEAD"] is used, which should point to the tip of the default branch in the remote repository.
+    The [ref] field can be a commit ID, a branch name, a tag name, or anything accepted by [git fetch]. (The older [git] before year 2015 would not accept commit IDs, but please upgrade it already.) The field [path] is the relative path pointing to the root of the library. If the [path] field is missing, then the tool assumes the library is at the root of the repository. If [ref] is missing, then ["HEAD"] is used, which should point to the tip of the default branch in the remote repository.
 
     Different URLs pointing to the "same" git repository are treated as different libraries. Therefore, [git@github.com:favonia/bantorra.git] and [https://github.com/favonia/bantorra.git] are treated as two different git repositories. The resolver cannot identify a remote git repository and any local copy not managed by it, either. A proper solution to this problem is a global mapping table from package names to repositories, as employed by many programming language tools.
 
