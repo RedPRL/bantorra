@@ -19,10 +19,10 @@ name: "bantorra"
 
 *)
 
-(** {1 User Configeration} *)
+(** {1 Configeration Format} *)
 
 (**
-   By default, the configuration is at [$XDG_CONFIG_HOME/${app_name}/${config}]. The exact directory is given by {!val:BantorraBasis.Xdg.get_config_home} concatenated with the argument [config] given to {!val:resolver}.
+   By default, the configuration is at [$XDG_CONFIG_HOME/${app_name}/${config}]. The exact path is given by {!val:BantorraBasis.Xdg.get_config_home} concatenated with the argument [config] given to {!val:resolver}.
 
    Here is an example:
    {v
@@ -95,9 +95,9 @@ type config = {dict : (versioned_library * string) list}
 val default_config : config
 (** Default configuration that is empty. *)
 
-val read_opt : app_name:string -> config:string -> config option
+val read : app_name:string -> config:string -> config
 (**
-   Try to read the configuration file. Note that the results are cached. See {!val:clear_cached_configs}.
+   Try to read the configuration file. Note that the results are cached. See {!val:clear_cached_configs}. If the configuration file does not exist or is ill-formated, then the default configuration (the empty mapping) is returned. The cache will be updated accordingly.
 
    @param app_name The application name for generating a suitable directory to put the configuration file.
    @param config The file name of the configuration file.
@@ -105,9 +105,9 @@ val read_opt : app_name:string -> config:string -> config option
 
 val unsafe_write : app_name:string -> config:string -> config -> unit
 (**
-   Write the configuration file. Do not use this function unless you know what you are doing. Due to some questionable design of the underlying OCaml YAML library [yaml], strings such as ["1.0"] and ["null"] will not be serialized correctly. It is thus recommended to edit the configuration files directly before the library [yaml] is either fixed or replaced. See the {{:https://github.com/avsm/ocaml-yaml/issues/39}issue on GitHub}.
+   Write the configuration file. Do not use this function unless you know what you are doing. Due to some questionable design of the underlying OCaml YAML package [yaml], strings such as ["1.0"] and ["null"] will not be serialized correctly. It is thus recommended to edit the configuration files directly before the package [yaml] is either fixed or replaced. See the {{:https://github.com/avsm/ocaml-yaml/issues/39}issue on GitHub}.
 
-   The cache within this module will be updated upon successful writing. See {!val:clear_cached_configs}. However, the caveat in the library [yaml] means the written configuration file might be broken or different upon rereading.
+   The cache within this module will be updated upon successful writing. See {!val:clear_cached_configs}. However, the caveat in the package [yaml] means the written configuration file might be broken or different upon rereading.
 
    @param app_name The application name for generating a suitable directory to put the configuration file.
    @param config The file name of the configuration file.
