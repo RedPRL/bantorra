@@ -24,7 +24,7 @@ name: "bantorra"
 (**
    By default, the configuration is at [$XDG_CONFIG_HOME/${app_name}/${config}]. The exact path is given by {!val:BantorraBasis.Xdg.get_config_home} concatenated with the argument [config] given to {!val:resolver}.
 
-   Here is an example:
+   Here is an example configuration file:
    {v
 format: "1.0.0"
 libraries:
