@@ -57,12 +57,6 @@ val is_existing_and_regular : string -> bool
    Symbolic links are followed before the testing.
 *)
 
-val is_existing_and_directory : string -> bool
-(**
-   [is_existing_and_directory path] tests whether [p] points to a directory.
-   Symbolic links are followed before the testing.
-*)
-
 val is_executable : string -> bool
 (** [is_executable p] checks whether the file at [p] is executable. Does not work on Windows (yet). *)
 

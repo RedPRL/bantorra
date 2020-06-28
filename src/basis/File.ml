@@ -50,9 +50,6 @@ let normalize_dir dir =
 let is_existing_and_regular p =
   try (UnixLabels.stat p).st_kind = S_REG with _ -> false
 
-let is_existing_and_directory p =
-  try Sys.is_directory p with _ -> false
-
 let is_executable p : bool =
   if Sys.win32 then
     (* One needs to check PATHEXT. *)
