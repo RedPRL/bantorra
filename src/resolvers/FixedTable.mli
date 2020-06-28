@@ -1,11 +1,14 @@
 
-(** {1 Introduction}
+(** A fixed-table resolver contains a fixed table from library names to paths to library roots. *)
 
-    A fixed-table resolver contains a fixed table from library names to paths to library roots.
+(**
+   {1 Argument Format}
 
-    The resolver accepts simple YAML strings as library names.
+   The resolver accepts simple YAML strings as library names.
+*)
 
-    {1 The Builder}
+(**
+    {1 Builder}
 *)
 
 val resolver : dict:(string * string) list -> Bantorra.Resolver.t

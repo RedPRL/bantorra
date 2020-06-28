@@ -15,6 +15,8 @@ let default () : t = {dict = Hashtbl.create 0}
 type config = {dict : (versioned_library * string) list}
 let default_config : config = {dict = []}
 
+let library_in_use : (string, string) Hashtbl.t = Hashtbl.create 10
+
 let cache : (string, t) Hashtbl.t = Hashtbl.create 0
 
 module M =
@@ -56,27 +58,23 @@ let serialize ({dict} : t) : Marshal.value =
 let config_filepath ~app_name ~config =
   Xdg.get_config_home ~app_name / config
 
-let read_opt_ ~app_name ~config =
-  try
-    let filepath = config_filepath ~app_name ~config in
-    match Hashtbl.find_opt cache filepath with
-    | Some conf -> Some conf
-    | None ->
-      let conf = deserialize @@ Marshal.read_plain filepath in
-      Hashtbl.replace cache filepath conf;
-      Some conf
-  with _ -> None
-
-let try_read ~app_name ~config =
-  Option.value ~default:(default ()) @@ read_opt_ ~app_name ~config
+let read_ ~app_name ~config =
+  let filepath = config_filepath ~app_name ~config in
+  match Hashtbl.find_opt cache filepath with
+  | Some conf -> conf
+  | None ->
+    let conf = try deserialize @@ Marshal.read_plain filepath with _ -> default () in
+    Hashtbl.replace cache filepath conf;
+    conf
 
 (* XXX expensive List -> Hashtbl -> List conversion *)
-let read_opt ~app_name ~config =
-  read_opt_ ~app_name ~config |> Option.map @@ fun ({dict} : t) ->
+let read ~app_name ~config =
+  read_ ~app_name ~config |> fun ({dict} : t) ->
   {dict = List.of_seq @@ Hashtbl.to_seq dict}
 
 (* XXX expensive List -> Hashtbl -> List conversion *)
-let write ~app_name ~config {dict} =
+(* XXX Yaml.of_string does not quote strings properly *)
+let unsafe_write ~app_name ~config {dict} =
   let filepath = config_filepath ~app_name ~config in
   let conf : t = {dict = Util.Hashtbl.of_unique_seq @@ List.to_seq dict} in
   Marshal.write_plain filepath @@ serialize conf;
@@ -86,15 +84,14 @@ let clear_cached_configs () =
   Hashtbl.clear cache
 
 let resolver ~app_name ~config =
-  let fast_checker ~cur_root:_ r =
+  let resolver ~cur_root:_ arg =
     try
-      let conf = try_read ~app_name ~config in
-      Hashtbl.mem conf.dict @@ M.to_versioned_library r
-    with _ -> false
-  and resolver ~cur_root:_ r =
-    try
-      let conf = try_read ~app_name ~config in
-      Hashtbl.find_opt conf.dict @@ M.to_versioned_library r
+      let conf = read_ ~app_name ~config in
+      let {name; _} as arg = M.to_versioned_library arg in
+      let root = Hashtbl.find conf.dict arg in
+      match Hashtbl.find_opt library_in_use name with
+      | None -> Hashtbl.replace library_in_use name root; Some root
+      | Some root' -> if root' <> root then None else Some root
     with _ -> None
   in
-  Resolver.make ~fast_checker resolver
+  Resolver.make resolver

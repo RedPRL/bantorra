@@ -99,9 +99,13 @@ let init_crate ~crate_root =
     Hashtbl.replace loaded_crates crate_root crate;
     crate
 
-let resolver ~crate_root =
+let resolver ~strict_checking ~crate_root =
   let crate = init_crate ~crate_root in
-  let fast_checker ~cur_root:_ _ = true
+  let fast_checker ~cur_root:_ arg =
+    if strict_checking then
+      try ignore @@ load_git_repo ~crate @@ M.to_info arg; true with _ -> false
+    else
+      try ignore @@ M.to_info arg; true with _ -> false
   and resolver ~cur_root:_ arg =
     try Option.some @@ load_git_repo ~crate @@ M.to_info arg with _ -> None
   in

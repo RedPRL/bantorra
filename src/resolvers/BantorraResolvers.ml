@@ -1,10 +1,4 @@
-(**
-   {1 Introduction}
-
-   Here are some examples of library resolvers.
-
-   {1 Resolvers}
-*)
+(** Here are some examples of library resolvers. *)
 
 module FixedTable = FixedTable
 (** Resolver based on a fixed table of libraries. *)
