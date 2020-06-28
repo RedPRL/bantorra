@@ -1,6 +1,6 @@
 (** {1 Introduction}
 
-    The waypoint resolver walks around the file system to resolve the library name. It tries to find special files (called {e landmarks}) that contain waypoints. Landmarks all have the same file name specified by the argument given to {!val:resolver}, which are similar to anchors of libraries.
+    The waypoint resolver walks around the file system to resolve library names. It tries to find special files (called {e landmarks}) that contain waypoints, which help the resolver to find the roots of target libraries. All landmark files have the same file name specified by the argument given to {!val:resolver}.
 
     The resolver accepts simple YAML strings as library names.
 
@@ -40,7 +40,7 @@ waypoints:
 val resolver : strict_checking:bool -> landmark:string -> Bantorra.Resolver.t
 (** [resolver ~strict_checking ~landmark] construct a resolver for the specified file name [landmark].
 
-    @param strict_checking Whether one should perform full resolution to check the validity of library names. If absent or [false], the resolver will only check whether all dependencies are well-formed when loading a new library.
+    @param strict_checking Whether one should perform full resolution to check the validity of library names. If the value is [false], the resolver will only check whether all dependencies are well-formed when loading a new library.
     @param landmark The name of the special landmark files that the resolver should look for.
 *)
 
