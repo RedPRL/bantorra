@@ -36,7 +36,7 @@ let to_local_unitpath lib path =
 (** @param suffix The suffix should include the dot. *)
 let to_local_filepath lib path ~suffix =
   match path with
-  | [] -> invalid_arg "resolve: empty unit path"
+  | [] -> invalid_arg "to_filepath: empty unit path"
   | path -> lib, File.join (lib.root :: path) ^ suffix
 
 (** @param suffix The suffix should include the dot. *)
