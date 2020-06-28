@@ -29,4 +29,4 @@ url: "git@github.com:favonia/bantorra.git"
 *)
 
 val resolver : crate_root:string -> Bantorra.Resolver.t
-(** [resolver ~crate_root] downloads git repositories, when requested, into the directory [crate_root] and resolves the URL into a path pointing to a local copy of the library. The resolver assumes the directory [crate_root] already exists and it has total control over the directory at [crate_root] during the program execution. *)
+(** [resolver ~crate_root] downloads git repositories, when requested, into the directory [crate_root] and resolves the URL into a path pointing to a local copy of the library. The resolver assumes the directory [crate_root] already exists and it has total control over the directory during the program execution. *)
