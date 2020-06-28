@@ -1,3 +1,23 @@
+(** An anchor is a YAML file pinning the root of a library. *)
+
+(** {1 Format}
+
+    It can be empty (equivalent to the YAML value [null]) or in one of the following formats:
+    {v
+format: "1.0.0"
+    v}
+    {v
+format: "1.0.0"
+deps:
+  - mount_point: [lib, num]
+    resolver: solver
+    res_args:
+      ...
+    v}
+
+    If the [deps] field is missing or the entire anchor is empty (or equivalent to the YAML value [null]), then it means the library has no dependency. Each dependency is specifed by its mount point ([mount_point]), the name of the resolver ([resolver]), and the arguments to the resolver ([res_args]). During the resolution, the entire YAML subtree under ([res_args]) is sent to the resolver. See {!type:Resolver.res_args}.
+*)
+
 (** {1 Types} *)
 
 type t
@@ -13,22 +33,10 @@ type lib_ref =
   }
 (** The type of library references to be resolved. *)
 
-(** {1 Initialization} *)
+(** {1 Anchor I/O} *)
 
 val read : string -> t
-(** [read path] read the content of an anchor file.
-
-    Here is a sample anchor file:
-    {v
-format: "1.0.0"
-deps:
-  - mount_point: [lib, num]
-    resolver: builtin
-    res_args: number
-    v}
-
-    The argument format [res_args] is determined by the resolver "[builtin]".
-*)
+(** [read path] read the content of an anchor file. *)
 
 (** {1 Accessors} *)
 

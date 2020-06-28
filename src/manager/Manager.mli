@@ -21,7 +21,7 @@ val init : resolvers:(string * Resolver.t) list -> anchor:string -> t
 (** {1 Library Loading} *)
 
 val load_library : t -> string -> library
-(** [load_library manager root] explicitly loads the library at [root]. *)
+(** [load_library manager root] explicitly loads the library at [root]. The dependencies are not loaded eagerly. *)
 
 val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpath
 (** [locate_anchor ~anchor ~suffix path] assumes the unit at [path] resides in some library
@@ -36,9 +36,9 @@ val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpat
     but there is a dependency mounted at [["a"]], then the original unit is actually not accessible by that path.
 *)
 
-(** {1 Accessors}
+(** {1 Resolvers}
 
-    These accessors will automatically load the dependencies.
+    These functions will automatically load the dependencies.
 *)
 
 val to_unitpath : t -> library -> unitpath -> library * unitpath

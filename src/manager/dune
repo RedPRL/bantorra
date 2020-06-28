@@ -1,5 +1,4 @@
 (library
  (name Bantorra)
  (public_name bantorra)
- (private_modules library anchor)
  (libraries bantorra.basis))
