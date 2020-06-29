@@ -19,9 +19,9 @@ deps:
       ...
     v}
 
-    If the [deps] field is missing or the entire anchor is empty (or equivalent to the YAML value [null]), then it means the library has no dependency. Each dependency is specifed by its mount point ([mount_point]), the name of the resolver ([resolver]), and the arguments to the resolver ([res_args]). During the resolution, the entire YAML subtree under ([res_args]) is sent to the resolver. See {!type:Resolver.res_args}.
+    If the [deps] field is missing or the entire anchor is equivalent to the YAML value [null] (e.g., empty), then the library has no dependencies. Each dependency is specifed by its mount point in the current library ([mount_point]), the name of the resolver to find the imported library([resolver]), and the arguments to the resolver ([res_args]). During the resolution, the entire YAML subtree under the field [res_args] is sent to the resolver. See {!type:Resolver.res_args} and {!val:Resolver.make}.
 
-    The order of entries in [dep] does not matter and the dispatching is based on longest prefix match. The same library can have multiple mount points. To keep things unambiguous, there cannot be two entries sharing the same mount point, and the mount point cannot be an empty list (the root). Here is an example showing the longest prefix match:
+    The order of entries in [dep] does not matter and the dispatching is based on longest prefix match. If no match can be found, then the unit path is local. The same library can be mounted at multiple points. However, to keep the resolution unambiguous, there cannot be two dependencies sharing the same mount point, and the mount point cannot be the empty list (the root). Here is an example demonstrating the longest prefix match:
     {v
 format: "1.0.0"
 deps:
@@ -34,13 +34,14 @@ deps:
     v}
 
     The unit path [tcp.ftp] will be resolved to [ftp] in the [tcp] library, awaiting further resolution, while the unit path [tcp.http.connect] will be resolved to [connect] in the [http] library, not [http.connect] in the [tcp] library. Again, the order of dependencies does not matter.
+
+    If some library is mounted at [mylib.hello], then the original unit associated with [mylib.hello] or any path with the prefix [mylib.hello] is no longer accessible. Moreover, [mylib.hello] cannot point to any unit after the mounting because there cannot be any unit associated with the empty path (the root), and [mylib.hello] means the empty path (the root) in the mounted library, which cannot point to anything.
 *)
 
 (** {1 Types} *)
 
 type t
-(** The type of anchors. An anchor marks the root of a library
-    and records dependencies on other libraries. See {!val:read}. *)
+(** The type of anchors. *)
 
 type unitpath = string list
 (** The type of unit paths. *)
