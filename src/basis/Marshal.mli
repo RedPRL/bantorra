@@ -21,10 +21,10 @@ val read_yaml : string -> value
 (** {2 Unsafe API} *)
 
 val unsafe_to_yaml : value -> string
-(** A function that serializes a value. This function does not quote strings properly due to the bug in the [yaml] package. *)
+(** A function that serializes a value. This function does not quote strings properly due to a bug in the [yaml] package. *)
 
 val unsafe_write_yaml : string -> value -> unit
-(** [write_yaml path v] writes the serialization of [v] into the file at [path]. This function does not quote strings properly due to the bug in the [yaml] package. *)
+(** [unsafe_write_yaml path v] writes the serialization of [v] into the file at [path]. This function does not quote strings properly due to a bug in the [yaml] package. *)
 
 (** {1 Helper Functions} *)
 
