@@ -47,10 +47,10 @@ val to_list : (value -> 'a) -> value -> 'a list
 (** Projecting a list out of a [value]. *)
 
 val of_float : float -> value
-(** Embedding a string into a [value]. *)
+(** Embedding a float into a [value]. *)
 
 val to_float : value -> float
-(** Projecting a list out of a [value]. *)
+(** Projecting a float out of a [value]. *)
 
 val dump : value -> string
 (** A quick, dirty converter to turn a [value] into a string for ugly-printing. *)
