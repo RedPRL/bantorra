@@ -14,7 +14,7 @@ jobs:
       with:
         ocaml-version: '4.10.0'
     - run: opam pin . --with-doc -y
-    - run: echo '::set-env name=opam-build-root::'`opam config var yuujinchou:build`
+    - run: echo '::set-env name=opam-build-root::'`opam config var bantorra:build`
     - uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
