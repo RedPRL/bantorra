@@ -1,6 +1,5 @@
 opam-version: "2.0"
 name: "bantorra-web-resolvers"
-version: "~dev"
 synopsis: "Resolvers for the Bantorra framework that access online repositories"
 description: """
 This package defines several library resolvers that access the online repositories. They can be used in the Bantorra framework easily.
@@ -12,11 +11,13 @@ homepage: "https://github.com/favonia/bantorra"
 bug-reports: "https://github.com/favonia/bantorra/issues"
 dev-repo: "git+https://github.com/favonia/bantorra.git"
 depends: [
-  "bantorra"
+  "bantorra" {= version}
 ]
 build: [
+  ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
-  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+  ["dune" "build" "-p" name "-j" jobs "@runtest"] {with-test}
+  ["dune" "build" "-p" name "-j" jobs "@doc"] {with-doc}
 ]
 depexts: [
   ["git"]
