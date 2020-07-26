@@ -50,7 +50,7 @@ let rec lookup_waypoint ~landmark cur_root lib_name k =
   let waypoints = get_waypoints ~landmark cur_root in
   match Hashtbl.find_opt waypoints lib_name with
   | None -> k ()
-  | Some Direct {at} -> File.join @@ cur_root :: at
+  | Some Direct {at} -> File.normalize_dir @@ File.join @@ cur_root :: at
   | Some Indirect {next; rename} ->
     let cur_root = File.join @@ cur_root :: next in
     let lib_name = Option.value ~default:lib_name rename in
@@ -59,15 +59,17 @@ let rec lookup_waypoint ~landmark cur_root lib_name k =
 let rec lookup_waypoint_in_ancestors ~landmark cur_root lib_name =
   let cur_root, _ = File.locate_anchor ~anchor:landmark cur_root in
   lookup_waypoint ~landmark cur_root lib_name @@ fun () ->
-  lookup_waypoint_in_ancestors ~landmark (Filename.dirname cur_root) lib_name
+  match parent_of_normalized_dir cur_root with
+  | None -> raise Not_found
+  | Some parent -> lookup_waypoint_in_ancestors ~landmark parent lib_name
 
 let resolver ~strict_checking ~landmark =
-  let fast_checker ~cur_root r =
+  let fast_checker ~cur_root arg =
     if strict_checking then
-      try ignore @@ lookup_waypoint_in_ancestors ~landmark cur_root @@ Marshal.to_string r; true with _ -> false
+      try ignore @@ lookup_waypoint_in_ancestors ~landmark cur_root @@ Marshal.to_string arg; true with _ -> false
     else
-      try ignore @@ Marshal.to_string r; true with _ -> false
-  and resolver ~cur_root r =
-    try Option.some @@ lookup_waypoint_in_ancestors ~landmark cur_root @@ Marshal.to_string r with _ -> None
+      try ignore @@ Marshal.to_string arg; true with _ -> false
+  and resolver ~cur_root arg =
+    try Option.some @@ lookup_waypoint_in_ancestors ~landmark cur_root @@ Marshal.to_string arg with _ -> None
   in
   Resolver.make ~fast_checker resolver

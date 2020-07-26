@@ -11,6 +11,7 @@ type lib_ref =
 
 type t =
   { deps : (unitpath, lib_ref) Hashtbl.t
+  ; cache : (unitpath, (lib_ref * unitpath) option) Hashtbl.t
   }
 
 let check_deps libs =
@@ -36,17 +37,19 @@ struct
 end
 
 let deserialize : Marshal.value -> t =
+  let cache = Hashtbl.create 10 in
   function
-  | `Null -> { deps = Hashtbl.create 0 }
+  | `Null ->
+    {deps = Hashtbl.create 0; cache}
   | `O ms ->
     begin
       match List.sort Stdlib.compare ms with
       | ["format", `String format_version] when format_version = version ->
-        { deps = Hashtbl.create 0 }
+        {deps = Hashtbl.create 0; cache}
       | ["deps", deps; "format", `String format_version] when format_version = version ->
         let deps = Util.Hashtbl.of_unique_seq @@ List.to_seq @@ Marshal.to_list M.to_dep deps in
         check_deps deps;
-        { deps }
+        {deps; cache}
       | _ -> raise Marshal.IllFormed
     end
   | _ -> raise Marshal.IllFormed
@@ -69,8 +72,16 @@ let max_match x y =
   | Some (n0, _), (n1, _) when n0 >= n1 -> x
   | _ -> Some y
 
-let dispatch_path {deps; _} unitpath =
+let dispatch_path_ {deps; _} unitpath =
   Option.map (fun (_, r) -> r) @@ Seq.fold_left max_match None begin
     Hashtbl.to_seq deps |> Seq.filter_map @@ fun (mount_point, lib) ->
     match_prefix 0 mount_point unitpath @@ fun unitpath -> lib, unitpath
   end
+
+let dispatch_path anchor unitpath =
+  match Hashtbl.find_opt anchor.cache unitpath with
+  | Some ref -> ref
+  | None ->
+    let ref = dispatch_path_ anchor unitpath in
+    Hashtbl.replace anchor.cache unitpath ref;
+    ref

@@ -44,22 +44,23 @@ let protect_cwd f =
 let normalize_dir dir =
   protect_cwd @@ fun _ -> Sys.chdir dir; Sys.getcwd ()
 
+let parent_of_normalized_dir dir =
+  let p = Filename.dirname dir in
+  if p = dir then None else Some p
+
 let is_existing_and_regular p =
   try (UnixLabels.stat p).st_kind = S_REG with _ -> false
 
-let locate_anchor ~anchor start =
+let locate_anchor ~anchor start_dir =
   let rec find_root cwd unitpath_acc =
     if is_existing_and_regular anchor then
       cwd, unitpath_acc
     else
-      let parent = Filename.dirname cwd in
-      if parent = cwd then
-        raise Not_found
-      else begin
+      match parent_of_normalized_dir cwd with
+      | None -> raise Not_found
+      | Some parent ->
         Sys.chdir parent;
         find_root parent @@ Filename.basename cwd :: unitpath_acc
-      end
   in
   protect_cwd @@ fun _ ->
-  Sys.chdir @@ Filename.dirname start;
-  find_root (Sys.getcwd ()) []
+  find_root (normalize_dir start_dir) []
