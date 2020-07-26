@@ -1,6 +1,5 @@
 opam-version: "2.0"
 name: "bantorra"
-version: "~dev"
 synopsis: "Extensible Library Management and Path Resolution"
 description: """
 This package is developed for managing libraries and resolving unit paths within them.
@@ -18,6 +17,8 @@ depends: [
   "yaml" {>= "2.1.0"}
 ]
 build: [
+  ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
-  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+  ["dune" "build" "-p" name "-j" jobs "@runtest"] {with-test}
+  ["dune" "build" "-p" name "-j" jobs "@doc"] {with-doc}
 ]
