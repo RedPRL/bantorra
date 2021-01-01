@@ -37,9 +37,7 @@ let rec ensure_dir path =
 
 let protect_cwd f =
   let dir = Sys.getcwd () in
-  match f dir with
-  | ans -> Sys.chdir dir; ans
-  | exception ext -> Sys.chdir dir; raise ext
+  Fun.protect ~finally:(fun () -> Sys.chdir dir) @@ fun () -> f dir
 
 let normalize_dir dir =
   protect_cwd @@ fun _ -> Sys.chdir dir; Sys.getcwd ()

@@ -34,11 +34,11 @@ struct
         Exec.system ~prog:"git" ~args:["fetch"; "--quiet"; "--no-tags"; "--recurse-submodules=on-demand"; "--depth=1"; "--"; url; ref];
         match id_in_use with
         | None ->
-          Exec.system ~prog:"git" ~args:["reset"; "--quiet"; "--hard"; "--recurse-submodules"; "--"; "FETCH_HEAD"];
+          Exec.system ~prog:"git" ~args:["reset"; "--quiet"; "--hard"; "--recurse-submodules"; "FETCH_HEAD"; "--"];
           Exec.with_system_in ~prog:"git" ~args:["rev-parse"; "HEAD"] @@ fun ic_id ->
           String.trim @@ input_line ic_id
         | Some id_in_use ->
-          Exec.with_system_in ~prog:"git" ~args:["rev-parse"; "FETCH_HEAD"] @@ fun ic_id ->
+          Exec.with_system_in ~prog:"git" ~args:["rev-parse"; "FETCH_HEAD"; "--"] @@ fun ic_id ->
           if id_in_use <> String.trim @@ input_line ic_id then
             failwith @@ "Inconsistent commit IDs for the repo at: "^url
           else
