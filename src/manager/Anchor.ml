@@ -3,10 +3,10 @@ open BantorraBasis
 let version = "1.0.0"
 
 type unitpath = string list
-type res_args = Resolver.res_args
+type resolver_arguments = Resolver.resolver_arguments
 type lib_ref =
   { resolver : string
-  ; res_args : res_args
+  ; resolver_arguments : resolver_arguments
   }
 
 type t =
@@ -23,10 +23,10 @@ struct
 
   let to_dep_ ms =
     match List.sort Stdlib.compare ms with
-    | ["mount_point", mount_point; "res_args", res_args; "resolver", resolver] ->
+    | ["mount_point", mount_point; "resolver_arguments", resolver_arguments; "resolver", resolver] ->
       to_path mount_point,
       { resolver = Marshal.to_string resolver
-      ; res_args
+      ; resolver_arguments
       }
     | _ -> raise Marshal.IllFormed
 

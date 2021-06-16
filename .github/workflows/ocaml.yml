@@ -2,20 +2,21 @@ name: Build, test, and doc update
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
 jobs:
   run:
-    if: ${{ github.ref == 'refs/heads/master' || (github.event_name == 'pull_request' && startsWith (github.head_ref, 'doc')) }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: avsm/setup-ocaml@v1
+    - uses: ocaml/setup-ocaml@v2
       with:
-        ocaml-version: '4.10.0'
-    - run: opam pin . --with-doc -y
-    - run: opam exec -- dune build @doc
+        ocaml-compiler: '4.10.0'
+    - run: opam pin . --with-doc --with-test --yes
+    - run: echo 'opam-build-root='`opam config var bantorra:build` >> $GITHUB_ENV
+      if: ${{ github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && startsWith (github.head_ref, 'doc')) }}
     - uses: peaceiris/actions-gh-pages@v3
+      if: ${{ github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && startsWith (github.head_ref, 'doc')) }}
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./_build/default/_doc/_html/
+        publish_dir: ${{ format('{0}/_build/default/_doc/_html/', env.opam-build-root) }}

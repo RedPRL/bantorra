@@ -7,9 +7,9 @@ This package defines several library resolvers that access the online repositori
 maintainer: "favonia <favonia@gmail.com>"
 authors: "favonia <favonia@gmail.com>"
 license: "Apache-2.0"
-homepage: "https://github.com/favonia/bantorra"
-bug-reports: "https://github.com/favonia/bantorra/issues"
-dev-repo: "git+https://github.com/favonia/bantorra.git"
+homepage: "https://github.com/RedPRL/bantorra"
+bug-reports: "https://github.com/RedPRL/bantorra/issues"
+dev-repo: "git+https://github.com/RedPRL/bantorra.git"
 depends: [
   "bantorra" {= version}
   "odoc" {with-doc}

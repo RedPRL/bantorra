@@ -1,11 +1,11 @@
 # Bantorra: Extensible Library Management and Path Resolution
 
-_Bantorra_ is an OCaml package for managing user libraries and resolving unit paths within them. It supports many resolution strategies found in other programming language tools. Please [consult the documentation](https://favonia.org/bantorra).
+_Bantorra_ is an OCaml package for managing user libraries and resolving unit paths within them. It supports many resolution strategies found in other programming language tools. Please [consult the documentation](https://RedPRL.org/bantorra).
 
 ## Installation
 
 You need OCaml 4.10.0 or newer. You can check out the source repository and install the latest version in development:
 ```
-git clone https://github.com/favonia/bantorra.git
+git clone https://github.com/RedPRL/bantorra.git
 opam install ./bantorra
 ```
