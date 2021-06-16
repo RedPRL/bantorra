@@ -1,6 +1,6 @@
 (** {1 Types} *)
 
-type value = Yaml.value
+type value = Ezjsonm.value
 (** The type suitable for marshalling. This is the universal type to exchange information
     within the framework. *)
 
@@ -9,22 +9,22 @@ exception IllFormed
 
 (** {1 Human-Readable Serialization} *)
 
-(** These are functions to retrieve the data of type [value] in a human-readable format (YAML).
+(** These are functions to retrieve the data of type [value] in the JSON format.
     They are suitable for reading configuration files created by users. *)
 
-val of_yaml : string -> value
+val of_json : string -> value
 (** A function that deserializes a value. *)
 
-val read_yaml : string -> value
-(** [read_yaml path v] reads and deserializes the content of the file at [path]. *)
+val read_json : string -> value
+(** [read_json path v] reads and deserializes the content of the file at [path]. *)
 
 (** {2 Unsafe API} *)
 
-val unsafe_to_yaml : value -> string
-(** A function that serializes a value. This function does not quote strings properly due to a bug in the [yaml] package. *)
+val unsafe_to_json : value -> string
+(** A function that serializes a value. This function does not quote strings properly due to a bug in the [json] package. *)
 
-val unsafe_write_yaml : string -> value -> unit
-(** [unsafe_write_yaml path v] writes the serialization of [v] into the file at [path]. This function does not quote strings properly due to a bug in the [yaml] package. *)
+val unsafe_write_json : string -> value -> unit
+(** [unsafe_write_json path v] writes the serialization of [v] into the file at [path]. This function does not quote strings properly due to a bug in the [json] package. *)
 
 (** {1 Helper Functions} *)
 

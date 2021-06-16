@@ -55,7 +55,7 @@ let deserialize : Marshal.value -> t =
   | _ -> raise Marshal.IllFormed
 
 let read anchor =
-  try deserialize @@ Marshal.read_yaml anchor with _ -> failwith @@ anchor ^ ": not found or ill-formatted"
+  try deserialize @@ Marshal.read_json anchor with _ -> failwith @@ anchor ^ ": not found or ill-formatted"
 
 let iter_deps f {deps; _} =
   Hashtbl.iter (fun _ lib_name -> f lib_name) deps
