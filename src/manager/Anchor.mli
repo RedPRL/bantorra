@@ -11,15 +11,15 @@ format: "1.0.0"
 deps:
   - mount_point: [path, to, lib1]
     resolver: solver
-    res_args:
+    resolver_arguments:
       ...
   - mount_point: [path, to, lib2]
     resolver: solver
-    res_args:
+    resolver_arguments:
       ...
     v}
 
-    If the [deps] field is missing or the entire anchor is equivalent to the YAML value [null] (e.g., empty), then the library has no dependencies. Each dependency is specifed by its mount point in the current library ([mount_point]), the name of the resolver to find the imported library([resolver]), and the arguments to the resolver ([res_args]). During the resolution, the entire YAML subtree under the field [res_args] is sent to the resolver. See {!type:Resolver.res_args} and {!val:Resolver.make}.
+    If the [deps] field is missing or the entire anchor is equivalent to the YAML value [null] (e.g., empty), then the library has no dependencies. Each dependency is specifed by its mount point in the current library ([mount_point]), the name of the resolver to find the imported library([resolver]), and the arguments to the resolver ([resolver_arguments]). During the resolution, the entire YAML subtree under the field [resolver_arguments] is sent to the resolver. See {!type:Resolver.resolver_arguments} and {!val:Resolver.make}.
 
     The order of entries in [dep] does not matter and the dispatching is based on longest prefix match. If no match can be found, then the unit path is local. The same library can be mounted at multiple points. However, to keep the resolution unambiguous, there cannot be two dependencies sharing the same mount point, and the mount point cannot be the empty list (the root). Here is an example demonstrating the longest prefix match:
     {v
@@ -27,10 +27,10 @@ format: "1.0.0"
 deps:
   - mount_point: [tcp]
     resolver: builtin
-    res_args: tcp
+    resolver_arguments: tcp
   - mount_point: [tcp, http]
     resolver: builtin
-    res_args: http
+    resolver_arguments: http
     v}
 
     The unit path [tcp.ftp] will be resolved to [ftp] in the [tcp] library, awaiting further resolution, while the unit path [tcp.http.connect] will be resolved to [connect] in the [http] library, not [http.connect] in the [tcp] library. Again, the order of dependencies does not matter.
@@ -48,7 +48,7 @@ type unitpath = string list
 
 type lib_ref =
   { resolver : string (** The name of the library resolver. *)
-  ; res_args : Resolver.res_args (** The arguments to the library resolver. *)
+  ; resolver_arguments : Resolver.resolver_arguments (** The arguments to the library resolver. *)
   }
 (** The type of library references to be resolved. *)
 

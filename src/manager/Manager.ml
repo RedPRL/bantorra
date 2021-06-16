@@ -9,12 +9,12 @@ type library = Library.t
 type unitpath = Anchor.unitpath
 
 let check_dep resolvers root =
-  Library.iter_deps @@ fun {resolver; res_args} ->
+  Library.iter_deps @@ fun {resolver; resolver_arguments} ->
   match Hashtbl.find_opt resolvers resolver with
   | None -> failwith ("Unknown resolver: "^resolver)
   | Some r ->
-    if not (Resolver.fast_check r ~cur_root:root res_args) then
-      failwith ("Library "^Resolver.dump_args r ~cur_root:root res_args^" could not be found.")
+    if not (Resolver.fast_check r ~cur_root:root resolver_arguments) then
+      failwith ("Library "^Resolver.dump_args r ~cur_root:root resolver_arguments^" could not be found.")
 
 let init ~resolvers ~anchor =
   let resolvers = Util.Hashtbl.of_unique_seq @@ List.to_seq resolvers in
@@ -33,9 +33,9 @@ let load_library lm lib_root =
 let locate_anchor = Library.locate_anchor
 
 let rec_resolver f lm =
-  let rec global ~cur_root ({resolver; res_args} : Anchor.lib_ref) =
+  let rec global ~cur_root ({resolver; resolver_arguments} : Anchor.lib_ref) =
     let resolver = Hashtbl.find lm.resolvers resolver in
-    let lib_root = Resolver.resolve resolver ~cur_root res_args in
+    let lib_root = Resolver.resolve resolver ~cur_root resolver_arguments in
     let lib = load_library lm lib_root in
     f ~global lib
   in

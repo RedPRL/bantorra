@@ -6,15 +6,16 @@ This package is developed for managing libraries and resolving unit paths within
 """
 maintainer: "favonia <favonia@gmail.com>"
 authors: "favonia <favonia@gmail.com>"
-license: "Apache 2.0"
-homepage: "https://github.com/favonia/bantorra"
-bug-reports: "https://github.com/favonia/bantorra/issues"
-dev-repo: "git+https://github.com/favonia/bantorra.git"
+license: "Apache-2.0"
+homepage: "https://github.com/RedPRL/bantorra"
+bug-reports: "https://github.com/RedPRL/bantorra/issues"
+dev-repo: "git+https://github.com/RedPRL/bantorra.git"
 depends: [
   "dune" {>= "2.5"}
   "ocaml" {>= "4.10.0"}
   "ocamlfind" {>= "1.8.1"}
   "yaml" {>= "2.1.0"}
+  "odoc" {with-doc}
 ]
 build: [
   ["dune" "subst"] {pinned}
