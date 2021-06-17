@@ -28,8 +28,7 @@ val load_library : t -> filepath -> library
 (** [load_library manager library_root] explicitly loads the library at the directory [library_root]
     from the file system. By loading, it means the manager retrieves necessary information from the file
     system to resolve unit paths within the library. The intended use of this function is to explicitly
-    load the current library as the manager will automatically load any other libraries the current one
-    depends on.
+    load the current library via [load_library] and let the manager automatically load dependencies (if any).
 
     If a library was already loaded, the cached version will be used instead.
     The dependencies are not loaded eagerly. *)
