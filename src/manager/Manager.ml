@@ -6,7 +6,6 @@ type t =
   ; loaded_libs : (string, Library.t) Hashtbl.t
   }
 type library = Library.t
-type filepath = string
 type unitpath = Anchor.unitpath
 
 let check_dep resolvers root =
@@ -31,7 +30,11 @@ let load_library lm lib_root =
     Hashtbl.replace lm.loaded_libs lib_root lib;
     lib
 
-let locate_anchor = Library.locate_anchor
+let locate_anchor_from_file = Library.locate_anchor_from_file
+
+let locate_anchor_from_dir = Library.locate_anchor_from_dir
+
+let locate_anchor_from_cwd = Library.locate_anchor_from_cwd
 
 let rec_resolver f lm =
   let rec global ~current_root ({resolver; resolver_argument} : Anchor.lib_ref) =

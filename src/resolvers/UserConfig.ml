@@ -8,7 +8,6 @@ type versioned_library =
   { name : string
   ; version : string option
   }
-type filepath = string
 
 type config = {dict : (versioned_library, filepath) Hashtbl.t}
 type t = config
