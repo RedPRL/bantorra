@@ -20,10 +20,10 @@ val read_json : string -> value
 
 (** {2 Unsafe API} *)
 
-val unsafe_to_json : value -> string
+val unsafe_to_json : ?minify:bool -> value -> string
 (** A function that serializes a value. This function does not quote strings properly due to a bug in the [json] package. *)
 
-val unsafe_write_json : string -> value -> unit
+val unsafe_write_json : ?minify:bool -> string -> value -> unit
 (** [unsafe_write_json path v] writes the serialization of [v] into the file at [path]. This function does not quote strings properly due to a bug in the [json] package. *)
 
 (** {1 Helper Functions} *)

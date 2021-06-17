@@ -8,8 +8,8 @@ exception IllFormed
 let of_json p = try p |> Ezjsonm.value_from_string with _ -> raise IllFormed
 let read_json path = of_json @@ readfile path
 
-let unsafe_to_json j = try j |> Ezjsonm.value_to_string ~minify:true with _ -> raise IllFormed
-let unsafe_write_json path j = writefile path @@ unsafe_to_json j
+let unsafe_to_json ?(minify=true) j = try j |> Ezjsonm.value_to_string ~minify with _ -> raise IllFormed
+let unsafe_write_json ?minify path j = writefile path @@ unsafe_to_json ?minify j
 
 let of_string s = `String s
 let to_string : value -> string =
