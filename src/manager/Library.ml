@@ -26,7 +26,7 @@ let iter_deps f {anchor; _} = Anchor.iter_deps f anchor
 let dispatch_path local ~global lib path =
   match Anchor.dispatch_path lib.anchor path with
   | None -> local lib path
-  | Some (lib_name, path) -> global ~cur_root:lib.root lib_name path
+  | Some (lib_name, path) -> global ~current_root:lib.root lib_name path
 
 let to_local_unitpath lib path =
   match path with

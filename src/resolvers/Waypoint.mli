@@ -4,49 +4,63 @@
 (**
    {1 Argument Format}
 
-   The resolver accepts simple YAML strings as library names.
+   The resolver accepts simple JSON strings as library names.
 *)
 
 (**
    {1 Waypoints and Landmark Files}
 
-   A waypoint is either {e direct} or {e indirect}. A direct waypoint points to the library root directly. Its YAML representation is as follows:
+   A waypoint is either {e direct} or {e indirect}. A direct waypoint points to the library root in the file system directly. Its JSON representation is as follows:
    {v
-cool:
-  at: [mylib, cool]
+{
+  "cool": {
+    "at": ["mylib", "cool"]
+  }
+}
    v}
-   This means the root of the [cool] library is at [mylib/cool]. An indect waypoint is pointing to another waypoint, possibly with a new library name to look up. Its YAML representation is:
+   This means the root of the [cool] library is at the file system path [mylib/cool]. An indect waypoint is pointing to another waypoint, possibly with a new library name to look up. Its JSON representation is:
    {v
-cool:
-  next: [mylib]
+{
+  "cool": {
+    "next": ["mylib"]
+  }
+}
    v}
    This means one should look for the landmark file under the [mylib] directory for further instructions. One can also specify the [rename] field in case a new library name should be used:
    {v
-cool.basis:
-  next: [cool]
-  rename: basis
+{
+  "cool.basis": {
+    "next": ["cool"],
+    "rename": "basis"
+  }
+}
    v}
 
    A complete landmark file looks like this:
    {v
-format: "1.0.0"
-waypoints:
-  cool.basis:
-    next: [cool]
-    rename: basis
-  hello:
-    at: [misc, hello]
+{
+  "format": "1.0.0",
+  "waypoints": {
+    "cool.basis": {
+      "next": ["path", "to", "another", "directory"],
+      "rename": "cool.basis.new"
+    },
+    "hello": {
+      "at": ["vendor", "lib", "hello"]
+    }
+  }
+}
    v}
 
-   The resolver starts from the root of the library that imports the target library, going up in the file system tree until it finds a landmark file with an applicable waypoint. It will then follow the waypoints until the root of the target library is found. Note that the resolver only climbs up the file system tree once, at the beginning. The resolution immediately fails if an indirect waypoint points to a landmark file with no applicable waypoint. This would prevent unintentional infinite looping due to simple typos.
+   There are two phases in locating the library using waypoints. In the first phase, the resolver starts from the root of the library that imports the target library, going up in the file system tree until it finds a landmark file with an applicable waypoint (that is, with a matching field in the [waypoints] JSON object). The resolution fails if no much landmark files are found. If such a landmark file is found, then the resolver enters the second phase. During the second phose, it follow the waypoints until the root of the target library is found. The difference from the first phase is that if the library the resolver is looking for is not explicitly listed in the [waypoints] object, the resolution fails immediately. In comparison, the resolver would climb up the file system tree during the first phase. This is to prevent unintentional infinite looping due to simple typos.
 *)
 
 (** {1 The Builder} *)
 
-val resolver : strict_checking:bool -> landmark:string -> Bantorra.Resolver.t
-(** [resolver ~strict_checking ~landmark] construct a resolver for the specified file name [landmark].
+val resolver : ?eager_resolution:bool -> landmark:string -> Bantorra.Resolver.t
+(** [resolver ~eager_resolution ~landmark] construct a resolver for the specified file name [landmark].
 
-    @param strict_checking Whether full resolution is performed to check the validity of library names. If the value is [false], the resolver will only check whether all dependencies are well-formed when loading a new library.
+    @param eager_resolution Whether full resolution is performed to check the validity of library names. If the value is [false], the resolver will only check whether the argument to the resolver is well-formed. The default value is [false].
     @param landmark The name of the special landmark files that the resolver should look for.
 *)
 

@@ -46,6 +46,10 @@ val of_list : ('a -> value) -> 'a list -> value
 val to_list : (value -> 'a) -> value -> 'a list
 (** Projecting a list out of a [value]. *)
 
+val of_olist : ('a -> value) -> 'a list option -> value
+
+val to_olist : (value -> 'a) -> value -> 'a list option
+
 val of_float : float -> value
 (** Embedding a float into a [value]. *)
 

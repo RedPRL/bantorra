@@ -46,30 +46,30 @@ let clear_cached_landmarks () =
   Hashtbl.clear cache
 
 (* XXX errors are not handled *)
-let rec lookup_waypoint ~landmark cur_root lib_name k =
-  let waypoints = get_waypoints ~landmark cur_root in
+let rec lookup_waypoint ~landmark current_root lib_name k =
+  let waypoints = get_waypoints ~landmark current_root in
   match Hashtbl.find_opt waypoints lib_name with
   | None -> k ()
-  | Some Direct {at} -> File.normalize_dir @@ File.join @@ cur_root :: at
+  | Some Direct {at} -> File.normalize_dir @@ File.join @@ current_root :: at
   | Some Indirect {next; rename} ->
-    let cur_root = File.join @@ cur_root :: next in
+    let current_root = File.join @@ current_root :: next in
     let lib_name = Option.value ~default:lib_name rename in
-    lookup_waypoint ~landmark cur_root lib_name @@ fun () -> raise Not_found
+    lookup_waypoint ~landmark current_root lib_name @@ fun () -> raise Not_found
 
-let rec lookup_waypoint_in_ancestors ~landmark cur_root lib_name =
-  let cur_root, _ = File.locate_anchor ~anchor:landmark cur_root in
-  lookup_waypoint ~landmark cur_root lib_name @@ fun () ->
-  match parent_of_normalized_dir cur_root with
+let rec lookup_waypoint_in_ancestors ~landmark current_root lib_name =
+  let current_root, _ = File.locate_anchor ~anchor:landmark current_root in
+  lookup_waypoint ~landmark current_root lib_name @@ fun () ->
+  match parent_of_normalized_dir current_root with
   | None -> raise Not_found
   | Some parent -> lookup_waypoint_in_ancestors ~landmark parent lib_name
 
-let resolver ~strict_checking ~landmark =
-  let fast_checker ~cur_root arg =
-    if strict_checking then
-      try ignore @@ lookup_waypoint_in_ancestors ~landmark cur_root @@ Marshal.to_string arg; true with _ -> false
+let resolver ?(eager_resolution=false) ~landmark =
+  let fast_checker ~current_root arg =
+    if eager_resolution then
+      try ignore @@ lookup_waypoint_in_ancestors ~landmark current_root @@ Marshal.to_string arg; true with _ -> false
     else
       try ignore @@ Marshal.to_string arg; true with _ -> false
-  and resolver ~cur_root arg =
-    try Option.some @@ lookup_waypoint_in_ancestors ~landmark cur_root @@ Marshal.to_string arg with _ -> None
+  and resolver ~current_root arg =
+    try Option.some @@ lookup_waypoint_in_ancestors ~landmark current_root @@ Marshal.to_string arg with _ -> None
   in
   Resolver.make ~fast_checker resolver

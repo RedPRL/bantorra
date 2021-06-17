@@ -1,19 +1,23 @@
 
 (** {1 Argument Format}
 
-    The resolver takes YAML arguments in one of the following formats:
+    The resolver takes a JSON argument in one of the following formats:
     {v
-name: "bantorra"
-verson: "0.1.0"
+{
+  "name": "bantorra",
+  "version": "0.1.0"
+}
     v}
     {v
-name: "bantorra"
-verson: null
+{
+  "name": "bantorra",
+  "version": null
+}
     v}
     {v
-name: "bantorra"
+{ "name": "bantorra" }
     v}
-    A missing version is understood as the version [null]. Therefore, the last two specifications are identical. Versions are compared using structural equality. There is no smart comparison, version globbing, or ordering between versions. Each version is completely independent of each other; the version [null] only matches [null], not any string version. Not even the string ["null"].
+    A missing [version] is understood as the version [null]. Therefore, the last two specifications are identical. Versions are compared using structural equality. There is no smart comparison, version globbing, or ordering between versions. Each version is completely independent of each other; the version [null] only matches [null], not any string version. Not even the string ["null"].
 
     However, one could have multiple versions of the same library registered in the user configuration file, as long as the versions {e in use} all point to the same library on disk. (For example, one may have both versions ["1.0"] and ["1"] pointing to [/usr/lib/hello/1.0], which means they can be used interchangeably.) Any attempt to load incompatible versions during the program execution would abort the library resolution.
 
@@ -26,43 +30,92 @@ name: "bantorra"
 
    Here is an example configuration file:
    {v
-format: "1.0.0"
-libraries:
-- name: num
-  version: "3"
-  at: "/usr/lib/something/num34"
-- name: tcp
-  version: "2"
-  at: "/usr/lib/something/tcp21"
+{
+  "format": "1.0.0",
+  "libraries": [
+    {
+      "name": "num",
+      "version": "3",
+      "at": "/usr/lib/something/num34"
+    },
+    {
+      "name": "tcp",
+      "version": "2",
+      "at": "/usr/lib/something/tcp21"
+    }
+  ]
+}
    v}
 
-   Multiple versions of the same library name can be registered to enable dispatching on different versions. Right now, no globbing or smart comparison is supported, so one has to list every possible version of a library in use, including the [null] version. The following is a more complicated configuration file using this dispatching feature:
+   Multiple versions of the same library name can be registered to enable dispatching on different versions. Right now, no globbing or smart comparison is supported, but one may use the [versions] field instead of the [version] field, which takes a non-empty array of versions. An entry with a [versions] field is equivalent to multiple copies of that entry of listed [version]. That is, the following two configuration files are equivalent:
 
    {v
-format: "1.0.0"
-libraries:
-- name: num
-  version: "2"
-  at: "/usr/lib/something/num25"
-- name: num
-  version: "2.5"
-  at: "/usr/lib/something/num25"
-- name: num
-  version: "3"
-  at: "/usr/lib/something/num34"
-- name: num
-  version: "3.4"
-  at: "/usr/lib/something/num34"
-- name: num
-  version: null
-  at: "/usr/lib/something/num34"
-- name: tcp
-  version: "2"
-  at: "/usr/lib/something/tcp21"
-- name: tcp
-  version: "2.1"
-  at: "/usr/lib/something/tcp21"
+{
+  "format": "1.0.0",
+  "libraries": [
+    {
+      "name": "tcp",
+      "version": "2",
+      "at": "/usr/lib/something/tcp21"
+    },
+    {
+      "name": "tcp",
+      "version": "2.1",
+      "at": "/usr/lib/something/tcp21"
+    }
+  ]
+}
+   v}
+
+   {v
+{
+  "format": "1.0.0",
+  "libraries": [
+    {
+      "name": "tcp",
+      "versions": ["2", "2.1"],
+      "at": "/usr/lib/something/tcp21"
+    }
+  ]
+}
+   v}
+
+   The following is a more complicated example:
+
+   {v
+{
+  "format": "1.0.0",
+  "libraries": [
+    {
+      "name": "num",
+      "versions": ["2", "2.5"],
+      "at": "/usr/lib/something/num25"
+    },
+    {
+      "name": "num",
+      "version": "3",
+      "at": "/usr/lib/something/num34"
+    },
+    {
+      "name": "num",
+      "version": ["3.4", null],
+      "at": "/usr/lib/something/num34"
+    },
+    {
+      "name": "tcp",
+      "version": "2",
+      "at": "/usr/lib/something/tcp21"
+    },
+    {
+      "name": "tcp",
+      "version": "2.1",
+      "at": "/usr/lib/something/tcp21"
+    }
+  ]
+}
     v}
+
+   However, as an abbreviation, one may collapse multiple entries w
 
    Given this configuration file, versions ["2"] and ["2.5"] of the library [num] are compatible because they point to the same library on disk. Versions [null] and ["2"] of the library ["num"] are not compatible because they point to different libraries. Incompatible libraries cannot be loaded at the same time. Note that there is no version [null] registered for the library [tcp], so one has to specify a string version (either ["2"] or ["2.1"]) for it. The philosophy is that all entries must be explicitly listed.
 *)

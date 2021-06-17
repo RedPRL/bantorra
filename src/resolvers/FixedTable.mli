@@ -4,12 +4,14 @@
 (**
    {1 Argument Format}
 
-   The resolver accepts simple YAML strings as library names.
+   The resolver accepts simple JSON strings as library names.
 *)
 
 (**
     {1 Builder}
 *)
 
-val resolver : dict:(string * string) list -> Bantorra.Resolver.t
-(** [resolver ~dict] construct a resolver based on the mapping [dict]. All paths in [dict] are normalized and turned into absolute paths with respect to the current working directory using {!val:BantorraBasis.File.normalize_dir}. *)
+type filepath = string
+
+val resolver : dict:(string * filepath) list -> Bantorra.Resolver.t
+(** [resolver ~dict] construct a resolver based on the mapping [dict]. All paths in [dict] will be normalized and turned into absolute paths with respect to the current working directory using {!val:BantorraBasis.File.normalize_dir}. *)

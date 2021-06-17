@@ -34,6 +34,16 @@ let to_list to_item =
   | `A items -> List.map to_item items
   | _ -> raise IllFormed
 
+let of_olist of_item =
+  function
+  | None -> `Null
+  | Some l -> of_list of_item l
+let to_olist to_item =
+  function
+  | `A items -> Some (List.map to_item items)
+  | `Null -> None
+  | _ -> raise IllFormed
+
 let of_float f = `Float f
 let to_float =
   function
