@@ -24,7 +24,7 @@ struct
   let reset_repo ~url ~ref ~git_root ~id_in_use =
     match String.index_opt ref ':' with
     | Some i when i <> String.length ref - 1 (* dst is not empty *) ->
-      invalid_arg @@ "reset_repo: refspec "^ref^" has non-empty <dst>. Please remove the part after the colon."
+      invalid_arg @@ Printf.sprintf "reset_repo: refspec %s has non-empty <dst>. Please remove the part after the colon." ref
     | _ ->
       try
         File.protect_cwd @@ fun _ ->
@@ -40,7 +40,7 @@ struct
         | Some id_in_use ->
           Exec.with_system_in ~prog:"git" ~args:["rev-parse"; "FETCH_HEAD"; "--"] @@ fun ic_id ->
           if id_in_use <> String.trim @@ input_line ic_id then
-            failwith @@ "Inconsistent commit IDs for the repo at: "^url
+            failwith @@ Printf.sprintf "Inconsistent commit IDs for the repo at: %s" url
           else
             id_in_use
       with _ -> failwith "git init/fetch/reset failed"
@@ -61,13 +61,13 @@ struct
           }
         | ["ref", ref; "url", url] ->
           { url = Marshal.to_string url
-          ; ref = Marshal.to_string ref
+          ; ref = Option.value (Marshal.to_ostring ref) ~default:"HEAD"
           ; path = []
           }
         | ["path", path; "url", url] ->
           { url = Marshal.to_string url
           ; ref = "HEAD"
-          ; path = Marshal.to_list Marshal.to_string path
+          ; path = Option.value (Marshal.to_olist Marshal.to_string path) ~default:[]
           }
         | ["path", path; "ref", ref; "url", url] ->
           { url = Marshal.to_string url
@@ -87,7 +87,7 @@ let load_git_repo ~crate:{root; id_in_use; url_in_use} {url; ref; path} =
   begin
     match Hashtbl.find_opt url_in_use url_digest with
     | Some url_in_use when url_in_use <> url ->
-      failwith @@ "Unfortunate MD5 hash collision happened: "^url^" and "^url_in_use
+      failwith @@ Printf.sprintf "Unfortunately, hash collision happened: %s and %s" url url_in_use
     | _ -> ()
   end;
   Hashtbl.replace id_in_use url_digest @@
@@ -105,14 +105,14 @@ let init_crate ~crate_root =
     Hashtbl.replace loaded_crates crate_root crate;
     crate
 
-let resolver ~strict_checking ~crate_root =
+let resolver ?(eager_resolution=false) ~crate_root =
   let crate = init_crate ~crate_root in
-  let fast_checker ~cur_root:_ arg =
-    if strict_checking then
+  let fast_checker ~current_root:_ arg =
+    if eager_resolution then
       try ignore @@ load_git_repo ~crate @@ M.to_info arg; true with _ -> false
     else
       try ignore @@ M.to_info arg; true with _ -> false
-  and resolver ~cur_root:_ arg =
+  and resolver ~current_root:_ arg =
     try Option.some @@ load_git_repo ~crate @@ M.to_info arg with _ -> None
   in
   Resolver.make ~fast_checker resolver

@@ -6,7 +6,7 @@
 (**
    {1 Argument Format}
 
-   The resolver accepts simple YAML strings as library names.
+   The resolver accepts JSON strings as library names.
 *)
 
 (**

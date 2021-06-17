@@ -5,11 +5,16 @@
 
    To access the units outside the current library, an anchor may {e mount} a library in the tree, in a way similar to how partitions are mounted in POSIX-compliant systems. Here is a sample anchor file:
    {v
-format: "1.0.0"
-deps:
-  - mount_point: [lib, num]
-    resolver: builtin
-    resolver_arguments: number
+{
+  "format": "1.0.0",
+  "depends": [
+    {
+      "mount_point": ["lib", "num"],
+      "resolver": "builtin",
+      "resolver_argument": "number"
+    }
+  ]
+}
     v}
    The above anchor file mounts the library [number] at [lib.num] via the [builtin] resolver. With this, the unit path [lib.num.types], for example, will be understood as the unit path [types] within the library [number]. The [builtin] resolver here is responsible for locating the root of this [number] library. The resolution is recursive because the depended library may depend on yet another library.
 

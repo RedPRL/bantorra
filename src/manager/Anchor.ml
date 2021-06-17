@@ -3,10 +3,10 @@ open BantorraBasis
 let version = "1.0.0"
 
 type unitpath = string list
-type resolver_arguments = Resolver.resolver_arguments
+type resolver_argument = Resolver.resolver_argument
 type lib_ref =
   { resolver : string
-  ; resolver_arguments : resolver_arguments
+  ; resolver_argument : resolver_argument
   }
 
 type t =
@@ -23,10 +23,10 @@ struct
 
   let to_dep_ ms =
     match List.sort Stdlib.compare ms with
-    | ["mount_point", mount_point; "resolver_arguments", resolver_arguments; "resolver", resolver] ->
+    | ["mount_point", mount_point; "resolver_argument", resolver_argument; "resolver", resolver] ->
       to_path mount_point,
       { resolver = Marshal.to_string resolver
-      ; resolver_arguments
+      ; resolver_argument
       }
     | _ -> raise Marshal.IllFormed
 
@@ -55,7 +55,7 @@ let deserialize : Marshal.value -> t =
   | _ -> raise Marshal.IllFormed
 
 let read anchor =
-  try deserialize @@ Marshal.read_yaml anchor with _ -> failwith @@ anchor ^ ": not found or ill-formatted"
+  try deserialize @@ Marshal.read_json anchor with _ -> failwith @@ anchor ^ ": not found or ill-formatted"
 
 let iter_deps f {deps; _} =
   Hashtbl.iter (fun _ lib_name -> f lib_name) deps
