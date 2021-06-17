@@ -1,5 +1,7 @@
 open StdLabels
 
+type filepath = string
+
 let (/) = Filename.concat
 
 let join = List.fold_left ~f:(/) ~init:Filename.current_dir_name

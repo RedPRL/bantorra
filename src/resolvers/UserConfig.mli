@@ -1,4 +1,3 @@
-
 (** {1 Argument Format}
 
     The resolver takes a JSON argument in one of the following formats:
@@ -140,15 +139,13 @@ type versioned_library =
   }
 (** The type of versioned library names. [None] corresponds to [null] and [Some ver] corresponds to explicit versions. *)
 
-type filepath = string
-
 type config
 (** The type of configurations as association lists. *)
 
 val default_config : config
 (** Default configuration that is empty. *)
 
-val read : app_name:string -> config:filepath -> config
+val read : app_name:string -> config:BantorraBasis.File.filepath -> config
 (**
    Try to read the configuration file. Note that the results are cached. See {!val:clear_cached_configs}. If the configuration file does not exist or is ill-formated, then the default configuration (the empty mapping) is returned. The cache will be updated accordingly.
 
@@ -156,7 +153,7 @@ val read : app_name:string -> config:filepath -> config
    @param config The file path of the configuration file.
 *)
 
-val lookup : name:string -> version:string option -> config -> filepath option
+val lookup : name:string -> version:string option -> config -> BantorraBasis.File.filepath option
 
 val unsafe_write : app_name:string -> config:string -> config -> unit
 (**

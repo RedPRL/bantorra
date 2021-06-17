@@ -12,13 +12,17 @@ let init ~anchor ~root =
   let anchor = Anchor.read @@ root / anchor in
   {root; anchor}
 
-let locate_anchor ~anchor ~suffix filepath =
+let locate_anchor_from_dir = File.locate_anchor
+
+let locate_anchor_from_cwd = locate_anchor_from_dir (Sys.getcwd ())
+
+let locate_anchor_from_file ~anchor ~suffix filepath =
   if not @@ Sys.file_exists filepath then
-    invalid_arg @@ "locate_anchor: " ^ filepath ^ " does not exist";
+    invalid_arg @@ Printf.sprintf "locate_anchor: %s does not exist" filepath;
   match Filename.chop_suffix_opt ~suffix @@ Filename.basename filepath with
-  | None -> invalid_arg @@ "locate_anchor: " ^ filepath ^ " does not have suffix " ^ suffix
+  | None -> invalid_arg @@ Printf.sprintf "locate_anchor: %s does not have suffix %s" filepath suffix
   | Some basename ->
-    let root, unitpath = File.locate_anchor ~anchor @@ Filename.dirname filepath in
+    let root, unitpath = locate_anchor_from_dir ~anchor @@ Filename.dirname filepath in
     root, unitpath @ [basename]
 
 let iter_deps f {anchor; _} = Anchor.iter_deps f anchor

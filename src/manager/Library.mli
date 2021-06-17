@@ -8,11 +8,17 @@ type t
 
 (** {1 Initialization} *)
 
-val init : anchor:string -> root:string -> t
+val init : anchor:string -> root:BantorraBasis.File.filepath -> t
 (** Initite a library rooted at [root] where the name of the anchor file is [anchor]. *)
 
-val locate_anchor : anchor:string -> suffix:string -> string -> string * unitpath
-(** See {!val:Manager.locate_anchor}. *)
+val locate_anchor_from_file : anchor:string -> suffix:string -> BantorraBasis.File.filepath -> BantorraBasis.File.filepath * unitpath
+(** See {!val:Manager.locate_anchor_from_file}. *)
+
+val locate_anchor_from_dir : anchor:string -> BantorraBasis.File.filepath -> BantorraBasis.File.filepath * unitpath
+(** See {!val:Manager.locate_anchor_from_dir}. *)
+
+val locate_anchor_from_cwd : anchor:string -> BantorraBasis.File.filepath * unitpath
+(** See {!val:Manager.locate_anchor_from_cwd}. *)
 
 (** {1 Accessor} *)
 
@@ -25,7 +31,7 @@ val iter_deps : (Anchor.lib_ref -> unit) -> t -> unit
     Please use the high-level API in {!module:Manager} instead. *)
 
 val to_unitpath :
-  global:(current_root:string -> Anchor.lib_ref -> unitpath -> t * unitpath) ->
+  global:(current_root:BantorraBasis.File.filepath -> Anchor.lib_ref -> unitpath -> t * unitpath) ->
   t -> unitpath -> t * unitpath
 (** [to_unitpath ~global lib unitpath] resolves [unitpath] and returns the eventual library where the unit belongs and the local unit path pointing to the unit.
 
@@ -33,8 +39,8 @@ val to_unitpath :
 *)
 
 val to_filepath :
-  global:(current_root:string -> Anchor.lib_ref -> unitpath -> suffix:string -> t * string) ->
-  t -> unitpath -> suffix:string -> t * string
+  global:(current_root:BantorraBasis.File.filepath -> Anchor.lib_ref -> unitpath -> suffix:string -> t * BantorraBasis.File.filepath) ->
+  t -> unitpath -> suffix:string -> t * BantorraBasis.File.filepath
 (** [to_filepath ~global lib unitpath ~suffix] resolves [unitpath] and returns the eventual library where the unit belongs and the underlying file path of the unit. It is similar to {!val:to_unitpath} but returns a file path instead of a unit path.
 
     @param global The global resolver for unit paths pointing to other libraries.

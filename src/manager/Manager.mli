@@ -9,9 +9,6 @@ type library
 type unitpath = string list
 (** The type of unit paths. *)
 
-type filepath = string
-(** The type of file paths. *)
-
 (** {1 Initialization} *)
 
 val init : resolvers:(string * Resolver.t) list -> anchor:string -> t
@@ -24,7 +21,7 @@ val init : resolvers:(string * Resolver.t) list -> anchor:string -> t
 
 (** {1 Library Loading} *)
 
-val load_library : t -> filepath -> library
+val load_library : t -> BantorraBasis.File.filepath -> library
 (** [load_library manager library_root] explicitly loads the library at the directory [library_root]
     from the file system. By loading, it means the manager retrieves necessary information from the file
     system to resolve unit paths within the library. The intended use of this function is to explicitly
@@ -33,8 +30,8 @@ val load_library : t -> filepath -> library
     If a library was already loaded, the cached version will be used instead.
     The dependencies are not loaded eagerly. *)
 
-val locate_anchor : anchor:string -> suffix:string -> filepath -> filepath * unitpath
-(** [locate_anchor ~anchor ~suffix filepath] assumes the unit at [filepath] resides in some library
+val locate_anchor_from_file : anchor:string -> suffix:string -> BantorraBasis.File.filepath -> BantorraBasis.File.filepath * unitpath
+(** [locate_anchor_from_file ~anchor ~suffix filepath] assumes the unit at [filepath] resides in some library
     and tries to find the root of the library by locating the file [anchor]. It returns
     the root of the found library and a unit path within the library that could potentially
     point to the input unit. (See the caveat below.)
@@ -49,6 +46,10 @@ val locate_anchor : anchor:string -> suffix:string -> filepath -> filepath * uni
     the unit path returned by [locate_anchor] instead of assuming that it would point to [filepath].
 *)
 
+val locate_anchor_from_dir : anchor:string -> BantorraBasis.File.filepath -> BantorraBasis.File.filepath * unitpath
+
+val locate_anchor_from_cwd : anchor:string -> BantorraBasis.File.filepath * unitpath
+
 (** {1 Composite Resolver}
 
     These functions will automatically load the dependencies.
@@ -58,7 +59,7 @@ val to_unitpath : t -> library -> unitpath -> library * unitpath
 (** [to_unitpath manager lib unitpath] resolves [unitpath] and returns the {i eventual} library where the unit belongs and the local unit path pointing to the unit.
 *)
 
-val to_filepath : t -> library -> unitpath -> suffix:string -> library * filepath
+val to_filepath : t -> library -> unitpath -> suffix:string -> library * BantorraBasis.File.filepath
 (** [resolver manager lib unitpath ~suffix] resolves [unitpath] in the library [lib] and returns the {i eventual} library where the unit belongs and the corresponding file path of the unit with the specified suffix. It is similar to {!val:to_unitpath} but returns a file path instead of a unit path.
 
     @param suffix The suffix shared by all the units in the file system.
