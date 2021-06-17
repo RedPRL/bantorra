@@ -4,7 +4,7 @@ open BantorraBasis.File
 type unitpath = Anchor.unitpath
 
 type t =
-  { root : string
+  { root : filepath
   ; anchor : Anchor.t
   }
 
