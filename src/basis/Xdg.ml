@@ -9,10 +9,9 @@ type scheme = MacOS | Linux | Windows
 
 let uname_s =
   lazy begin
-    try
-      Exec.with_system_in ~prog:"uname" ~args:["-s"] @@ fun ic ->
-      Some (String.trim @@ input_line ic)
-    with _ -> None
+    Result.to_option @@
+    Exec.with_system_in ~prog:"uname" ~args:["-s"] @@ fun ic ->
+    String.trim @@ input_line ic
   end
 
 let guess_scheme =
@@ -30,27 +29,27 @@ let guess_scheme =
   end
 
 (* XXX I did not test the following code on different platforms. *)
-let get_config_home ~app_name =
+let get_config_home ?(as_linux=false) ~app_name =
   match Sys.getenv_opt "XDG_CONFIG_HOME" with
   | Some dir -> dir/app_name
   | None ->
-    match Lazy.force guess_scheme with
-    | Linux ->
+    match Lazy.force guess_scheme, as_linux with
+    | Linux, _ | _, true ->
       Sys.getenv "HOME"/".config"/app_name
-    | MacOS ->
+    | MacOS, false ->
       Sys.getenv "HOME"/"Library"/"Application Support"/app_name
-    | Windows ->
+    | Windows, false ->
       Sys.getenv "APPDATA"/app_name/"config"
 
 (* XXX I did not test the following code on different platforms. *)
-let get_cache_home ~app_name =
+let get_cache_home ?(as_linux=false) ~app_name =
   match Sys.getenv_opt "XDG_CACHE_HOME" with
   | Some dir -> dir/app_name
   | None ->
-    match Lazy.force guess_scheme with
-    | Linux ->
+    match Lazy.force guess_scheme, as_linux with
+    | Linux, _ | _, true ->
       Sys.getenv "HOME"/".cache"/app_name
-    | MacOS ->
+    | MacOS, false ->
       Sys.getenv "HOME"/"Library"/"Caches"/app_name
-    | Windows ->
+    | Windows, false ->
       Sys.getenv "LOCALAPPDATA"/app_name/"cache"

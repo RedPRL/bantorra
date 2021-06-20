@@ -14,13 +14,13 @@ val join : filepath list -> filepath
 
 (** {1 Basic I/O} *)
 
-val writefile : filepath -> string -> unit
+val writefile : filepath -> string -> (unit, [> `SystemError of string]) result
 (**
    [writefile path str] writes the string [str] the file at [path] (in binary mode).
    If there was already a file at [path], it will be overwritten.
 *)
 
-val readfile : filepath -> string
+val readfile : filepath -> (string, [> `SystemError of string]) result
 (**
    [readfile path] reads the content of string [str] the file at [path] (in binary mode).
    If there was already a file at [path], it will be overwritten.
@@ -28,7 +28,7 @@ val readfile : filepath -> string
 
 (** {1 Directories} *)
 
-val ensure_dir : filepath -> unit
+val ensure_dir : filepath -> (unit, [> `SystemError of string | `NotDirectory]) result
 (**
    [ensure_dir dir] effectively implements [mkdir dir] in OCaml.
 *)
@@ -53,7 +53,7 @@ val parent_of_normalized_dir : filepath -> filepath option
 
 (** {1 Locating Files} *)
 
-val locate_anchor : anchor:string -> filepath -> filepath * string list
+val locate_anchor : anchor:string -> filepath -> (filepath * string list) option
 (**
    [locate_anchor ~anchor dir] finds the closest regular file named [anchor] in [dir] or its ancestors in the file system tree.
 

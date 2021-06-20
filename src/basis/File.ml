@@ -1,4 +1,6 @@
 open StdLabels
+module U = UnixLabels
+open ResultMonad.Syntax
 
 type filepath = string
 
@@ -8,34 +10,36 @@ let join = List.fold_left ~f:(/) ~init:Filename.current_dir_name
 
 (** Write a string to a file. *)
 let writefile p s =
-  let ch = open_out_bin p in
   try
+    let ch = open_out_bin p in
+    Fun.protect ~finally:(fun () -> close_out_noerr ch) @@
+    fun () ->
     output_string ch s;
-    close_out ch
-  with Sys_error _ as e ->
-    close_out_noerr ch;
-    raise e
+    close_out ch;
+    ret ()
+  with Sys_error s -> error @@ `SystemError s
 
 (** Read the entire file as a string. *)
 let readfile p =
-  let ch = open_in_bin p in
   try
+    let ch = open_in_bin p in
+    Fun.protect ~finally:(fun () -> close_in_noerr ch) @@
+    fun () ->
     let s = really_input_string ch (in_channel_length ch) in
     close_in ch;
-    s
-  with Sys_error _ as e ->
-    close_in_noerr ch;
-    raise e
+    ret s
+  with Sys_error s -> error @@ `SystemError s
 
 (** OCaml implementation of [mkdir -p] *)
 let rec ensure_dir path =
   match Sys.is_directory path with
-  | false -> raise @@ Sys_error (path ^ ": Not a directory")
-  | true -> ()
+  | false -> error `NotDirectory
+  | true -> ret ()
   | exception Sys_error _ ->
     let parent = Filename.dirname path in
-    ensure_dir parent;
-    UnixLabels.mkdir ~perm:0o777 path
+    let* () = ensure_dir parent in
+    try ret @@ U.mkdir ~perm:0o777 path with
+    | U.Unix_error (e, _,  _) -> error @@ `SystemError (U.error_message e)
 
 let protect_cwd f =
   let dir = Sys.getcwd () in
@@ -49,15 +53,15 @@ let parent_of_normalized_dir dir =
   if p = dir then None else Some p
 
 let is_existing_and_regular p =
-  try (UnixLabels.stat p).st_kind = S_REG with _ -> false
+  try (U.stat p).st_kind = S_REG with _ -> false
 
 let locate_anchor ~anchor start_dir =
   let rec find_root cwd unitpath_acc =
     if is_existing_and_regular anchor then
-      cwd, unitpath_acc
+      Some (cwd, unitpath_acc)
     else
       match parent_of_normalized_dir cwd with
-      | None -> raise Not_found
+      | None -> None
       | Some parent ->
         Sys.chdir parent;
         find_root parent @@ Filename.basename cwd :: unitpath_acc
