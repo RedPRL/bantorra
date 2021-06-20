@@ -47,11 +47,5 @@ val of_olist : ('a -> value) -> 'a list option -> value
 
 val to_olist : (value -> ('a, [> `FormatError of string] as 'e) result) -> value -> ('a list option, 'e) result
 
-val of_float : float -> value
-(** Embedding a float into a [value]. *)
-
-val to_float : value -> (float, [> `FormatError of string]) result
-(** Projecting a float out of a [value]. *)
-
 val dump : value -> string
 (** A quick, dirty converter to turn a [value] into a string for ugly-printing. *)
