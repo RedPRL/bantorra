@@ -4,7 +4,8 @@ open ResultMonad.Syntax
 
 type filepath = string
 
-let (/) = Filename.concat
+let (/) p1 p2 =
+  if Filename.is_relative p2 then Filename.concat p1 p2 else p2
 
 let join = List.fold_left ~f:(/) ~init:Filename.current_dir_name
 
@@ -70,17 +71,19 @@ let locate_anchor ~anchor start_dir =
       ret (cwd, unitpath_acc)
     else
       match parent_of_normalized_dir cwd with
-      | None -> error @@ `AnchorNotFound "locate_anchor: no anchor found up to the root"
+      | None -> error @@ `AnchorNotFound "locate_anchor: no anchor found all the way up to the root"
       | Some parent ->
         Sys.chdir parent;
         find_root parent @@ Filename.basename cwd :: unitpath_acc
   in
   protect_cwd @@ fun _ ->
-  match normalize_dir start_dir with
+  match safe_chdir start_dir with
+  | Ok () ->
+    let cwd = Sys.getcwd () in
+    find_root cwd []
   | Error (`SystemError msg) ->
     Printf.ksprintf (fun msg -> error @@ `AnchorNotFound msg)
       "locate_anchor: %s" msg
-  | Ok dir -> find_root dir []
 
 let check_intercepting_anchors ~anchor root =
   function
