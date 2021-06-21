@@ -49,8 +49,8 @@ let deserialize : Marshal.value -> (t, _) result =
         else begin
           let* routes = Option.value ~default:[] <$> Marshal.to_olist M.to_route routes in
           match Util.Hashtbl.of_unique_seq @@ List.to_seq routes with
-          | Error (`DuplicateKeys k) -> error @@
-            `FormatError (Printf.sprintf "multiple libs mounted at %s" @@ Util.string_of_unitpath k)
+          | Error (`DuplicateKeys k) ->
+            Marshal.invalid_arg ~f:"Anchor.deserialize" v "multiple libraries mounted at %s" @@ Util.string_of_unitpath k
           | Ok routes -> ret {routes; cache}
         end
       | _ -> assert false
