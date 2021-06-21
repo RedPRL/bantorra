@@ -71,7 +71,7 @@ let locate_anchor ~anchor start_dir =
       ret (cwd, unitpath_acc)
     else
       match parent_of_normalized_dir cwd with
-      | None -> error @@ `AnchorNotFound "locate_anchor: no anchor found up to the root"
+      | None -> error @@ `AnchorNotFound "locate_anchor: no anchor found all the way up to the root"
       | Some parent ->
         Sys.chdir parent;
         find_root parent @@ Filename.basename cwd :: unitpath_acc
