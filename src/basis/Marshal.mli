@@ -25,6 +25,8 @@ val write_json : ?minify:bool -> string -> value -> (unit, [> `FormatError of st
 
 (** {1 Helper Functions} *)
 
+val invalid_arg : f:string -> value -> ('a, unit, string, ('b, [> `FormatError of string ]) result) format4 -> 'a
+
 val of_string : string -> value
 (** Embedding a string into a [value]. *)
 

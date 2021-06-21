@@ -11,14 +11,14 @@ let read_json path = readfile path >>= of_json
 let to_json ?(minify=true) j = Ezjsonm.value_to_string ~minify j
 let write_json ?minify path j = writefile path @@ to_json ?minify j
 
-let invalid_arg f v =
-  error @@ `FormatError (Printf.sprintf "%s: %s" f @@ to_json ~minify:true v)
+let invalid_arg ~f v =
+  Printf.ksprintf (fun s -> error @@ `FormatError (Printf.sprintf "%s on %s: %s" f (to_json ~minify:true v) s))
 
 let of_string s = `String s
 let to_string : value -> (string, [> `FormatError of string]) result =
   function
   | `String s -> ret s
-  | v -> invalid_arg "to_string" v
+  | v -> invalid_arg ~f:"to_string" v "not a string"
 
 let of_ostring =
   function
@@ -28,14 +28,14 @@ let to_ostring =
   function
   | `String str -> ret @@ Some str
   | `Null -> ret None
-  | v -> invalid_arg "to_ostring" v
+  | v -> invalid_arg ~f:"to_ostring" v "not a null or a string"
 
 let of_list of_item l =
   `A (List.map of_item l)
 let to_list to_item =
   function
   | `A items -> ResultMonad.map to_item items
-  | v -> invalid_arg "of_list" v
+  | v -> invalid_arg ~f:"of_list" v "not a list"
 
 let of_olist of_item =
   function
@@ -46,6 +46,6 @@ let to_olist to_item =
   | `A items ->
     let+ l = ResultMonad.map to_item items in Some l
   | `Null -> ret None
-  | v -> invalid_arg "of_olist" v
+  | v -> invalid_arg ~f:"of_olist" v "not a null or a list"
 
 let dump v = Ezjsonm.value_to_string v

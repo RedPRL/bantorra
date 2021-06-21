@@ -39,7 +39,7 @@ val protect_cwd : (filepath -> 'a) -> 'a
    working directory after the computation is done, even when an exception is raised.
 *)
 
-val normalize_dir : filepath -> filepath
+val normalize_dir : filepath -> (filepath, [> `SystemError of string]) result
 (**
    [normalize_dir dir] uses [Sys.chdir] and [Sys.getcwd] to normalize a path. Symbolic links and special
    directories such as [.] and [..] will be resolved and the result will be an absolute path on many systems.
@@ -53,7 +53,7 @@ val parent_of_normalized_dir : filepath -> filepath option
 
 (** {1 Locating Files} *)
 
-val locate_anchor : anchor:string -> filepath -> (filepath * string list) option
+val locate_anchor : anchor:string -> filepath -> (filepath * string list, [> `AnchorNotFound of string]) result
 (**
    [locate_anchor ~anchor dir] finds the closest regular file named [anchor] in [dir] or its ancestors in the file system tree.
 
@@ -68,3 +68,5 @@ val locate_anchor : anchor:string -> filepath -> (filepath * string list) option
    [locate_anchor ~anchor:"anchor.txt" "/usr/lib/gcc"] will return ["/usr", ["lib"; "gcc"]]
    and [locate_anchor ~anchor:"anchor.txt" "/usr"] will return ["/usr", []].
 *)
+
+val check_intercepting_anchors : anchor:string -> filepath -> string list -> bool

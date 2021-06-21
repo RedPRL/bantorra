@@ -31,5 +31,5 @@ module Manager = Manager
 module Anchor = Anchor
 (** Parser of anchor files. *)
 
-module Resolver = Resolver
-(** The type of library resolvers. *)
+module Router = Router
+(** The type of library routers. *)

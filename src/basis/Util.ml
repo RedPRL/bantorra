@@ -16,3 +16,5 @@ struct
     with
     | DuplicateKeys k -> error @@ `DuplicateKeys k
 end
+
+let string_of_unitpath = String.concat "."

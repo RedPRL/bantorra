@@ -45,26 +45,51 @@ let protect_cwd f =
   let dir = Sys.getcwd () in
   Fun.protect ~finally:(fun () -> Sys.chdir dir) @@ fun () -> f dir
 
+let safe_chdir dir =
+  try ret @@ Sys.chdir dir
+  with Sys_error s -> error @@ `SystemError s
+
 let normalize_dir dir =
-  protect_cwd @@ fun _ -> Sys.chdir dir; Sys.getcwd ()
+  protect_cwd @@ fun _ ->
+  let+ () = safe_chdir dir in
+  Sys.getcwd ()
 
 let parent_of_normalized_dir dir =
   let p = Filename.dirname dir in
   if p = dir then None else Some p
 
-let is_existing_and_regular p =
-  try (U.stat p).st_kind = S_REG with _ -> false
-
 let locate_anchor ~anchor start_dir =
   let rec find_root cwd unitpath_acc =
-    if is_existing_and_regular anchor then
-      Some (cwd, unitpath_acc)
+    if Sys.file_exists anchor then
+      ret (cwd, unitpath_acc)
     else
       match parent_of_normalized_dir cwd with
-      | None -> None
+      | None -> error (`AnchorNotFound "no anchor found up to the root")
       | Some parent ->
         Sys.chdir parent;
         find_root parent @@ Filename.basename cwd :: unitpath_acc
   in
   protect_cwd @@ fun _ ->
-  find_root (normalize_dir start_dir) []
+  match normalize_dir start_dir with
+  | Error (`SystemError e) -> error (`AnchorNotFound e)
+  | Ok dir -> find_root dir []
+
+let check_intercepting_anchors ~anchor root =
+  function
+  | [] -> false
+  | part :: parts ->
+    let rec loop parts =
+      if Sys.file_exists anchor then
+        true
+      else
+        match parts with
+        | [] -> false
+        | part :: parts ->
+          match safe_chdir (root/part) with
+          | Error (`SystemError _) -> false
+          | Ok () -> loop parts
+    in
+    protect_cwd @@ fun _ ->
+    match safe_chdir (root/part) with
+    | Error (`SystemError _) -> false
+    | Ok () -> loop parts
