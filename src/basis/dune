@@ -1,4 +1,4 @@
 (library
  (name BantorraBasis)
  (public_name bantorra.basis)
- (libraries ezjsonm))
+ (libraries ezjsonm unix))
