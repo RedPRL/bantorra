@@ -4,7 +4,8 @@ open ResultMonad.Syntax
 
 type filepath = string
 
-let (/) = Filename.concat
+let (/) p1 p2 =
+  if Filename.is_relative p2 then Filename.concat p1 p2 else p2
 
 let join = List.fold_left ~f:(/) ~init:Filename.current_dir_name
 
