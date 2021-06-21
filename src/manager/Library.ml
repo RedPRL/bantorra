@@ -1,11 +1,10 @@
 open BantorraBasis
-open BantorraBasis.File
 open ResultMonad.Syntax
 
 type unitpath = Anchor.unitpath
 
 type t =
-  { root : filepath
+  { root : File.filepath
   ; anchor : string
   ; loaded_anchor : Anchor.t
   }
@@ -17,10 +16,10 @@ let load_from_root ~find_cache ~anchor root =
   match find_cache root with
   | Some lib -> ret lib
   | None ->
-    match Anchor.read @@ root / anchor with
+    match Anchor.read File.(root/anchor) with
     | Ok loaded_anchor -> ret {root; anchor; loaded_anchor}
     | Error (`SystemError msg | `FormatError msg) ->
-      Router.library_load_error "%s" msg
+      Router.library_load_error "cannot parse %s: %s" File.(root/anchor) msg
 
 let load_from_dir ~find_cache ~anchor dir =
   match File.locate_anchor ~anchor dir with

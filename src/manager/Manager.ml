@@ -71,8 +71,8 @@ let resolve lm =
       let* lib = load_library_from_root lm lib_root in
       Library.resolve ~global lib unitpath ~suffix
     with
-    | Error (`UnitNotFound e | `InvalidLibrary e) ->
-      Library.unit_resolve_error "router %s on %s: %s" router (Util.string_of_unitpath unitpath) e
+    | Error (`UnitNotFound msg | `InvalidLibrary msg) ->
+      Library.unit_resolve_error "router %s on %s: %s" router (Util.string_of_unitpath unitpath) msg
     | Ok res -> ret res
   in
   Library.resolve ~global
