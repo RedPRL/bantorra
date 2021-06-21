@@ -15,6 +15,9 @@ struct
       ret tbl
     with
     | DuplicateKeys k -> error @@ `DuplicateKeys k
+
+  let of_unique_list l =
+    of_unique_seq @@ List.to_seq l
 end
 
 let string_of_unitpath = String.concat "."

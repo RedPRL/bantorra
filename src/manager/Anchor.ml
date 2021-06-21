@@ -19,21 +19,18 @@ module M =
 struct
   let to_path = Marshal.(to_list to_string)
 
-  let to_route_ ms =
-    match List.sort Stdlib.compare ms with
-    | ["mount_point", mount_point; "router_argument", router_argument; "router", router] ->
-      let+ router = Marshal.to_string router
-      and+ prefix = to_path mount_point
-      in
-      prefix,
-      { router
-      ; router_argument
-      }
-    | v -> Marshal.invalid_arg ~f:"Anchor.deserialize" (`O v) "unexpected or missing fields"
-
   let to_route =
     function
-    | `O ms -> to_route_ ms
+    | `O ms ->
+      Marshal.parse_object_fields ~required:["mount_point"; "router"] ~optional:["router_argument"] ms >>=
+      begin function
+        | ["mount_point", mount_point; "router", router], ["router_argument", router_argument] ->
+          let+ router = Marshal.to_string router
+          and+ prefix = to_path mount_point
+          in
+          prefix, {router; router_argument}
+        | _ -> assert false
+      end
     | v -> Marshal.invalid_arg ~f:"Anchor.deserialize" v "not an object"
 end
 
@@ -42,20 +39,21 @@ let deserialize : Marshal.value -> (t, _) result =
   function
   | `Null ->
     ret {routes = Hashtbl.create 0; cache}
-  | `O ms ->
-    begin
-      match List.sort Stdlib.compare ms with
-      | ["format", `String format_version] when format_version = version ->
-        ret {routes = Hashtbl.create 0; cache}
-      | ["routes", routes; "format", `String format_version] when format_version = version ->
-        begin
-          let* routes = Marshal.to_list M.to_route routes in
+  | `O ms as v ->
+    Marshal.parse_object_fields ~required:["format"] ~optional:["routes"] ms >>=
+    begin function
+      | ["format", format], ["routes", routes] ->
+        let* format = Marshal.to_string format in
+        if format <> version then
+          Marshal.invalid_arg ~f:"Anchor.deserialize" v "unsupported version %s" format
+        else begin
+          let* routes = Option.value ~default:[] <$> Marshal.to_olist M.to_route routes in
           match Util.Hashtbl.of_unique_seq @@ List.to_seq routes with
           | Error (`DuplicateKeys k) -> error @@
             `FormatError (Printf.sprintf "multiple libs mounted at %s" @@ Util.string_of_unitpath k)
           | Ok routes -> ret {routes; cache}
         end
-      | _ -> Marshal.invalid_arg ~f:"Anchor:deserialize" (`O ms) "unexpeced or missing fields"
+      | _ -> assert false
     end
   | v -> Marshal.invalid_arg ~f:"Anchor:deserialize" v "not an object"
 

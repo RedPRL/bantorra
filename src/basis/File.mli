@@ -28,10 +28,12 @@ val readfile : filepath -> (string, [> `SystemError of string]) result
 
 (** {1 Directories} *)
 
-val ensure_dir : filepath -> (unit, [> `SystemError of string | `NotDirectory]) result
+val ensure_dir : filepath -> (unit, [> `SystemError of string]) result
 (**
    [ensure_dir dir] effectively implements [mkdir dir] in OCaml.
 *)
+
+val safe_chdir : filepath -> (unit, [> `SystemError of string]) result
 
 val protect_cwd : (filepath -> 'a) -> 'a
 (**
@@ -70,3 +72,17 @@ val locate_anchor : anchor:string -> filepath -> (filepath * string list, [> `An
 *)
 
 val check_intercepting_anchors : anchor:string -> filepath -> string list -> bool
+
+(** {1 Special Directories} *)
+
+val get_home : unit -> filepath option
+
+val expand_home : filepath -> filepath
+
+val get_xdg_config_home : ?as_linux:bool -> app_name:string -> filepath
+(** Get the per-user config directory based on [XDG_CONFIG_HOME]
+    with reasonable default values on major platforms. *)
+
+val get_xdg_cache_home : ?as_linux:bool -> app_name:string -> filepath
+(** Get the per-user persistent cache directory based on [XDG_CACHE_HOME]
+    with reasonable default values on major platforms. *)

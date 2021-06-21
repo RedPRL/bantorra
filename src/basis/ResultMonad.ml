@@ -1,6 +1,7 @@
 module Syntax =
 struct
   let (>>=) = Result.bind
+  let (<$>) = Result.map
   let (let*) = Result.bind
   let[@inline] (let+) m f = Result.map f m
   let ret = Result.ok
@@ -18,6 +19,13 @@ let rec map f =
     let* x = f x in
     let* l = map f l in
     ret @@ x :: l
+
+let rec iter f =
+  function
+  | [] -> ret ()
+  | x :: l ->
+    let* () = f x in
+    iter f l
 
 let rec iter_seq f s =
   match s () with

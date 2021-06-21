@@ -11,9 +11,5 @@ module Exec = Exec
 module Marshal = Marshal
 (** Routines for serialization. *)
 
-module Xdg = Xdg
-(** Routines to calculate the directories in the XDG standard
-    while having reasonable default values on major platforms. *)
-
 module Util = Util
 (** Other routines that are difficult to classify. *)

@@ -1,3 +1,5 @@
+open BantorraBasis
+
 (** The git resolver takes a URL that the [git] tool can understand, clones the repository and returns the library root within the local copy.
 
     The resolver takes a JSON argument in one of the following formats:
@@ -5,7 +7,7 @@
 {
     "url": "git@github.com:favonia/bantorra.git",
     "ref": "main",
-    "path": ["src", "library"]
+    "path": "src/library"
 }
     v}
     {v
@@ -17,7 +19,7 @@
     {v
 {
     "url": "git@github.com:favonia/bantorra.git",
-    "path": ["src", "library"]
+    "path": "src/library"
 }
     v}
     {v
@@ -34,8 +36,8 @@
     {1 The Builder}
 *)
 
-val resolver : ?eager_resolution:bool -> crate_root:string -> Bantorra.Resolver.t
-(** [resolver ~crate_root] downloads git repositories, when requested, into the directory [crate_root] and resolves the URL into a path pointing to a local copy of the library. The resolver assumes the directory [crate_root] already exists and it has total control over the directory during the program execution.
+val router : ?eager_resolution:bool -> crate_root:File.filepath -> (Bantorra.Router.t, [> `InvalidRouter of string ]) result
+(** [router ~crate_root] downloads git repositories, when requested, into the directory [crate_root] and resolves the URL into a path pointing to a local copy of the library. The resolver assumes the directory [crate_root] already exists and it has total control over the directory during the program execution.
 
     @param eager_resolution Whether full resolution is performed to check the validity of arguments. If the value is [true], the resolver will immediately download the library when it receives a URL. If the value is [false], the resolver will only check whether the argument is well-formed JSON. The default value is [false].
 *)

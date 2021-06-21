@@ -19,8 +19,8 @@ let load_from_root ~find_cache ~anchor root =
   | None ->
     match Anchor.read @@ root / anchor with
     | Ok loaded_anchor -> ret {root; anchor; loaded_anchor}
-    | Error (`SystemError e | `FormatError e) ->
-      Router.library_load_error "%s" e
+    | Error (`SystemError msg | `FormatError msg) ->
+      Router.library_load_error "%s" msg
 
 let load_from_dir ~find_cache ~anchor dir =
   match File.locate_anchor ~anchor dir with

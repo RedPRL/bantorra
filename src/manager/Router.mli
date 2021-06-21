@@ -33,3 +33,4 @@ val dump_argument : t -> starting_dir:string -> router_argument -> string
 (** {1 Error reporting} *)
 
 val library_load_error : ('a, unit, string, ('b, [> `InvalidLibrary of string ]) result) format4 -> 'a
+val invalid_router_error : maker:string -> ('a, unit, string, ('b, [> `InvalidRouter of string ]) result) format4 -> 'a

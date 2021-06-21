@@ -3,6 +3,8 @@ open ResultMonad.Syntax
 
 let library_load_error fmt =
   Printf.ksprintf (fun s -> error @@ `InvalidLibrary (Printf.sprintf "Library.load: %s" s)) fmt
+let invalid_router_error ~maker fmt =
+  Printf.ksprintf (fun s -> error @@ `InvalidRouter (Printf.sprintf "%s: %s" maker s)) fmt
 
 type router_argument = Marshal.value
 type t =

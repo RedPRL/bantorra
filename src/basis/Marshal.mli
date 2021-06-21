@@ -51,3 +51,7 @@ val to_olist : (value -> ('a, [> `FormatError of string] as 'e) result) -> value
 
 val dump : value -> string
 (** A quick, dirty converter to turn a [value] into a string for ugly-printing. *)
+
+val parse_object_fields :
+  ?required:string list -> ?optional:string list -> (string * value) list ->
+  ((string * value) list * (string * value) list, [> `FormatError of string ]) result
