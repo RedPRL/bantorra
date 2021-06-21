@@ -77,11 +77,13 @@ let locate_anchor ~anchor start_dir =
         find_root parent @@ Filename.basename cwd :: unitpath_acc
   in
   protect_cwd @@ fun _ ->
-  match normalize_dir start_dir with
+  match safe_chdir start_dir with
+  | Ok () ->
+    let cwd = Sys.getcwd () in
+    find_root cwd []
   | Error (`SystemError msg) ->
     Printf.ksprintf (fun msg -> error @@ `AnchorNotFound msg)
       "locate_anchor: %s" msg
-  | Ok dir -> find_root dir []
 
 let check_intercepting_anchors ~anchor root =
   function
