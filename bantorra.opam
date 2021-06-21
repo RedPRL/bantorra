@@ -23,3 +23,6 @@ build: [
   ["dune" "build" "-p" name "-j" jobs "@runtest"] {with-test}
   ["dune" "build" "-p" name "-j" jobs "@doc"] {with-doc}
 ]
+depexts: [
+  ["git"]
+]

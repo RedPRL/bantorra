@@ -1,0 +1,4 @@
+(library
+ (name BantorraRouters)
+ (public_name bantorra.routers)
+ (libraries findlib bantorra.basis bantorra))

@@ -14,13 +14,13 @@ val join : filepath list -> filepath
 
 (** {1 Basic I/O} *)
 
-val writefile : filepath -> string -> unit
+val writefile : filepath -> string -> (unit, [> `SystemError of string]) result
 (**
    [writefile path str] writes the string [str] the file at [path] (in binary mode).
    If there was already a file at [path], it will be overwritten.
 *)
 
-val readfile : filepath -> string
+val readfile : filepath -> (string, [> `SystemError of string]) result
 (**
    [readfile path] reads the content of string [str] the file at [path] (in binary mode).
    If there was already a file at [path], it will be overwritten.
@@ -28,10 +28,12 @@ val readfile : filepath -> string
 
 (** {1 Directories} *)
 
-val ensure_dir : filepath -> unit
+val ensure_dir : filepath -> (unit, [> `SystemError of string]) result
 (**
    [ensure_dir dir] effectively implements [mkdir dir] in OCaml.
 *)
+
+val safe_chdir : filepath -> (unit, [> `SystemError of string]) result
 
 val protect_cwd : (filepath -> 'a) -> 'a
 (**
@@ -39,7 +41,7 @@ val protect_cwd : (filepath -> 'a) -> 'a
    working directory after the computation is done, even when an exception is raised.
 *)
 
-val normalize_dir : filepath -> filepath
+val normalize_dir : filepath -> (filepath, [> `SystemError of string]) result
 (**
    [normalize_dir dir] uses [Sys.chdir] and [Sys.getcwd] to normalize a path. Symbolic links and special
    directories such as [.] and [..] will be resolved and the result will be an absolute path on many systems.
@@ -53,7 +55,7 @@ val parent_of_normalized_dir : filepath -> filepath option
 
 (** {1 Locating Files} *)
 
-val locate_anchor : anchor:string -> filepath -> filepath * string list
+val locate_anchor : anchor:string -> filepath -> (filepath * string list, [> `AnchorNotFound of string]) result
 (**
    [locate_anchor ~anchor dir] finds the closest regular file named [anchor] in [dir] or its ancestors in the file system tree.
 
@@ -68,3 +70,19 @@ val locate_anchor : anchor:string -> filepath -> filepath * string list
    [locate_anchor ~anchor:"anchor.txt" "/usr/lib/gcc"] will return ["/usr", ["lib"; "gcc"]]
    and [locate_anchor ~anchor:"anchor.txt" "/usr"] will return ["/usr", []].
 *)
+
+val check_intercepting_anchors : anchor:string -> filepath -> string list -> bool
+
+(** {1 Special Directories} *)
+
+val get_home : unit -> filepath option
+
+val expand_home : filepath -> filepath
+
+val get_xdg_config_home : ?as_linux:bool -> app_name:string -> filepath
+(** Get the per-user config directory based on [XDG_CONFIG_HOME]
+    with reasonable default values on major platforms. *)
+
+val get_xdg_cache_home : ?as_linux:bool -> app_name:string -> filepath
+(** Get the per-user persistent cache directory based on [XDG_CACHE_HOME]
+    with reasonable default values on major platforms. *)
