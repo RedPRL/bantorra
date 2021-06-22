@@ -108,7 +108,7 @@ let read ?xdg_as_linux ~app_name ~config =
   | Some conf -> ret conf
   | None ->
     let* conf =
-      if Sys.file_exists filepath then
+      if File.file_exists filepath then
         Marshal.read_json filepath >>= deserialize
       else
         ret default_config

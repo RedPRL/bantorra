@@ -21,46 +21,32 @@ let loaded_crates : (string, t) Hashtbl.t = Hashtbl.create 5
 
 module G =
 struct
-  let git_init () =
-    match Exec.system ~prog:"git" ~args:["init"; "--quiet"] with
+  let wrap ~summary f =
+    match f () with
     | Error (`Exit _ | `Signaled _ | `Stopped _) ->
-      Router.library_load_error "Git.reset_repo: `git init' failed"
+      Router.library_load_error "Git.reset_repo: `%s' failed" summary
     | Error (`SystemError msg) ->
-      Router.library_load_error "Git.reset_repo: `git init' failed: %s" msg
-    | Ok () -> ret ()
+      Router.library_load_error "Git.reset_repo: `%s' failed: %s" summary msg
+    | Ok res -> ret res
+
+  let system ~summary ~prog ~args = wrap ~summary @@ fun () -> Exec.system ~prog ~args
+  let with_system_in ~summary ~prog ~args = wrap ~summary @@ fun () ->
+    Exec.with_system_in ~prog ~args @@ fun ic_id ->
+    String.trim @@ try input_line ic_id with End_of_file -> ""
+
+  let git_init () =
+    system ~summary:"git init" ~prog:"git" ~args:["init"; "--quiet"]
 
   let git_fetch ~url ~ref =
-    match
-      Exec.system ~prog:"git"
-        ~args:["fetch"; "--quiet"; "--no-tags"; "--recurse-submodules=on-demand"; "--depth=1"; "--"; url; ref]
-    with
-    | Error (`Exit _ | `Signaled _ | `Stopped _) ->
-      Router.library_load_error "Git.reset_repo: `git fetch' failed"
-    | Error (`SystemError msg) ->
-      Router.library_load_error "Git.reset_repo: `git fetch' failed: %s" msg
-    | Ok () -> ret ()
+    system ~summary:"git fetch" ~prog:"git"
+      ~args:["fetch"; "--quiet"; "--no-tags"; "--recurse-submodules=on-demand"; "--depth=1"; "--"; url; ref]
 
   let git_reset () =
-    match
-      Exec.system ~prog:"git"
-        ~args:["reset"; "--quiet"; "--hard"; "--recurse-submodules"; "FETCH_HEAD"; "--"]
-    with
-    | Error (`Exit _ | `Signaled _ | `Stopped _) ->
-      Router.library_load_error "Git.reset_repo: `git reset' failed"
-    | Error (`SystemError msg) ->
-      Router.library_load_error "Git.reset_repo: `git fetch' failed: %s" msg
-    | Ok () -> ret ()
+    system ~summary:"git reset" ~prog:"git"
+      ~args:["reset"; "--quiet"; "--hard"; "--recurse-submodules"; "FETCH_HEAD"; "--"]
 
   let git_rev_parse ~ref =
-    match
-      Exec.with_system_in ~prog:"git" ~args:["rev-parse"; ref] @@ fun ic_id ->
-      String.trim @@ try input_line ic_id with End_of_file -> ""
-    with
-    | Error (`Exit _ | `Signaled _ | `Stopped _) ->
-      Router.library_load_error "Git.reset_repo: `git rev-parse' failed"
-    | Error (`SystemError msg) ->
-      Router.library_load_error "Git.reset_repo: `git rev-parse' failed: %s" msg
-    | Ok id -> ret id
+    with_system_in ~summary:"git rev-parse" ~prog:"git" ~args:["rev-parse"; ref]
 
   let reset_repo ~url ~ref ~git_root ~id_in_use =
     match String.index_opt ref ':' with
@@ -70,7 +56,7 @@ struct
       File.protect_cwd @@ fun _ ->
       match
         let* () = File.ensure_dir git_root in
-        File.safe_chdir git_root
+        File.chdir git_root
       with
       | Error (`SystemError msg) ->
         Router.library_load_error "Git.reset_repo: %s" msg

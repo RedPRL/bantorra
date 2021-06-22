@@ -28,12 +28,14 @@ val readfile : filepath -> (string, [> `SystemError of string]) result
 
 (** {1 Directories} *)
 
+val getcwd : unit -> filepath
+
+val chdir : filepath -> (unit, [> `SystemError of string]) result
+
 val ensure_dir : filepath -> (unit, [> `SystemError of string]) result
 (**
    [ensure_dir dir] effectively implements [mkdir dir] in OCaml.
 *)
-
-val safe_chdir : filepath -> (unit, [> `SystemError of string]) result
 
 val protect_cwd : (filepath -> 'a) -> 'a
 (**
@@ -54,6 +56,8 @@ val parent_of_normalized_dir : filepath -> filepath option
 *)
 
 (** {1 Locating Files} *)
+
+val file_exists : filepath -> bool
 
 val locate_anchor : anchor:string -> filepath -> (filepath * string list, [> `AnchorNotFound of string]) result
 (**
