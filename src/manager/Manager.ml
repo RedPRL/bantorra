@@ -46,7 +46,7 @@ let load_library_from_route lm Anchor.{router; router_argument} =
   match Hashtbl.find_opt lm.routers router with
   | None -> Router.library_load_error "router %s not found" router
   | Some loaded_router ->
-    let starting_dir = Sys.getcwd () in
+    let starting_dir = File.getcwd () in
     let* lib_root = Router.route loaded_router ~starting_dir router_argument in
     load_library_from_root lm lib_root
 
@@ -56,7 +56,7 @@ let load_library_from_dir lm dir =
   ret (lib, unitpath_opt)
 
 let load_library_from_cwd lm =
-  load_library_from_dir lm @@ Sys.getcwd ()
+  load_library_from_dir lm @@ File.getcwd ()
 
 let load_library_from_unit lm ~suffix filepath =
   let* lib, unitpath_opt = Library.load_from_unit ~find_cache:(find_cache lm) ~anchor:lm.anchor ~suffix filepath in

@@ -31,7 +31,7 @@ let load_from_dir ~find_cache ~anchor dir =
     else lib, None
 
 let load_from_unit ~find_cache ~anchor ~suffix filepath =
-  if not @@ Sys.file_exists filepath then
+  if not @@ File.file_exists filepath then
     Router.library_load_error "%s does not exist" filepath
   else
     match Filename.chop_suffix_opt ~suffix @@ Filename.basename filepath with
