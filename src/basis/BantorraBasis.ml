@@ -1,5 +1,9 @@
 (** This library implements basic routines used by other libraries. *)
 
+module Error = Error
+
+module Errors = Errors
+
 module ResultMonad = ResultMonad
 
 module File = File

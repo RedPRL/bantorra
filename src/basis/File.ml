@@ -1,5 +1,6 @@
 open StdLabels
 module U = UnixLabels
+module E = Errors
 open ResultMonad.Syntax
 
 type filepath = string
@@ -11,6 +12,7 @@ let join = List.fold_left ~f:(/) ~init:Filename.current_dir_name
 
 (** Write a string to a file. *)
 let writefile p s =
+  let src = "File.writefile" in
   try
     let ch = open_out_bin p in
     Fun.protect ~finally:(fun () -> close_out_noerr ch) @@
@@ -18,10 +20,11 @@ let writefile p s =
     output_string ch s;
     close_out ch;
     ret ()
-  with Sys_error s -> error @@ `SystemError s
+  with Sys_error msg -> E.error_system_msg ~src msg
 
 (** Read the entire file as a string. *)
 let readfile p =
+  let src = "File.readfile" in
   try
     let ch = open_in_bin p in
     Fun.protect ~finally:(fun () -> close_in_noerr ch) @@
@@ -29,21 +32,23 @@ let readfile p =
     let s = really_input_string ch (in_channel_length ch) in
     close_in ch;
     ret s
-  with Sys_error s -> error @@ `SystemError s
+  with Sys_error msg -> E.error_system_msg ~src msg
 
 let getcwd = Sys.getcwd
 
 let unsafe_chdir dir = Sys.chdir dir
 
 let chdir dir =
+  let src = "File.chdir" in
   try ret @@ unsafe_chdir dir
-  with Sys_error s -> error @@ `SystemError s
+  with Sys_error msg -> E.error_system_msg ~src msg
 
 (** OCaml implementation of [mkdir -p] *)
 let rec ensure_dir path =
+  let src = "File.ensure_dir" in
   match Sys.is_directory path with
   | false ->
-    Printf.ksprintf (fun msg -> error @@ `SystemError msg)
+    E.error_system_msgf ~src
       "%s exists but is not a directory" path
   | true -> ret ()
   | exception Sys_error _ ->
@@ -51,8 +56,9 @@ let rec ensure_dir path =
     let* () = ensure_dir parent in
     let rec loop () =
       try ret @@ U.mkdir ~perm:0o777 path with
-      | U.Unix_error (U.EINTR, _,  _) -> loop ()
-      | U.Unix_error (e, _,  _) -> error @@ `SystemError (U.error_message e)
+      | U.Unix_error (U.EINTR, _,  _) -> loop () (* try again *)
+      | U.Unix_error (e, _,  _) ->
+        E.error_system_msg ~src @@ U.error_message e
     in
     loop ()
 
@@ -72,16 +78,16 @@ let parent_of_normalized_dir dir =
 let file_exists p =
   try U.(stat p).st_kind = S_REG with _ -> false
 
-let anchor_not_found fmt =
-  Printf.ksprintf (fun msg -> error @@ `AnchorNotFound msg) fmt
-
 let locate_anchor ~anchor start_dir =
+  let src = "File.locate_anchor" in
   let rec find_root cwd unitpath_acc =
     if file_exists anchor then
       ret (cwd, unitpath_acc)
     else
       match parent_of_normalized_dir cwd with
-      | None -> anchor_not_found "locate_anchor: no anchor found all the way up to the root"
+      | None ->
+        E.error_anchor_not_found_msg ~src
+          "No anchor found all the way up to the root"
       | Some parent ->
         unsafe_chdir parent;
         find_root parent @@ Filename.basename cwd :: unitpath_acc
@@ -92,9 +98,10 @@ let locate_anchor ~anchor start_dir =
     let cwd = getcwd () in
     find_root cwd []
   | Error (`SystemError msg) ->
-    anchor_not_found "locate_anchor: %s" msg
+    E.append_error_anchor_not_found_msgf ~earlier:msg ~src
+      "%s is invalid" start_dir
 
-let check_intercepting_anchors ~anchor root =
+let hijacking_anchors_exist ~anchor ~root =
   function
   | [] -> false
   | part :: parts ->
@@ -119,6 +126,8 @@ let check_intercepting_anchors ~anchor root =
     It does not correspond to the actual OS that is running. For example, the
     [Linux] scheme covers all BSD-like systems and Cygwin on Windows. *)
 type scheme = MacOS | Linux | Windows
+
+let getenv_opt = Sys.getenv_opt
 
 let uname_s =
   lazy begin
@@ -145,23 +154,24 @@ let get_home () =
   match Lazy.force guess_scheme with
   | Windows ->
     begin
-      match Sys.getenv_opt "USERPROFILE" with
+      match getenv_opt "USERPROFILE" with
       | Some userprofile -> Some userprofile
       | None ->
-        match Sys.getenv_opt "HOMEPATH" with
+        match getenv_opt "HOMEPATH" with
         | None -> None
         | Some homepath ->
           let drive = Option.value ~default:"" @@ Sys.getenv_opt "HOMEDRIVE" in
           Some (drive/homepath)
     end
   | Linux | MacOS ->
-    match Sys.getenv_opt "HOME" with
+    match getenv_opt "HOME" with
     | Some home -> Some home
     | None ->
       let rec loop () =
         try
           Some Unix.(getpwuid @@ getuid ()).pw_dir
         with
+        | Not_found (* getpwuid *) -> None
         | Unix.Unix_error (Unix.EINTR, _, _) -> loop ()
         | Unix.Unix_error _ -> None
       in
@@ -174,35 +184,81 @@ let expand_home =
     match get_home () with
     | None -> p
     | Some home ->
-      if String.(length p >= length home_prefix) &&
-         String.(equal (sub ~pos:0 ~len:(length home_prefix) p) home_prefix)
+      if p = "~" then
+        home
+      else if String.(length p >= length home_prefix) &&
+              String.(sub ~pos:0 ~len:(length home_prefix) p = home_prefix)
       then
         home / String.sub ~pos:1 ~len:(String.length p - 1) p
       else
         p
 
 (* XXX I did not test the following code on different platforms. *)
-let get_xdg_config_home ?(as_linux=false) ~app_name =
-  match Sys.getenv_opt "XDG_CONFIG_HOME" with
-  | Some dir -> dir/app_name
+let get_xdg_config_home ?(macos_as_linux=false) ~app_name =
+  let src = "File.get_xdg_config_home" in
+  match getenv_opt "XDG_CONFIG_HOME" with
+  | Some dir -> ret @@ dir/app_name
   | None ->
-    match Lazy.force guess_scheme, as_linux with
-    | Linux, _ | _, true ->
-      Sys.getenv "HOME"/".config"/app_name
+    match Lazy.force guess_scheme, macos_as_linux with
+    | Linux, _ | MacOS, true ->
+      begin
+        match get_home () with
+        | None ->
+          E.error_system_msg ~src
+            "Both XDG_CONFIG_HOME and HOME are not set"
+        | Some home ->
+          ret @@ home/".config"/app_name
+      end
     | MacOS, false ->
-      Sys.getenv "HOME"/"Library"/"Application Support"/app_name
-    | Windows, false ->
-      Sys.getenv "APPDATA"/app_name/"config"
+      begin
+        match get_home () with
+        | None ->
+          E.error_system_msg ~src
+            "Both XDG_CONFIG_HOME and HOME are not set"
+        | Some home ->
+          ret @@ home/"Library"/"Application Support"/app_name
+      end
+    | Windows, _ ->
+      begin
+        match getenv_opt "APPDATA" with
+        | None ->
+          E.error_system_msg ~src
+            "Both XDG_CONFIG_HOME and APPDATA are not set"
+        | Some app_data ->
+          ret @@ app_data/app_name/"config"
+      end
 
 (* XXX I did not test the following code on different platforms. *)
-let get_xdg_cache_home ?(as_linux=false) ~app_name =
+let get_xdg_cache_home ?(macos_as_linux=false) ~app_name =
+  let src = "File.get_xdg_cache_home" in
   match Sys.getenv_opt "XDG_CACHE_HOME" with
-  | Some dir -> dir/app_name
+  | Some dir -> ret @@ dir/app_name
   | None ->
-    match Lazy.force guess_scheme, as_linux with
-    | Linux, _ | _, true ->
-      Sys.getenv "HOME"/".cache"/app_name
+    match Lazy.force guess_scheme, macos_as_linux with
+    | Linux, _ | MacOS, true ->
+      begin
+        match get_home () with
+        | None ->
+          E.error_system_msg ~src
+            "Both XDG_CACHE_HOME and HOME are not set"
+        | Some home ->
+          ret @@ home/".cache"/app_name
+      end
     | MacOS, false ->
-      Sys.getenv "HOME"/"Library"/"Caches"/app_name
-    | Windows, false ->
-      Sys.getenv "LOCALAPPDATA"/app_name/"cache"
+      begin
+        match get_home () with
+        | None ->
+          E.error_system_msg ~src
+            "Both XDG_CACHE_HOME and HOME are not set"
+        | Some home ->
+          ret @@ home/"Library"/"Caches"/app_name
+      end
+    | Windows, _ ->
+      begin
+        match getenv_opt "LOCALAPPDATA" with
+        | None ->
+          E.error_system_msg ~src
+            "Both XDG_CACHE_HOME and LOCALAPPDATA are not set"
+        | Some local_app_data ->
+          ret @@ local_app_data/app_name/"cache"
+      end

@@ -75,7 +75,7 @@ val locate_anchor : anchor:string -> filepath -> (filepath * string list, [> `An
    and [locate_anchor ~anchor:"anchor.txt" "/usr"] will return ["/usr", []].
 *)
 
-val check_intercepting_anchors : anchor:string -> filepath -> string list -> bool
+val hijacking_anchors_exist : anchor:string -> root:filepath -> string list -> bool
 
 (** {1 Special Directories} *)
 
@@ -83,10 +83,10 @@ val get_home : unit -> filepath option
 
 val expand_home : filepath -> filepath
 
-val get_xdg_config_home : ?as_linux:bool -> app_name:string -> filepath
+val get_xdg_config_home : ?macos_as_linux:bool -> app_name:string -> (filepath, [> `SystemError of string]) result
 (** Get the per-user config directory based on [XDG_CONFIG_HOME]
     with reasonable default values on major platforms. *)
 
-val get_xdg_cache_home : ?as_linux:bool -> app_name:string -> filepath
+val get_xdg_cache_home : ?macos_as_linux:bool -> app_name:string -> (filepath, [> `SystemError of string]) result
 (** Get the per-user persistent cache directory based on [XDG_CACHE_HOME]
     with reasonable default values on major platforms. *)
