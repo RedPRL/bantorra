@@ -1,7 +1,7 @@
 (**
-   A Bantorra library is a virtual tree of units that can be accessed via unit paths from the root. The framework maps each unit path to the underlying file path via a flexible resolution process.
+   A {e library} in the Bantorra framework is a tree of units that can be accessed via unit paths from the root. A unit path is a list of string separated by the dot, such as [std.num.types]. The purpose of this framework is to map each unit path to the underlying file path via a flexible resolution process. For example, the unit path [std.num.types] might be mapped to the file path [/usr/lib/built-in/number/types.source].
 
-   In the simplest case, there is a one-to-one correspondence between units and files under a specific directory: the unit path [a.b.c] corresponds to the file [a/b/c.suffix] where the extension [.suffix] is specified by the application. The root directory is marked by the existence of a special file with a name specified by the application. For example, the existence of the [dune] file means there is an OCaml library in the eyes of the [dune] building tool. These files are called {e anchors} in the Bantorra framework, each marking the root of a collection of units that forms a {e library}.
+   In the simplest case, there is a one-to-one correspondence between units and files under a directory: the unit path [a.b.c] corresponds to the file [a/b/c.source] where [.source] is the extension specified by the application. The root directory is marked by the existence of special files, called {e anchor}, which are files with a name again specified by the application. For example, the existence of a [dune] file means there is an OCaml library in the eyes of the [dune] building tool. An anchor in the Bantorra framework marks the root of a collection of units that forms a library. For instance, an anchor file at the directory [/usr/lib/built-in/number] marks the existence of a library at [/usr/lib/built-in/number].
 
    To access the units outside the current library, an anchor may {e mount} a library in the tree, in a way similar to how partitions are mounted in POSIX-compliant systems. Here is a sample anchor file:
    {v
@@ -9,14 +9,14 @@
   "format": "1.0.0",
   "depends": [
     {
-      "mount_point": ["lib", "num"],
+      "mount_point": ["std"; "num"],
       "router": "builtin",
       "router_argument": "number"
     }
   ]
 }
     v}
-   The above anchor file mounts the library [number] at [lib.num] via the [builtin] router. With this, the unit path [lib.num.types], for example, will be routed as the unit path [types] within the library [number]. The [builtin] router here is responsible for locating the root of this [number] library. The resolution is recursive because the depended library may depend on yet another library.
+   The above anchor file mounts the library [number] at [std.num] via the [builtin] router. With this, the unit path [n.types], for example, will be routed as the unit path [types] within the library [num]. The [builtin] router is responsible for locating the root of this [num] library. The resolution is recursive because the mounted library may mount yet another library.
 
    The implementation of the [builtin] router is specified by the application. For example, the application could use a fixed table router to implement the [builtin] router. A few basic routers are provided in {{:../BantorraRouters/index.html}BantorraRouters}.
 
