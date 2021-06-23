@@ -22,7 +22,7 @@
 (** {1 Configuration Format} *)
 
 (**
-   By default, the configuration is at [$XDG_CONFIG_HOME/${app_name}/${config}]. The exact path is given by {!val:BantorraBasis.Xdg.get_config_home} concatenated with the argument [config] given to {!val:router}.
+   By default, the configuration is at [$XDG_CONFIG_HOME/${app_name}/${config}]. The exact path is given by {!val:BantorraBasis.File.get_xdg_config_home} concatenated with the argument [config] given to {!val:router}.
 
    Here is an example configuration file:
    {v
@@ -116,8 +116,8 @@
 
 (** {1 Builder} *)
 
-val router : ?xdg_as_linux:bool -> app_name:string -> config:string -> Bantorra.Router.t
-(** [router ?xdg_as_linux ~app_name ~config] constructs a router that reads the user configuration. The location of the user configuration is given by {!val:BantorraBasis.Xdg.get_config_home ?as_linux:xdg_as_linux} concatenated with [config]. All paths are normalized and turned into absolute paths with respect to the current working directory using {!val:BantorraBasis.File.normalize_dir} .
+val router : ?xdg_macos_as_linux:bool -> app_name:string -> config:string -> Bantorra.Router.t
+(** [router ?xdg_as_linux ~app_name ~config] constructs a router that reads the user configuration. The location of the user configuration is given by {!val:BantorraBasis.File.get_xdg_config_home}[?as_linux:xdg_as_linux] concatenated with [config]. All paths are normalized and turned into absolute paths with respect to the current working directory using {!val:BantorraBasis.File.normalize_dir} .
 
     If the configuration file does not exist, an empty mapping is used, which means the router would reject every request.
 
@@ -143,24 +143,26 @@ type config
 val default_config : config
 (** Default configuration that is empty. *)
 
-val read : ?xdg_as_linux:bool -> app_name:string -> config:BantorraBasis.File.filepath ->
+val read : ?xdg_macos_as_linux:bool -> app_name:string -> config:BantorraBasis.File.filepath ->
   (config, [> `FormatError of string | `SystemError of string ]) result
 (**
    Try to read the configuration file. Note that the results are cached. See {!val:clear_cached_configs}. If the configuration file does not exist, then the default configuration (the empty mapping) is returned. The cache will be updated accordingly.
 
+   @param xdg_as_linux Whether the XDG path construction should follow the Linux convention, ignoring the OS detection.
    @param app_name The application name for generating a suitable directory to put the configuration file.
    @param config The file path of the configuration file.
 *)
 
 val lookup : name:string -> version:string option -> config -> BantorraBasis.File.filepath option
 
-val write : ?xdg_as_linux:bool -> app_name:string -> config:string -> config ->
+val write : ?xdg_macos_as_linux:bool -> app_name:string -> config:string -> config ->
   (unit, [> `FormatError of string | `SystemError of string ]) result
 (**
    Write the configuration file.
 
    The cache within this module will be updated upon successful writing. See {!val:clear_cached_configs}.
 
+   @param xdg_as_linux Whether the XDG path construction should follow the Linux convention, ignoring the OS detection.
    @param app_name The application name for generating a suitable directory to put the configuration file.
    @param config The file name of the configuration file.
 *)

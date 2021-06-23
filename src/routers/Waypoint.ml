@@ -1,3 +1,4 @@
+module E = Errors
 open BantorraBasis
 open ResultMonad.Syntax
 open Bantorra
@@ -14,63 +15,60 @@ let cache : (string, t) Hashtbl.t = Hashtbl.create 10
 
 module M =
 struct
-  let to_info =
+  let to_info v =
+    let src = "Waypoint.to_info" in
+    Marshal.parse_object ~required:["name"] ~optional:["at"; "next_waypoint"; "next_as"] v >>=
     function
-    | `O ms as v ->
-      Marshal.parse_object_fields ~required:["name"] ~optional:["at"; "next_waypoint"; "next_as"] ms >>=
-      begin function
-        | ["name", name], ["at", at; "next_waypoint", next_waypoint; "next_as", next_as] ->
-          let* name = Marshal.to_string name in
-          let* at = Marshal.to_ostring at in
-          let* next_waypoint = Marshal.to_ostring next_waypoint in
-          let* next_as = Marshal.to_ostring next_as in
-          begin match at, next_waypoint, next_as with
-            | Some at, None, None ->
-              ret (name, Direct {at})
-            | None, Some next_waypoint, next_as ->
-              ret (name, Indirect {next_waypoint; next_as})
-            | Some _, Some _, _ ->
-              Marshal.invalid_arg ~f:"Waypoint.deserialize" v "cannot specify both `at' and `next_waypoint'"
-            | Some _, _, Some _ ->
-              Marshal.invalid_arg ~f:"Waypoint.deserialize" v "cannot specify both `at' and `next_as'"
-            | None, None, _ ->
-              Marshal.invalid_arg ~f:"Waypoint.deserialize" v "must specify at least `at' or `next_waypoint'"
-          end
-        | _ -> assert false
+    | ["name", name], ["at", at; "next_waypoint", next_waypoint; "next_as", next_as] ->
+      let* name = Marshal.to_string name in
+      let* at = Marshal.to_ostring at in
+      let* next_waypoint = Marshal.to_ostring next_waypoint in
+      let* next_as = Marshal.to_ostring next_as in
+      begin match at, next_waypoint, next_as with
+        | Some at, None, None ->
+          ret (name, Direct {at})
+        | None, Some next_waypoint, next_as ->
+          ret (name, Indirect {next_waypoint; next_as})
+        | Some _, Some _, _ ->
+          E.error_format_msgf ~src "Cannot specify both `at' and `next_waypoint' in %a" Marshal.dump v
+        | Some _, _, Some _ ->
+          E.error_format_msgf ~src "Cannot specify both `at' and `next_as' in %a" Marshal.dump v
+        | None, None, _ ->
+          E.error_format_msgf ~src "Must specify at least `at' or `next_waypoint' in %a" Marshal.dump v
       end
-    | v -> Marshal.invalid_arg ~f:"Waypoint.deserialize" v "not an object"
+    | _ -> assert false
 end
 
-let deserialize : Marshal.value -> _ =
+let deserialize v =
+  let src = "Waypoint.deserialize" in
+  Marshal.parse_object ~required:["format"] ~optional:["waypoints"] v >>=
   function
-  | `O ms as v ->
-    Marshal.parse_object_fields ~required:["format"] ~optional:["waypoints"] ms >>=
-    begin function
-      | ["format", format], ["waypoints", dict] ->
-        let* format = Marshal.to_string format in
-        let* dict = Option.value ~default:[] <$> Marshal.to_olist M.to_info dict in
-        if format <> version then
-          Marshal.invalid_arg ~f:"Waypoint.deserialize" v "unsupported version %s" format
-        else begin
-          match Util.Hashtbl.of_unique_list dict with
-          | Error (`DuplicateKeys key) ->
-            Marshal.invalid_arg ~f:"Waypoint.deserialize" v
-              "duplicate waypoints with name = %s" key
-          | Ok dict -> ret dict
-        end
-      | _ -> assert false
+  | ["format", format], ["waypoints", dict] ->
+    let* format = Marshal.to_string format in
+    let* dict = Option.value ~default:[] <$> Marshal.to_olist M.to_info dict in
+    if format <> version then
+      Errors.error_format_msgf ~src "Format version `%s' is not supported (only version `%s' is supported)" format version
+    else begin
+      match Util.Hashtbl.of_unique_list dict with
+      | Error (`DuplicateKeys key) ->
+        Errors.error_format_msgf ~src
+          "Duplicate waypoints named `%s' in %a" key Marshal.dump v
+      | Ok dict -> ret dict
     end
-  | v -> Marshal.invalid_arg ~f:"Waypoint.deserialize" v "not an object"
+  | _ -> assert false
 
 let get_waypoints ~landmark root =
+  let src = "Waypoint.get_waypoints" in
   match Hashtbl.find_opt cache File.(root/landmark) with
   | Some waypoints -> ret waypoints
   | None ->
     match Marshal.read_json File.(root/landmark) >>= deserialize with
     | Error (`FormatError msg) ->
-      Router.library_load_error "Waypoint.route: the landmark %s is ill-formed: %s" File.(root/landmark) msg
+      E.append_error_invalid_library_msgf ~earlier:msg ~src
+        "Could not parse the landmark file at %s" File.(root/landmark)
     | Error (`SystemError msg) ->
-      Router.library_load_error "Waypoint.route: could not read the landmark %s: %s" File.(root/landmark) msg
+      E.append_error_invalid_library_msgf ~earlier:msg ~src
+        "Could not read the landmark file at %s" File.(root/landmark)
     | Ok waypoints ->
       Hashtbl.replace cache root waypoints;
       ret waypoints
@@ -79,6 +77,7 @@ let clear_cached_landmarks () =
   Hashtbl.clear cache
 
 let rec lookup_waypoint ~landmark current_dir lib_name k =
+  let src = "Waypoint.lookup_waypoint" in
   let* waypoints = get_waypoints ~landmark current_dir in
   match Hashtbl.find_opt waypoints lib_name with
   | None -> k ()
@@ -86,31 +85,38 @@ let rec lookup_waypoint ~landmark current_dir lib_name k =
     begin
       match File.normalize_dir File.(current_dir/at) with
       | Error (`SystemError msg) ->
-        Router.library_load_error "Waypoint.route: %s" msg
+        E.append_error_invalid_library_msgf ~earlier:msg ~src
+          "Could not load the library at %s" File.(current_dir/at)
       | Ok root -> ret root
     end
   | Some Indirect {next_waypoint; next_as} ->
     let current_dir = File.(current_dir/next_waypoint) in
     let lib_name = Option.value ~default:lib_name next_as in
     lookup_waypoint ~landmark current_dir lib_name @@ fun () ->
-    Router.library_load_error "Waypoint.route: cannot find the waypoint for %s" lib_name
+    E.error_invalid_library_msgf ~src
+      "Could not find a waypoint named `%s' in %s" lib_name File.(current_dir/next_waypoint)
 
 let rec lookup_waypoint_in_ancestors ~landmark current_dir lib_name =
+  let src = "Waypoint.lookup_waypoint_in_ancestors" in
   match File.locate_anchor ~anchor:landmark current_dir with
   | Error (`AnchorNotFound msg) ->
-    Router.library_load_error "Waypoint.route: no files named `%s' found all the way up to the root: %s" landmark msg
+    E.append_error_invalid_library_msgf ~earlier:msg ~src
+      "Could not find files named `%s' all the way up to the root" landmark
   | Ok (current_dir, _) ->
     lookup_waypoint ~landmark current_dir lib_name @@ fun () ->
     match File.parent_of_normalized_dir current_dir with
     | None ->
-      Router.library_load_error "Waypoint.route: %s not in any landmark all the way up to the root" lib_name
+      E.error_invalid_library_msgf ~src
+        "Could not find a waypoint named `%s' in all landmarks (files named `%s') all the way up to the root" lib_name landmark
     | Some parent -> lookup_waypoint_in_ancestors ~landmark parent lib_name
 
 let router ?(eager_resolution=false) ~landmark =
   let route ~starting_dir arg =
+    let src = "Waypoint.route" in
     match Marshal.to_string arg with
     | Error (`FormatError msg) ->
-      Router.library_load_error "Waypoint.route: %s" msg
+      E.append_error_invalid_library_msgf ~earlier:msg ~src
+        "Could not parse the argument: %a" Marshal.dump arg
     | Ok arg ->
       lookup_waypoint_in_ancestors ~landmark starting_dir arg
   in

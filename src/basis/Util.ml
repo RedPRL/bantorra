@@ -21,3 +21,5 @@ struct
 end
 
 let string_of_unitpath = String.concat "."
+
+let pp_unitpath fmt unitpath = Format.pp_print_string fmt @@ string_of_unitpath unitpath

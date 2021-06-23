@@ -25,8 +25,6 @@ val write_json : ?minify:bool -> string -> value -> (unit, [> `FormatError of st
 
 (** {1 Helper Functions} *)
 
-val invalid_arg : f:string -> value -> ('a, unit, string, ('b, [> `FormatError of string ]) result) format4 -> 'a
-
 val of_string : string -> value
 (** Embedding a string into a [value]. *)
 
@@ -49,9 +47,13 @@ val of_olist : ('a -> value) -> 'a list option -> value
 
 val to_olist : (value -> ('a, [> `FormatError of string] as 'e) result) -> value -> ('a list option, 'e) result
 
-val dump : value -> string
+val dump : Format.formatter -> value -> unit
 (** A quick, dirty converter to turn a [value] into a string for ugly-printing. *)
 
-val parse_object_fields :
-  ?required:string list -> ?optional:string list -> (string * value) list ->
+val parse_object :
+  ?required:string list -> ?optional:string list -> value ->
   ((string * value) list * (string * value) list, [> `FormatError of string ]) result
+
+val parse_object_or_null :
+  ?required:string list -> ?optional:string list -> value ->
+  (((string * value) list * (string * value) list) option, [> `FormatError of string ]) result

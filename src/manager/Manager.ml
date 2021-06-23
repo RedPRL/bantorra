@@ -1,3 +1,4 @@
+module E = Errors
 open BantorraBasis
 open ResultMonad.Syntax
 
@@ -10,21 +11,23 @@ type library = Library.t
 type unitpath = Anchor.unitpath
 
 let check_dep routers root =
-  Library.iter_routes @@ fun {router; router_argument} ->
+  let src = "Manager.check_dep" in
+  Library.iter_routes @@ fun ~router ~router_argument ->
   match Hashtbl.find_opt routers router with
-  | None -> Router.library_load_error "router %s not found" router
+  | None -> E.error_invalid_library_msgf ~src "Could not find the router named `%s'" router
   | Some r ->
     if Router.fast_check r ~starting_dir:root router_argument then
       ret ()
     else
-      Router.library_load_error "router %s: %s" router @@
-      Router.dump_argument r ~starting_dir:root router_argument
+      E.error_invalid_library_msgf ~src
+        "The fast checking failed for the route with router = `%s' and router_argument = `%a'"
+        router Marshal.dump router_argument
 
 let init ~anchor ~routers =
+  let src = "Manager.init" in
   match Util.Hashtbl.of_unique_seq @@ List.to_seq routers with
   | Error (`DuplicateKeys key) ->
-    Printf.kprintf (fun msg -> error @@ `InvalidRoutingTable msg)
-      "multiple routers named %s" key
+    E.error_invalid_router_msgf ~src "Multiple routers named %s" key
   | Ok routers ->
     let loaded_libs = Hashtbl.create 10 in
     ret {anchor; routers; loaded_libs}
@@ -42,13 +45,16 @@ let load_library_from_root lm lib_root =
   let* () = check_and_cache_library lm lib in
   ret lib
 
-let load_library_from_route lm Anchor.{router; router_argument} =
+let load_library_from_route lm ~router ~router_argument ~starting_dir =
+  let src = "Manager.load_library_from_route" in
   match Hashtbl.find_opt lm.routers router with
-  | None -> Router.library_load_error "router %s not found" router
+  | None -> E.error_invalid_library_msgf ~src "Router `%s' not found" router
   | Some loaded_router ->
-    let starting_dir = File.getcwd () in
     let* lib_root = Router.route loaded_router ~starting_dir router_argument in
     load_library_from_root lm lib_root
+
+let load_library_from_route_with_cwd lm ~router ~router_argument  =
+  load_library_from_route lm  ~router_argument ~router ~starting_dir:(File.getcwd ())
 
 let load_library_from_dir lm dir =
   let* lib, unitpath_opt = Library.load_from_dir ~find_cache:(find_cache lm) ~anchor:lm.anchor dir in
@@ -64,15 +70,16 @@ let load_library_from_unit lm ~suffix filepath =
   ret (lib, unitpath_opt)
 
 let resolve lm =
-  let rec global ~starting_dir Anchor.{router; router_argument} unitpath ~suffix =
+  let src = "Manager.resolve" in
+  let rec global ~starting_dir ~router ~router_argument unitpath ~suffix =
     match
-      let loaded_router = Hashtbl.find lm.routers router (* this must succeed due to [check_dep] *) in
-      let* lib_root = Router.route loaded_router ~starting_dir router_argument in
-      let* lib = load_library_from_root lm lib_root in
+      let* lib = load_library_from_route lm ~starting_dir ~router ~router_argument in
       Library.resolve ~global lib unitpath ~suffix
     with
     | Error (`UnitNotFound msg | `InvalidLibrary msg) ->
-      Library.unit_resolve_error "router %s on %s: %s" router (Util.string_of_unitpath unitpath) msg
+      E.append_error_unit_not_found_msgf ~earlier:msg ~src
+        "Could not find %a via the route with router = `%s' and router_argument = `%a'"
+        Util.pp_unitpath unitpath router Marshal.dump router_argument
     | Ok res -> ret res
   in
   Library.resolve ~global

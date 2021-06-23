@@ -1,35 +1,37 @@
 module Syntax =
 struct
+  let ret = Result.ok
+  let error = Result.error
   let (>>=) = Result.bind
   let (<$>) = Result.map
   let (let*) = Result.bind
-  let[@inline] (let+) m f = Result.map f m
-  let ret = Result.ok
   let[@inline] (and*) m n = let* m = m in let* n = n in ret (m, n)
+  let[@inline] (let+) m f = Result.map f m
   let (and+) = (and*)
-  let error = Result.error
 end
 
 open Syntax
 
+let ignore_error m = Result.value ~default:() m
+
 let rec map f =
   function
   | [] -> ret []
-  | x :: l ->
-    let* x = f x in
-    let* l = map f l in
-    ret @@ x :: l
+  | x :: xs ->
+    let+ y = f x
+    and+ ys = map f xs in
+    y :: ys
 
 let rec iter f =
   function
   | [] -> ret ()
-  | x :: l ->
+  | x :: xs ->
     let* () = f x in
-    iter f l
+    iter f xs
 
 let rec iter_seq f s =
   match s () with
   | Seq.Nil -> ret ()
-  | Seq.Cons (x, s) ->
+  | Seq.Cons (x, xs) ->
     let* () = f x in
-    iter_seq f s
+    iter_seq f xs

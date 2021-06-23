@@ -1,14 +1,17 @@
+module E = Errors
 open BantorraBasis
 open ResultMonad.Syntax
 open Bantorra
 
 let router =
   let route ~starting_dir arg =
+    let src = "Direct.route" in
     match
       let* path = Marshal.to_string arg in
       File.(normalize_dir @@ starting_dir/path)
     with
-    | Error (`FormatError msg | `SystemError msg) -> Router.library_load_error "Direct.route: %s" msg
+    | Error (`FormatError msg | `SystemError msg) ->
+      E.append_error_invalid_library_msg ~earlier:msg ~src "Could not find the library"
     | Ok dir -> ret dir
   in
   Router.make route
