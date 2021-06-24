@@ -262,3 +262,10 @@ let get_xdg_cache_home ?(macos_as_linux=false) ~app_name =
         | Some local_app_data ->
           ret @@ local_app_data/app_name/"cache"
       end
+
+let input_absolute_dir ?(starting_dir=Filename.current_dir_name) path =
+  normalize_dir (starting_dir / expand_home path)
+
+let input_relative_dir path =
+  if Filename.is_relative path then path
+  else Filename.(concat current_dir_name path)

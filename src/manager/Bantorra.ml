@@ -126,7 +126,7 @@
     If some library is mounted at [world.towitorra], then the original unit with the path [world.towitorra] or a path with the prefix [world.towitorra] is no longer accessible. Moreover, [world.towitorra] cannot point to any unit after the mounting because no unit can be associated with the empty path (the root), and [world.towitorra] means the empty path (the root) in the mounted library, which cannot refer to any unit.
 *)
 
-(** {1 Components} *)
+(** {1 Main Modules} *)
 
 module Manager = Manager
 (** Library managers. *)
@@ -134,5 +134,7 @@ module Manager = Manager
 module Router = Router
 (** The type of routers. *)
 
+(** {1 Helper Modules} *)
+
 module Errors = Errors
-(** Auxiliary functions to report errors. *)
+(** Error reporting functions *)

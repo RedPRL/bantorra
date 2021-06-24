@@ -89,3 +89,7 @@ val get_xdg_config_home : ?macos_as_linux:bool -> app_name:string -> (filepath, 
 val get_xdg_cache_home : ?macos_as_linux:bool -> app_name:string -> (filepath, [> `SystemError of string]) result
 (** Get the per-user persistent cache directory based on [XDG_CACHE_HOME]
     with reasonable default values on major platforms. *)
+
+(** {1 Getting User Inputs} *)
+val input_absolute_dir : ?starting_dir:filepath -> string -> (filepath, [> `SystemError of string]) result
+val input_relative_dir : string -> filepath

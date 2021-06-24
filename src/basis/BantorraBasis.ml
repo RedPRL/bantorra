@@ -1,15 +1,26 @@
 (** This library implements basic routines used by other libraries. *)
 
+(** {1 Main Modules} *)
+
 module File = File
-(** Routines to handle file paths and basic I/O. *)
+(** Basic I/O and path manipulation. *)
 
 module Exec = Exec
-(** Routines for running external tools. *)
+(** Runing external programs. *)
 
 module Marshal = Marshal
-(** Routines for serialization. *)
+(** Serialization. *)
+
+(** {1 Helper Modules} *)
 
 module Util = Util
+(** Utility functions. *)
+
 module Error = Error
+(** Generic error reporting functions. *)
+
 module Errors = Errors
+(** Specialized error reporting functions. *)
+
 module ResultMonad = ResultMonad
+(** The {!type:result} monad. *)

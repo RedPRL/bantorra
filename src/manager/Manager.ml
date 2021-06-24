@@ -16,7 +16,7 @@ let check_dep routers root =
   match Hashtbl.find_opt routers router with
   | None -> E.error_invalid_library_msgf ~src "Could not find the router named `%s'" router
   | Some r ->
-    if Router.fast_check r ~starting_dir:root router_argument then
+    if Router.fast_check r ~starting_dir:root ~arg:router_argument then
       ret ()
     else
       E.error_invalid_library_msgf ~src
@@ -50,7 +50,7 @@ let load_library_from_route lm ~router ~router_argument ~starting_dir =
   match Hashtbl.find_opt lm.routers router with
   | None -> E.error_invalid_library_msgf ~src "Router `%s' not found" router
   | Some loaded_router ->
-    let* lib_root = Router.route loaded_router ~starting_dir router_argument in
+    let* lib_root = Router.route loaded_router ~starting_dir ~arg:router_argument in
     load_library_from_root lm lib_root
 
 let load_library_from_route_with_cwd lm ~router ~router_argument  =

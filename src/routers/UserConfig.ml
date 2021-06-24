@@ -41,7 +41,7 @@ struct
           | version, None -> ret [version]
           | None, Some versions -> ret versions
         in
-        match File.normalize_dir (File.expand_home root) with
+        match File.input_absolute_dir root with
         | Error (`SystemError msg) ->
           E.append_error_format_msgf ~earlier:msg ~src "Could not normalize the path %s" root
         | Ok root ->
@@ -121,7 +121,7 @@ let clear_cached_configs () =
   Hashtbl.clear cache
 
 let router ?xdg_macos_as_linux ~app_name ~config =
-  Router.make @@ fun ~starting_dir:_ arg ->
+  Router.make @@ fun ~starting_dir:_ ~arg ->
   let src = "UserConfig.route" in
   match
     let* conf = read ?xdg_macos_as_linux ~app_name ~config in
