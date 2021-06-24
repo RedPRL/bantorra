@@ -117,7 +117,7 @@
 (** {1 Builder} *)
 
 val router : ?xdg_macos_as_linux:bool -> app_name:string -> config:string -> Bantorra.Router.t
-(** [router ?xdg_as_linux ~app_name ~config] constructs a router that reads the user configuration. The location of the user configuration is given by {!val:BantorraBasis.File.get_xdg_config_home}[?as_linux:xdg_as_linux] concatenated with [config]. All paths are normalized and turned into absolute paths with respect to the current working directory using {!val:BantorraBasis.File.normalize_dir} .
+(** [router ?xdg_as_linux ~app_name ~config] constructs a router that reads the user configuration. The location of the user configuration is given by {!val:BantorraBasis.File.get_xdg_config_home}[?as_linux:xdg_as_linux] concatenated with [config].
 
     If the configuration file does not exist, an empty mapping is used, which means the router would reject every request.
 

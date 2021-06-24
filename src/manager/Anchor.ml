@@ -5,7 +5,7 @@ let version = "1.0.0"
 
 type unitpath = string list
 type router_name = string
-type router_argument = Router.router_argument
+type router_argument = Router.argument
 
 type t =
   { routes : (unitpath, router_name * router_argument) Hashtbl.t

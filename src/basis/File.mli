@@ -4,7 +4,7 @@ type filepath = string
 
 val (/) : filepath -> filepath -> filepath
 (**
-   [p / q] concatenates paths [p] and [q]. The path [q] is assumed to be a relative path.
+   [p / q] concatenates paths [p] and [q].
 *)
 
 val join : filepath list -> filepath
@@ -39,15 +39,14 @@ val ensure_dir : filepath -> (unit, [> `SystemError of string]) result
 
 val protect_cwd : (filepath -> 'a) -> 'a
 (**
-   [protect_cwd f] runs [f cwd] where [cwd] is the current working directory, and restore the current
-   working directory after the computation is done, even when an exception is raised.
+   [protect_cwd f] runs [f cwd] where [cwd] is the current working directory, and then restores the current
+   working directory after the computation is done.
 *)
 
 val normalize_dir : filepath -> (filepath, [> `SystemError of string]) result
 (**
-   [normalize_dir dir] uses [Sys.chdir] and [Sys.getcwd] to normalize a path. Symbolic links and special
-   directories such as [.] and [..] will be resolved and the result will be an absolute path on many systems.
-   The current working directory will be restored after the computation.
+   [normalize_dir dir] uses [Sys.chdir] and [Sys.getcwd] to normalize a path.
+   The result will be an absolute path free of [.], [..], and symbolic links on many systems.
 *)
 
 val parent_of_normalized_dir : filepath -> filepath option
@@ -67,7 +66,6 @@ val locate_anchor : anchor:string -> filepath -> (filepath * string list, [> `An
 
    @return
    (1) the first directory that holds a regular file named [anchor] on the way from [dir] to the root directory; and (2) the relative path from the returned directory to [dir].
-   The exception [Not_found] is raised if such a file cannot be found.
 
    For example, on a typical Linux system, suppose there is no file called [anchor.txt] under directiors
    [/usr/lib/gcc/] and [/usr/lib/], but there is such a file under [/usr/].
@@ -82,6 +80,7 @@ val hijacking_anchors_exist : anchor:string -> root:filepath -> string list -> b
 val get_home : unit -> filepath option
 
 val expand_home : filepath -> filepath
+(** Expand the beginning tilde to the home directory. *)
 
 val get_xdg_config_home : ?macos_as_linux:bool -> app_name:string -> (filepath, [> `SystemError of string]) result
 (** Get the per-user config directory based on [XDG_CONFIG_HOME]
@@ -90,3 +89,7 @@ val get_xdg_config_home : ?macos_as_linux:bool -> app_name:string -> (filepath, 
 val get_xdg_cache_home : ?macos_as_linux:bool -> app_name:string -> (filepath, [> `SystemError of string]) result
 (** Get the per-user persistent cache directory based on [XDG_CACHE_HOME]
     with reasonable default values on major platforms. *)
+
+(** {1 Getting User Inputs} *)
+val input_absolute_dir : ?starting_dir:filepath -> string -> (filepath, [> `SystemError of string]) result
+val input_relative_dir : string -> filepath

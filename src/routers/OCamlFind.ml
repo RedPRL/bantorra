@@ -17,5 +17,5 @@ let get_package_dir pkg =
 
 let router ~package_name ~dict =
   let* package_dir = get_package_dir package_name in
-  let dict = List.map File.(fun (name, path) -> name, package_dir/path) dict in
+  let dict = List.map File.(fun (name, path) -> name, package_dir/(File.expand_home path)) dict in
   FixedTable.router ~dict

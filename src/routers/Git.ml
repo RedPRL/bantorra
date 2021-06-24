@@ -78,7 +78,10 @@ struct
     | ["url", url], ["ref", ref; "path", path] ->
       let* url = Marshal.to_string url in
       let* ref = Option.value ~default:"HEAD" <$> Marshal.to_ostring ref in
-      let* path = Option.value ~default:Filename.current_dir_name <$> Marshal.to_ostring path in
+      let* path =
+        Option.fold ~none:Filename.current_dir_name ~some:File.input_relative_dir <$>
+        Marshal.to_ostring path
+      in
       ret {url; ref; path}
     | _ -> assert false
 end
@@ -107,7 +110,7 @@ let load_git_repo ~crate:{root; id_in_use; url_in_use} {url; ref; path} =
 
 let init_crate ~crate_root =
   let src = "Git.init_crate" in
-  match File.normalize_dir crate_root with
+  match File.input_absolute_dir crate_root with
   | Error (`SystemError msg) ->
     E.append_error_invalid_router_msgf ~earlier:msg ~src "Could not create the crate for git repositories at %s" crate_root
   | Ok crate_root ->
@@ -119,23 +122,26 @@ let init_crate ~crate_root =
       ret crate
 
 let router ?(eager_resolution=false) ~crate_root =
-  let* crate = init_crate ~crate_root in
-  let fast_checker ~starting_dir:_ arg =
-    if eager_resolution then
-      try
-        Result.is_ok @@ (M.to_info arg >>= load_git_repo ~crate)
-      with _ -> false
-    else
-      try Result.is_ok @@ M.to_info arg with _ -> false
-  and route ~starting_dir:_ arg =
-    let src = "Git.route" in
-    match M.to_info arg with
-    | Error (`FormatError msg) ->
-      E.append_error_invalid_library_msgf ~earlier:msg ~src "Could not parse the argument: %a" Marshal.dump arg
-    | Ok parsed_arg ->
-      match load_git_repo ~crate parsed_arg with
-      | Error (`SystemError msg | `InvalidLibrary msg) ->
-        E.append_error_invalid_library_msgf ~earlier:msg ~src "Could not load the git repository at %a" Marshal.dump arg
-      | Ok root -> ret root
+  let src = "Git.router" in
+  let* crate =
+    match File.input_absolute_dir crate_root with
+    | Error (`SystemError msg) ->
+      E.append_error_invalid_router_msgf ~earlier:msg ~src
+        "Invalid path %s" crate_root
+    | Ok crate_root -> init_crate ~crate_root
   in
-  ret @@ Router.make ~fast_checker route
+  let fast_checker =
+    if eager_resolution then None
+    else Option.some @@ fun ~starting_dir:_ ~arg ->
+      try Result.is_ok @@ M.to_info arg with _ -> false
+  in
+  ret @@ Router.make ?fast_checker @@ fun ~starting_dir:_ ~arg ->
+  let src = "Git.route" in
+  match M.to_info arg >>= load_git_repo ~crate with
+  | Error (`FormatError msg) ->
+    E.append_error_invalid_library_msgf ~earlier:msg ~src
+      "Could not parse the argument: %a" Marshal.dump arg
+  | Error (`SystemError msg | `InvalidLibrary msg) ->
+    E.append_error_invalid_library_msgf ~earlier:msg ~src
+      "Could not load the git repository at %a" Marshal.dump arg
+  | Ok root -> ret root

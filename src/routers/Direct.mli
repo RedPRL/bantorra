@@ -1,4 +1,4 @@
-(** A router contains that directly accepts the library root. *)
+(** A router that directly accepts the library root. *)
 
 (**
    {1 Argument Format}

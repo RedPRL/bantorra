@@ -16,7 +16,7 @@ let check_dep routers root =
   match Hashtbl.find_opt routers router with
   | None -> E.error_invalid_library_msgf ~src "Could not find the router named `%s'" router
   | Some r ->
-    if Router.fast_check r ~starting_dir:root router_argument then
+    if Router.fast_check r ~starting_dir:root ~arg:router_argument then
       ret ()
     else
       E.error_invalid_library_msgf ~src
@@ -50,7 +50,7 @@ let load_library_from_route lm ~router ~router_argument ~starting_dir =
   match Hashtbl.find_opt lm.routers router with
   | None -> E.error_invalid_library_msgf ~src "Router `%s' not found" router
   | Some loaded_router ->
-    let* lib_root = Router.route loaded_router ~starting_dir router_argument in
+    let* lib_root = Router.route loaded_router ~starting_dir ~arg:router_argument in
     load_library_from_root lm lib_root
 
 let load_library_from_route_with_cwd lm ~router ~router_argument  =
@@ -64,14 +64,14 @@ let load_library_from_dir lm dir =
 let load_library_from_cwd lm =
   load_library_from_dir lm @@ File.getcwd ()
 
-let load_library_from_unit lm ~suffix filepath =
-  let* lib, unitpath_opt = Library.load_from_unit ~find_cache:(find_cache lm) ~anchor:lm.anchor ~suffix filepath in
+let load_library_from_unit lm filepath ~suffix =
+  let* lib, unitpath_opt = Library.load_from_unit ~find_cache:(find_cache lm) ~anchor:lm.anchor filepath ~suffix in
   let* () = check_and_cache_library lm lib in
   ret (lib, unitpath_opt)
 
 let resolve lm =
   let src = "Manager.resolve" in
-  let rec global ~starting_dir ~router ~router_argument unitpath ~suffix =
+  let rec global ~router ~router_argument ~starting_dir unitpath ~suffix =
     match
       let* lib = load_library_from_route lm ~starting_dir ~router ~router_argument in
       Library.resolve ~global lib unitpath ~suffix
