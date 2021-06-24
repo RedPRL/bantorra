@@ -53,11 +53,11 @@ let root lib = lib.root
 
 let iter_routes f lib = Anchor.iter_routes f lib.loaded_anchor
 
-let dispatch_path local ~global (lib : t) (path : unitpath) =
+let dispatch_path ~depth local ~global (lib : t) (path : unitpath) =
   match Anchor.dispatch_path lib.loaded_anchor path with
   | None -> local lib path
   | Some (router, router_argument, path) ->
-    global ~router ~router_argument ~starting_dir:lib.root path
+    global ~depth:(depth+1) ~router ~router_argument ~starting_dir:lib.root path
 
 let resolve_local lib path ~suffix =
   let src = "Library.resolve_local" in
@@ -73,4 +73,4 @@ let resolve_local lib path ~suffix =
       ret (lib, path, File.join (lib.root :: path) ^ suffix)
 
 (** @param suffix The suffix should include the dot. *)
-let resolve ~global = dispatch_path resolve_local ~global
+let resolve ~depth = dispatch_path ~depth resolve_local

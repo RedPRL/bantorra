@@ -69,17 +69,20 @@ let load_library_from_unit lm filepath ~suffix =
   let* () = check_and_cache_library lm lib in
   ret (lib, unitpath_opt)
 
-let resolve lm =
+let resolve lm ?(max_depth=100) =
   let src = "Manager.resolve" in
-  let rec global ~router ~router_argument ~starting_dir unitpath ~suffix =
-    match
-      let* lib = load_library_from_route lm ~starting_dir ~router ~router_argument in
-      Library.resolve ~global lib unitpath ~suffix
-    with
-    | Error (`UnitNotFound msg | `InvalidLibrary msg) ->
-      E.append_error_unit_not_found_msgf ~earlier:msg ~src
-        "Could not find %a via the route with router = `%s' and router_argument = `%a'"
-        Util.pp_unitpath unitpath router Marshal.dump router_argument
-    | Ok res -> ret res
+  let rec global ~depth ~router ~router_argument ~starting_dir unitpath ~suffix =
+    if depth > max_depth then
+      E.error_unit_not_found_msgf ~src "Library resolution stack overflow (max depth = %i)." max_depth
+    else
+      match
+        let* lib = load_library_from_route lm ~starting_dir ~router ~router_argument in
+        Library.resolve ~depth ~global lib unitpath ~suffix
+      with
+      | Error (`UnitNotFound msg | `InvalidLibrary msg) ->
+        E.append_error_unit_not_found_msgf ~earlier:msg ~src
+          "Could not find %a via the route with router = `%s' and router_argument = `%a'"
+          Util.pp_unitpath unitpath router Marshal.dump router_argument
+      | Ok res -> ret res
   in
-  Library.resolve ~global
+  Library.resolve ~depth:0 ~global
