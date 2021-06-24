@@ -78,34 +78,41 @@ let get_waypoints ~landmark ~starting_dir =
 let clear_cached_landmarks () =
   Hashtbl.clear cache
 
-let rec lookup_waypoint ~landmark ~starting_dir lib_name k =
+let rec lookup_waypoint ~max_depth ~depth ~landmark ~starting_dir lib_name k =
   let src = "Waypoint.lookup_waypoint" in
-  let* waypoints = get_waypoints ~landmark ~starting_dir in
-  match Hashtbl.find_opt waypoints lib_name with
-  | None -> k ()
-  | Some (Direct {at}) -> ret at
-  | Some Indirect {next_waypoint = starting_dir; next_as} ->
-    let lib_name = Option.value ~default:lib_name next_as in
-    lookup_waypoint ~landmark ~starting_dir lib_name @@ fun () ->
-    E.error_invalid_library_msgf ~src
-      "Could not find a waypoint named `%s' in %s" lib_name starting_dir
-
-let rec lookup_waypoint_in_ancestors ~landmark ~starting_dir lib_name =
-  let src = "Waypoint.lookup_waypoint_in_ancestors" in
-  match File.locate_anchor ~anchor:landmark starting_dir with
-  | Error (`AnchorNotFound msg) ->
-    E.append_error_invalid_library_msgf ~earlier:msg ~src
-      "Could not find files named `%s' all the way up to the root" landmark
-  | Ok (starting_dir, _) ->
-    lookup_waypoint ~landmark ~starting_dir lib_name @@ fun () ->
-    match File.parent_of_normalized_dir starting_dir with
-    | None ->
+  if depth > max_depth then
+    E.error_invalid_library_msgf ~src "Waypoint resolution stack overflow (max depth = %i)." max_depth
+  else
+    let* waypoints = get_waypoints ~landmark ~starting_dir in
+    match Hashtbl.find_opt waypoints lib_name with
+    | None -> k ()
+    | Some (Direct {at}) -> ret at
+    | Some Indirect {next_waypoint = starting_dir; next_as} ->
+      let depth = depth + 1 in
+      let lib_name = Option.value ~default:lib_name next_as in
+      lookup_waypoint ~max_depth ~depth ~landmark ~starting_dir lib_name @@ fun () ->
       E.error_invalid_library_msgf ~src
-        "Could not find a waypoint named `%s' in all landmarks (files named `%s')\
-         all the way up to the root" lib_name landmark
-    | Some parent -> lookup_waypoint_in_ancestors ~landmark ~starting_dir:parent lib_name
+        "Could not find a waypoint named `%s' in %s" lib_name starting_dir
 
-let router ?(eager_resolution=false) ~landmark =
+let rec lookup_waypoint_in_ancestors ~max_depth ~depth ~landmark ~starting_dir lib_name =
+  let src = "Waypoint.lookup_waypoint_in_ancestors" in
+  if depth > max_depth then
+    E.error_invalid_library_msgf ~src "Waypoint resolution stack overflow (max depth = %i)." max_depth
+  else
+    match File.locate_anchor ~anchor:landmark starting_dir with
+    | Error (`AnchorNotFound msg) ->
+      E.append_error_invalid_library_msgf ~earlier:msg ~src
+        "Could not find files named `%s' all the way up to the root" landmark
+    | Ok (starting_dir, _) ->
+      lookup_waypoint ~max_depth ~depth ~landmark ~starting_dir lib_name @@ fun () ->
+      match File.parent_of_normalized_dir starting_dir with
+      | None ->
+        E.error_invalid_library_msgf ~src
+          "Could not find a waypoint named `%s' in all landmarks (files named `%s')\
+           all the way up to the root" lib_name landmark
+      | Some parent -> lookup_waypoint_in_ancestors ~max_depth ~depth ~landmark ~starting_dir:parent lib_name
+
+let router ?(max_depth=100) ?(eager_resolution=false) ~landmark =
   let fast_checker =
     if eager_resolution then None
     else Option.some @@ fun ~starting_dir:_ ~arg ->
@@ -118,4 +125,4 @@ let router ?(eager_resolution=false) ~landmark =
     E.append_error_invalid_library_msgf ~earlier:msg ~src
       "Could not parse the argument: %a" Marshal.dump arg
   | Ok arg ->
-    lookup_waypoint_in_ancestors ~landmark ~starting_dir arg
+    lookup_waypoint_in_ancestors ~max_depth ~depth:0 ~landmark ~starting_dir arg

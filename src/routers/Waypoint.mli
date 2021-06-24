@@ -62,9 +62,10 @@
 
 (** {1 The Builder} *)
 
-val router : ?eager_resolution:bool -> landmark:string -> Bantorra.Router.t
+val router : ?max_depth:int -> ?eager_resolution:bool -> landmark:string -> Bantorra.Router.t
 (** [router ?eager_resolution ~landmark] construct a router for the specified file name [landmark].
 
+    @param max_depth Maximum depth in resolving indirect waypoints. The default value is [100].
     @param eager_resolution Whether full resolution is performed to check the validity of library names. If the value is [false], the router will only check whether the argument to the router is well-formed. The default value is [false].
     @param landmark The name of the special landmark files that the router should look for.
 *)

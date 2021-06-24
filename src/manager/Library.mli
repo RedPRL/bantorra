@@ -33,7 +33,9 @@ val iter_routes :
     Please use the high-level API in {!module:Manager} instead. *)
 
 val resolve :
-  global:(router:string ->
+  depth:int ->
+  global:(depth:int ->
+          router:string ->
           router_argument:Marshal.value ->
           starting_dir:File.filepath ->
           unitpath ->
