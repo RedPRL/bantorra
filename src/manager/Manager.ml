@@ -64,14 +64,14 @@ let load_library_from_dir lm dir =
 let load_library_from_cwd lm =
   load_library_from_dir lm @@ File.getcwd ()
 
-let load_library_from_unit lm ~suffix filepath =
-  let* lib, unitpath_opt = Library.load_from_unit ~find_cache:(find_cache lm) ~anchor:lm.anchor ~suffix filepath in
+let load_library_from_unit lm filepath ~suffix =
+  let* lib, unitpath_opt = Library.load_from_unit ~find_cache:(find_cache lm) ~anchor:lm.anchor filepath ~suffix in
   let* () = check_and_cache_library lm lib in
   ret (lib, unitpath_opt)
 
 let resolve lm =
   let src = "Manager.resolve" in
-  let rec global ~starting_dir ~router ~router_argument unitpath ~suffix =
+  let rec global ~router ~router_argument ~starting_dir unitpath ~suffix =
     match
       let* lib = load_library_from_route lm ~starting_dir ~router ~router_argument in
       Library.resolve ~global lib unitpath ~suffix

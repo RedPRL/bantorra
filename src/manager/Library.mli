@@ -16,7 +16,7 @@ val load_from_root : find_cache:(string -> t option) -> anchor:string -> File.fi
 val load_from_dir : find_cache:(string -> t option) -> anchor:string -> File.filepath ->
   (t * unitpath option, [> `InvalidLibrary of string ]) result
 
-val load_from_unit : find_cache:(string -> t option) -> anchor:string -> suffix:string -> File.filepath ->
+val load_from_unit : find_cache:(string -> t option) -> anchor:string -> File.filepath -> suffix:string ->
   (t * unitpath option, [> `InvalidLibrary of string ]) result
 
 (** {1 Accessor} *)
@@ -33,14 +33,10 @@ val iter_routes :
     Please use the high-level API in {!module:Manager} instead. *)
 
 val resolve :
-  global:(starting_dir:File.filepath ->
-          router:string ->
+  global:(router:string ->
           router_argument:Marshal.value ->
+          starting_dir:File.filepath ->
           unitpath ->
           suffix:string ->
           (t * unitpath * File.filepath, [> `UnitNotFound of string] as 'e) result) ->
   t -> unitpath -> suffix:string -> (t * unitpath * File.filepath, 'e) result
-(** [to_unitpath ~global lib unitpath] resolves [unitpath] and returns the eventual library where the unit belongs and the local unit path pointing to the unit.
-
-    @param global The global resolver for unit paths pointing to other libraries.
-*)

@@ -33,7 +33,7 @@ let load_from_dir ~find_cache ~anchor dir =
     then lib, Some prefix
     else lib, None
 
-let load_from_unit ~find_cache ~anchor ~suffix filepath =
+let load_from_unit ~find_cache ~anchor filepath ~suffix =
   let src = "Library.load_from_unit" in
   if not @@ File.file_exists filepath then
     E.error_invalid_library_msgf ~src
@@ -57,7 +57,7 @@ let dispatch_path local ~global (lib : t) (path : unitpath) =
   match Anchor.dispatch_path lib.loaded_anchor path with
   | None -> local lib path
   | Some (router, router_argument, path) ->
-    global ~starting_dir:lib.root ~router ~router_argument path
+    global ~router ~router_argument ~starting_dir:lib.root path
 
 let resolve_local lib path ~suffix =
   let src = "Library.resolve_local" in

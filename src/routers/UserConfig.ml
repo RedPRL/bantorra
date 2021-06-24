@@ -29,7 +29,7 @@ struct
       ["version", version; "versions", versions] ->
       begin
         let* name = Marshal.to_string name in
-        let* root = File.expand_home <$> Marshal.to_string root in
+        let* root = Marshal.to_string root in
         let* versions =
           let* version = Marshal.to_ostring version in
           let* versions = Marshal.(to_olist to_ostring) versions in
