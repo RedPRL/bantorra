@@ -11,16 +11,18 @@ module Exec = Exec
 module Marshal = Marshal
 (** Serialization. *)
 
-(** {1 Helper Modules} *)
+(**/**)
 
-module Util = Util
-(** Utility functions. *)
+(** {1 Helper Modules} *)
 
 module Error = Error
 (** Generic error reporting functions. *)
 
 module Errors = Errors
 (** Specialized error reporting functions. *)
+
+module Util = Util
+(** Utility functions. *)
 
 module ResultMonad = ResultMonad
 (** The {!type:result} monad. *)
