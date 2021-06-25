@@ -19,5 +19,7 @@ let append_error_msgf ~tag ~earlier =
   error_msgf ~tag:(append_tag ~tag ~earlier)
 
 let pp_lines fmt msg =
-  Format.(pp_print_list ~pp_sep:pp_print_newline pp_print_string) fmt @@
-  String.split_on_char '\n' msg
+  Format.fprintf fmt "@[<v>";
+  Format.(pp_print_list ~pp_sep:pp_print_cut pp_print_string) fmt @@
+  String.split_on_char '\n' msg;
+  Format.fprintf fmt "@]"
