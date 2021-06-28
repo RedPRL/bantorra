@@ -1,16 +1,11 @@
 let[@inline] error_msg ~tag ~src msg =
-  Printf.ksprintf tag "Reported from %s:\n  %s" src msg
+  Format.kasprintf tag "Reported from %s:\n  %s" src msg
 
 let error_msgf ~tag ~src =
-  let buf = Buffer.create 16 in
-  let k fmt =
-    Format.pp_print_flush fmt ();
-    error_msg ~tag ~src @@ Buffer.contents buf
-  in
-  Format.(kfprintf k @@ formatter_of_buffer buf)
+  Format.kasprintf (error_msg ~tag ~src)
 
 let append_tag ~tag ~earlier =
-  Printf.ksprintf tag "%s\n%s" earlier
+  Format.kasprintf tag "%s\n%s" earlier
 
 let append_error_msg ~tag ~earlier =
   error_msg ~tag:(append_tag ~tag ~earlier)
