@@ -6,7 +6,7 @@ module File = File
 (** Basic I/O and path manipulation. *)
 
 module Exec = Exec
-(** Runing external programs. *)
+(** Running external programs. *)
 
 module Marshal = Marshal
 (** Serialization. *)
