@@ -1,3 +1,5 @@
+(** A router that traverse the file system using landmark files. *)
+
 (** The waypoint router walks around the file system to route library names. It tries to find special files (called {e landmarks}) that contain waypoints, which help the router to find the roots of target libraries. All landmark files have the same file name specified by the argument given to {!val:router}.
 *)
 

@@ -1,3 +1,5 @@
+(** A router that downloads git repositories. *)
+
 open BantorraBasis
 
 (** The git resolver takes a URL that the [git] tool can understand, clones the repository and returns the library root within the local copy.
