@@ -1,3 +1,5 @@
+(** A router that uses per-user configuration files. *)
+
 (** {1 Argument Format}
 
     The router takes a JSON argument in one of the following formats:

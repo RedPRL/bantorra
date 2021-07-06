@@ -97,7 +97,7 @@
 }
     v}
 
-    If the [deps] field is missing, then the library has no dependencies. Each dependency is specified by its mount point ([mount_point]), the name of the router to find the imported library ([router]), and the argument to the router ([router_argument]). During the resolution, the entire JSON subtree under the field [router_argument] is passed to the router. See {!type:Router.router_argument} and {!val:Router.make}.
+    If the [deps] field is missing, then the library has no dependencies. Each dependency is specified by its mount point ([mount_point]), the name of the router to find the imported library ([router]), and the argument to the router ([router_argument]). During the resolution, the entire JSON subtree under the field [router_argument] is passed to the router. See {!type:Router.argument} and {!val:Router.make}.
 
     The order of entries in [dep] does not matter because the dispatching is based on longest prefix match. If no match can be found, then it means the unit path refers to a local unit. The same library can be mounted at multiple points. However, to keep the resolution unambiguous, there cannot be two libraries mounted at the same point. Here is an example demonstrating the longest prefix match:
     {v

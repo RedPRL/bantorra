@@ -43,8 +43,8 @@ val load_library_from_route : t ->
 
     @param manager The library manager.
     @param router The name of the router.
-    @param router_argument The root of the library, which should be a directory.
-    @param starting_dir The starting directory, which is used by some routers ({i e.g.}, the {{:../BantorraRouters/Waypoint/index.html}Waypoint} routers).
+    @param router_argument The argument sent to the router, as a JSON value.
+    @param starting_dir The starting directory, which is used by some routers ({i e.g.}, the {{:../../BantorraRouters/Waypoint/index.html}Waypoint} routers).
     @return The loaded library.
 *)
 
@@ -91,7 +91,7 @@ val load_library_from_unit : t -> File.filepath -> suffix:string ->
 
 val resolve :
   t -> ?max_depth:int -> library -> unitpath -> suffix:string ->
-  (library * unitpath * string, [ `InvalidLibrary of string | `UnitNotFound of string ]) result
+  (library * unitpath * File.filepath, [ `InvalidLibrary of string | `UnitNotFound of string ]) result
 (** [resolve manager lib unitpath ~suffix] resolves [unitpath] in the library in the library [lib] and returns the {i eventual} library where the unit belongs and the corresponding file path with the specified suffix.
 
     @param manager The library manager.
