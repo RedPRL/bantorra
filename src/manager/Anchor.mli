@@ -10,7 +10,7 @@ type unitpath = string list
 
 (** {1 Anchor I/O} *)
 
-val read : string -> (t, [> `FormatError of string | `SystemError of string ]) result
+val read : File.filepath -> (t, [> `FormatError of string | `SystemError of string ]) result
 (** [read path] read the content of an anchor file. *)
 
 (** {1 Accessors} *)
