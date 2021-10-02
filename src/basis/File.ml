@@ -36,13 +36,6 @@ let readfile p =
 
 let getcwd = Sys.getcwd
 
-let unsafe_chdir dir = Sys.chdir dir
-
-let chdir dir =
-  let src = "File.chdir" in
-  try ret @@ unsafe_chdir dir
-  with Sys_error msg -> E.error_system_msg ~src msg
-
 (** OCaml implementation of [mkdir -p] *)
 let rec ensure_dir path =
   let src = "File.ensure_dir" in
@@ -62,14 +55,10 @@ let rec ensure_dir path =
     in
     loop ()
 
-let protect_cwd f =
-  let dir = getcwd () in
-  Fun.protect ~finally:(fun () -> unsafe_chdir dir) @@ fun () -> f dir
-
 let normalize_dir dir =
-  protect_cwd @@ fun _ ->
-  let+ () = chdir dir in
-  getcwd ()
+  let src = "File.normalize_dir" in
+  try ret @@ UnixLabels.realpath dir
+  with Sys_error msg -> E.error_system_msg ~src msg
 
 let parent_of_normalized_dir dir =
   let p = Filename.dirname dir in
@@ -81,7 +70,7 @@ let file_exists p =
 let locate_anchor ~anchor start_dir =
   let src = "File.locate_anchor" in
   let rec find_root cwd unitpath_acc =
-    if file_exists anchor then
+    if file_exists (cwd/anchor) then
       ret (cwd, unitpath_acc)
     else
       match parent_of_normalized_dir cwd with
@@ -89,13 +78,10 @@ let locate_anchor ~anchor start_dir =
         E.error_anchor_not_found_msg ~src
           "No anchor found all the way up to the root"
       | Some parent ->
-        unsafe_chdir parent;
         find_root parent @@ Filename.basename cwd :: unitpath_acc
   in
-  protect_cwd @@ fun _ ->
-  match chdir start_dir with
-  | Ok () ->
-    let cwd = getcwd () in
+  match normalize_dir start_dir with
+  | Ok cwd ->
     find_root cwd []
   | Error (`SystemError msg) ->
     E.append_error_anchor_not_found_msgf ~earlier:msg ~src
@@ -105,21 +91,18 @@ let hijacking_anchors_exist ~anchor ~root =
   function
   | [] -> false
   | part :: parts ->
-    let rec loop parts =
-      if file_exists anchor then
+    let rec loop cwd parts =
+      if file_exists (cwd/anchor) then
         true
       else
         match parts with
         | [] -> false
         | part :: parts ->
-          match chdir (root/part) with
-          | Error (`SystemError _) -> false
-          | Ok () -> loop parts
+          loop (cwd/part) parts
     in
-    protect_cwd @@ fun _ ->
-    match chdir (root/part) with
+    match normalize_dir (root/part) with
     | Error (`SystemError _) -> false
-    | Ok () -> loop parts
+    | Ok cwd -> loop cwd parts
 
 (** The scheme refers to how various directories should be determined.
 

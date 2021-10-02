@@ -1,4 +1,5 @@
 (library
  (name BantorraBasis)
  (public_name bantorra.basis)
+ (flags (:standard -w -16))
  (libraries ezjsonm unix))
