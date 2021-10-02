@@ -30,17 +30,9 @@ val readfile : filepath -> (string, [> `SystemError of string]) result
 
 val getcwd : unit -> filepath
 
-val chdir : filepath -> (unit, [> `SystemError of string]) result
-
 val ensure_dir : filepath -> (unit, [> `SystemError of string]) result
 (**
    [ensure_dir dir] effectively implements [mkdir dir] in OCaml.
-*)
-
-val protect_cwd : (filepath -> 'a) -> 'a
-(**
-   [protect_cwd f] runs [f cwd] where [cwd] is the current working directory, and then restores the current
-   working directory after the computation is done.
 *)
 
 val normalize_dir : filepath -> (filepath, [> `SystemError of string]) result

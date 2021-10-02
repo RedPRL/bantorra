@@ -24,46 +24,45 @@ module G =
 struct
   let get_first_line ic = String.trim @@ try input_line ic with End_of_file -> ""
 
-  let git_check_ref_format ~ref =
-    Exec.system ~prog:"git" ~args:["check-ref-format"; "--allow-onelevel"; ref]
+  let git_check_ref_format ~git_root ~ref =
+    Exec.system ~prog:"git" ~args:["-C"; git_root; "check-ref-format"; "--allow-onelevel"; ref]
 
-  let git_init () =
-    Exec.system ~prog:"git" ~args:["init"; "--quiet"]
+  let git_init ~git_root =
+    Exec.system ~prog:"git" ~args:["-C"; git_root; "init"; "--quiet"]
 
-  let git_remote_reset_origin ~url =
+  let git_remote_reset_origin ~git_root ~url =
     ResultMonad.ignore_error @@ Exec.system ~prog:"git" ~args:["remote"; "remove"; "origin"];
-    Exec.system ~prog:"git" ~args:["remote"; "add"; "origin"; url]
+    Exec.system ~prog:"git" ~args:["-C"; git_root; "remote"; "add"; "origin"; url]
 
-  let git_fetch_origin ~ref =
-    Exec.system ~prog:"git" ~args:["fetch"; "--quiet"; "--no-tags"; "--recurse-submodules=on-demand"; "--depth=1"; "origin"; ref]
+  let git_fetch_origin ~git_root ~ref =
+    Exec.system ~prog:"git" ~args:["-C"; git_root; "fetch"; "--quiet"; "--no-tags"; "--recurse-submodules=on-demand"; "--depth=1"; "origin"; ref]
 
-  let git_reset () =
-    Exec.system ~prog:"git" ~args:["reset"; "--quiet"; "--hard"; "--recurse-submodules"; "FETCH_HEAD"; "--"]
+  let git_reset ~git_root =
+    Exec.system ~prog:"git" ~args:["-C"; git_root; "reset"; "--quiet"; "--hard"; "--recurse-submodules"; "FETCH_HEAD"; "--"]
 
-  let git_rev_parse ~ref =
-    Exec.with_system_in ~prog:"git" ~args:["rev-parse"; ref] get_first_line
+  let git_rev_parse ~git_root ~ref =
+    Exec.with_system_in ~prog:"git" ~args:["-C"; git_root; "rev-parse"; ref] get_first_line
 
   let reset_repo ~url ~ref ~git_root ~id_in_use =
     let src = "Git.reset_repo" in
-    File.protect_cwd @@ fun _ ->
     match
       let* () = File.ensure_dir git_root in
-      File.chdir git_root
+      File.normalize_dir git_root
     with
     | Error (`SystemError msg) ->
       E.append_error_invalid_library_msgf ~earlier:msg ~src "Not a directory: %s" git_root
-    | Ok () ->
-      let* () = git_init () in
-      let* () = git_check_ref_format ~ref in
-      let* () = git_remote_reset_origin ~url in
-      let* () = git_fetch_origin ~ref in
+    | Ok git_root ->
+      let* () = git_init ~git_root in
+      let* () = git_check_ref_format ~git_root ~ref in
+      let* () = git_remote_reset_origin ~git_root ~url in
+      let* () = git_fetch_origin ~git_root ~ref in
       match id_in_use with
       | None ->
-        let* () = git_reset () in
-        git_rev_parse ~ref:"HEAD"
+        let* () = git_reset ~git_root in
+        git_rev_parse ~git_root ~ref:"HEAD"
       | Some id_in_use ->
-        let* () = git_reset () in
-        let* id = git_rev_parse ~ref:"HEAD" in
+        let* () = git_reset ~git_root in
+        let* id = git_rev_parse ~git_root ~ref:"HEAD" in
         if id_in_use <> id then
           E.error_invalid_library_msgf ~src "Inconsistent comments in use: %s and %s for %s" id id_in_use url
         else
