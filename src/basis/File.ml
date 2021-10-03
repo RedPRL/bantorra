@@ -57,8 +57,13 @@ let rec ensure_dir path =
 
 let normalize_dir dir =
   let src = "File.normalize_dir" in
-  try ret @@ UnixLabels.realpath dir
-  with Sys_error msg -> E.error_system_msg ~src msg
+  let rec loop () =
+    try ret @@ U.realpath dir with
+    | U.Unix_error (U.EINTR, _,  _) -> loop () (* try again *)
+    | U.Unix_error (e, _,  _) ->
+      E.error_system_msg ~src @@ U.error_message e
+  in
+  loop ()
 
 let parent_of_normalized_dir dir =
   let p = Filename.dirname dir in
@@ -90,7 +95,7 @@ let locate_anchor ~anchor start_dir =
 let hijacking_anchors_exist ~anchor ~root =
   function
   | [] -> false
-  | part :: parts ->
+  | first :: parts ->
     let rec loop cwd parts =
       if file_exists (cwd/anchor) then
         true
@@ -100,7 +105,7 @@ let hijacking_anchors_exist ~anchor ~root =
         | part :: parts ->
           loop (cwd/part) parts
     in
-    match normalize_dir (root/part) with
+    match normalize_dir (root/first) with
     | Error (`SystemError _) -> false
     | Ok cwd -> loop cwd parts
 
