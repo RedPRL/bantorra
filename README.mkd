@@ -4,7 +4,7 @@ _Bantorra_ is an OCaml package for managing user libraries and resolving unit pa
 
 ## Installation
 
-You need OCaml 4.10.0 or newer. You can check out the source repository and install the latest version in development:
+You need OCaml 4.13.0 or newer. You can check out the source repository and install the latest version in development:
 ```
 git clone https://github.com/RedPRL/bantorra.git
 opam install ./bantorra
