@@ -1,6 +1,6 @@
 # Bantorra: Extensible Library Management and Path Resolution
 
-_Bantorra_ is an OCaml package for loading user libraries and resolving unit paths into file paths. The design is informed by Agda, where dependencies are checked at the source level and unit resolution happens within the source repository. Pre-compilation is not supported yet. Please [consult the documentation](https://RedPRL.org/bantorra).
+_Bantorra_ is an OCaml package for loading user libraries and resolving unit paths into file paths. The design is informed by proof assistants based on dependent type theory, where it is common to work with source code directly rather than compiled units; compiled units mostly serve as cache, not standalone objects as in usual programming languages. For this reason, distributing pre-compiled units is not supported yet. Please [consult the documentation](https://RedPRL.org/bantorra).
 
 ## Installation
 
