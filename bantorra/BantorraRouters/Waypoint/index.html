@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Waypoint (bantorra.BantorraRouters.Waypoint)</title><link rel="stylesheet" href="../../../odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc 2.1.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">bantorra</a> &#x00BB; <a href="../index.html">BantorraRouters</a> &#x00BB; Waypoint</nav><header class="odoc-preamble"><h1>Module <code><span>BantorraRouters.Waypoint</span></code></h1><p>A router that traverse the file system using landmark files.</p></header><nav class="odoc-toc"><ul><li><a href="#argument-format">Argument Format</a></li><li><a href="#waypoints-and-landmark-files">Waypoints and Landmark Files</a></li><li><a href="#the-builder">The Builder</a></li></ul></nav><div class="odoc-content"><p>The waypoint router walks around the file system to route library names. It tries to find special files (called <em>landmarks</em>) that contain waypoints, which help the router to find the roots of target libraries. All landmark files have the same file name specified by the argument given to <a href="#val-router"><code>router</code></a>.</p><h2 id="argument-format"><a href="#argument-format" class="anchor"></a>Argument Format</h2><p>The router accepts simple JSON strings as library names.</p><h2 id="waypoints-and-landmark-files"><a href="#waypoints-and-landmark-files" class="anchor"></a>Waypoints and Landmark Files</h2><p>A waypoint is either <em>direct</em> or <em>indirect</em>. A direct waypoint points to the library root in the file system directly. Its JSON representation is as follows:</p><pre>{
+  {
+    &quot;name&quot;: &quot;cool&quot;,
+    &quot;at&quot;: &quot;mylib/cool/&quot;
+  }
+}</pre><p>This means the root of the <code>cool</code> library is at the file system path <code>mylib/cool/</code>. An indirect waypoint is pointing to another waypoint, possibly with a new library name to look up. Its JSON representation is:</p><pre>{
+  {
+    &quot;name&quot;: &quot;cool&quot;,
+    &quot;next_waypoint&quot;: &quot;mylib/&quot;
+  }
+}</pre><p>This means one should look for the landmark file under the <code>mylib/</code> directory for further instructions. One can also specify the <code>rename</code> field in case a new library name should be used:</p><pre>{
+  {
+    &quot;name&quot;: &quot;cool.basis&quot;
+    &quot;next_waypoint&quot;: &quot;cool/&quot;,
+    &quot;next_as&quot;: &quot;basis&quot;
+  }
+}</pre><p>A complete landmark file looks like this:</p><pre>{
+  &quot;format&quot;: &quot;1.0.0&quot;,
+  &quot;waypoints&quot;: [
+    {
+      &quot;name&quot;: &quot;cool.basis&quot;,
+      &quot;next_waypoint&quot;: &quot;path/to/another/directory/&quot;,
+      &quot;next_as&quot;: &quot;cool.basis.new&quot;
+    },
+    {
+      &quot;name&quot;: &quot;hello&quot;,
+      &quot;at&quot;: &quot;vendor/lib/hello/&quot;
+    }
+  ]
+}</pre><p>There are two phases in locating the library using waypoints. In the first phase, the router starts from the root of the library that imports the target library, going up in the file system tree until it finds a landmark file with an applicable waypoint (that is, with a matching field in the <code>waypoints</code> JSON object). The resolution fails if no much landmark files are found. If such a landmark file is found, then the router enters the second phase. During the second phase, it follow the waypoints until the root of the target library is found. The difference from the first phase is that if the library the router is looking for is not explicitly listed in the <code>waypoints</code> object, the resolution fails immediately. In comparison, the router would climb up the file system tree during the first phase. This is to prevent unintentional infinite looping due to simple typos.</p><h2 id="the-builder"><a href="#the-builder" class="anchor"></a>The Builder</h2><div class="odoc-spec"><div class="spec value" id="val-router" class="anchored"><a href="#val-router" class="anchor"></a><code><span><span class="keyword">val</span> router : 
+  <span>?max_depth:int <span class="arrow">&#45;&gt;</span></span>
+  <span>?eager_resolution:bool <span class="arrow">&#45;&gt;</span></span>
+  <span>landmark:string <span class="arrow">&#45;&gt;</span></span>
+  <a href="../../Bantorra/Router/index.html#type-t">Bantorra.Router.t</a></span></code></div><div class="spec-doc"><p><code>router ?eager_resolution ~landmark</code> construct a router for the specified file name <code>landmark</code>.</p><ul class="at-tags"><li class="parameter"><span class="at-tag">parameter</span> <span class="value">max_depth</span> <p>Maximum depth in resolving indirect waypoints. The default value is <code>100</code>.</p></li></ul><ul class="at-tags"><li class="parameter"><span class="at-tag">parameter</span> <span class="value">eager_resolution</span> <p>Whether full resolution is performed to check the validity of library names. If the value is <code>false</code>, the router will only check whether the argument to the router is well-formed. The default value is <code>false</code>.</p></li></ul><ul class="at-tags"><li class="parameter"><span class="at-tag">parameter</span> <span class="value">landmark</span> <p>The name of the special landmark files that the router should look for.</p></li></ul></div></div><div class="odoc-spec"><div class="spec value" id="val-clear_cached_landmarks" class="anchored"><a href="#val-clear_cached_landmarks" class="anchor"></a><code><span><span class="keyword">val</span> clear_cached_landmarks : <span>unit <span class="arrow">&#45;&gt;</span></span> unit</span></code></div><div class="spec-doc"><p>Landmark files are all cached to reduce I/O load, but perhaps you are writing some tool to modify landmark files. In this case, one should call this function to reload all landmark files.</p></div></div></div></body></html>
