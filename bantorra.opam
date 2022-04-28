@@ -2,7 +2,7 @@ opam-version: "2.0"
 name: "bantorra"
 synopsis: "Extensible Library Management and Path Resolution"
 description: """
-This package is developed for managing libraries and resolving unit paths within them.
+Managing libraries and resolving unit paths within them.
 """
 maintainer: "favonia <favonia@gmail.com>"
 authors: "favonia <favonia@gmail.com>"
@@ -11,10 +11,12 @@ homepage: "https://github.com/RedPRL/bantorra"
 bug-reports: "https://github.com/RedPRL/bantorra/issues"
 dev-repo: "git+https://github.com/RedPRL/bantorra.git"
 depends: [
-  "dune" {>= "2.5"}
-  "ocaml" {>= "4.13.0"}
-  "ocamlfind" {>= "1.8.1"}
-  "ezjsonm" {>= "1.2.0"}
+  "dune" {>= "2.0"}
+  "ocaml" {>= "5.0"}
+  "bos" {>= "0.2"}
+  "conf-git" {post}
+  "ezjsonm" {>= "1.2"}
+  "ocamlfind" {>= "1.8"}
   "odoc" {with-doc}
 ]
 build: [
