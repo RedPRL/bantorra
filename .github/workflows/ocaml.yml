@@ -6,18 +6,16 @@ on:
   pull_request:
 jobs:
   run:
+    strategy:
+      matrix:
+        include:
+          - ocaml-compiler: "ocaml-variants.5.0.0+trunk"
+            build-doc: true
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: ocaml/setup-ocaml@v2
+      - uses: actions/checkout@v3
+      - uses: RedPRL/actions-ocaml@v1
         with:
-          ocaml-compiler: "4.13"
-      - run: opam pin . --with-doc --with-test --yes
-      - run: echo 'opam-build-root='`opam config var bantorra:build` >> $GITHUB_ENV
-        if: ${{ github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && startsWith (github.head_ref, 'doc')) }}
-      - uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && startsWith (github.head_ref, 'doc')) }}
-        with:
-          force_orphan: true
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ format('{0}/_build/default/_doc/_html/', env.opam-build-root) }}
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          build-doc: ${{ matrix.build-doc }}
+          publish-doc-if-built: ${{ github.ref == 'refs/heads/main' }}
