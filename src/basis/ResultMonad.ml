@@ -5,7 +5,7 @@ struct
   let (>>=) = Result.bind
   let (<$>) = Result.map
   let (let*) = Result.bind
-  let[@inline] (and*) m n = let* m = m in let* n = n in ret (m, n)
+  let[@inline] (and*) m n = let* m in let* n in ret (m, n)
   let[@inline] (let+) m f = Result.map f m
   let (and+) = (and*)
 end

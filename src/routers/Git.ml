@@ -1,5 +1,4 @@
 module E = Errors
-open StdLabels
 open BantorraBasis
 open ResultMonad.Syntax
 open Bantorra
@@ -22,47 +21,51 @@ let loaded_crates : (string, t) Hashtbl.t = Hashtbl.create 5
 
 module G =
 struct
-  let get_first_line ic = String.trim @@ try input_line ic with End_of_file -> ""
+  open Bos
 
-  let git_check_ref_format ~git_root ~ref =
-    Exec.system ~prog:"git" ~args:["-C"; git_root; "check-ref-format"; "--allow-onelevel"; ref]
+  let git ~root = Cmd.(v "git" % "-C" % root)
 
-  let git_init ~git_root =
-    Exec.system ~prog:"git" ~args:["-C"; git_root; "init"; "--quiet"]
+  let run_null cmd = Bos.OS.Cmd.(in_null |> run_io cmd |> to_null)
 
-  let git_remote_reset_origin ~git_root ~url =
-    ResultMonad.ignore_error @@ Exec.system ~prog:"git" ~args:["remote"; "remove"; "origin"];
-    Exec.system ~prog:"git" ~args:["-C"; git_root; "remote"; "add"; "origin"; url]
+  let git_check_ref_format ~root ~ref =
+    run_null Cmd.(git ~root % "check-ref-format" %  "--allow-onelevel" % ref)
 
-  let git_fetch_origin ~git_root ~ref =
-    Exec.system ~prog:"git" ~args:["-C"; git_root; "fetch"; "--quiet"; "--no-tags"; "--recurse-submodules=on-demand"; "--depth=1"; "origin"; ref]
+  let git_init ~root =
+    run_null Cmd.(git ~root % "init" %  "--quiet")
 
-  let git_reset ~git_root =
-    Exec.system ~prog:"git" ~args:["-C"; git_root; "reset"; "--quiet"; "--hard"; "--recurse-submodules"; "FETCH_HEAD"; "--"]
+  let git_remote_reset_origin ~root ~url =
+    ResultMonad.ignore_error @@ run_null Cmd.(git ~root % "remote" % "remove" % "origin");
+    run_null Cmd.(git ~root % "remote" % "add" % "origin" % url)
 
-  let git_rev_parse ~git_root ~ref =
-    Exec.with_system_in ~prog:"git" ~args:["-C"; git_root; "rev-parse"; ref] get_first_line
+  let git_fetch_origin ~root ~ref =
+    run_null Cmd.(git ~root % "fetch" % "--quiet" % "--no-tags" % "--recurse-submodules=on-demand" % "--depth=1" % "origin" % ref)
 
-  let reset_repo ~url ~ref ~git_root ~id_in_use =
+  let git_reset ~root =
+    run_null Cmd.(git ~root % "reset" % "--quiet" % "--hard" % "--recurse-submodules" % "FETCH_HEAD" % "--")
+
+  let git_rev_parse ~root ~ref =
+    Bos.OS.Cmd.(in_null |> run_io Cmd.(git ~root % "rev-parse" % "--verify" % "--end-of-options" % ref) |> to_string)
+
+  let reset_repo ~url ~ref ~root ~id_in_use =
     let src = "Git.reset_repo" in
     match
-      let* () = File.ensure_dir git_root in
-      File.normalize_dir git_root
+      let* () = File.ensure_dir root in
+      File.normalize_dir root
     with
     | Error (`SystemError msg) ->
-      E.append_error_invalid_library_msgf ~earlier:msg ~src "Not a directory: %s" git_root
-    | Ok git_root ->
-      let* () = git_init ~git_root in
-      let* () = git_check_ref_format ~git_root ~ref in
-      let* () = git_remote_reset_origin ~git_root ~url in
-      let* () = git_fetch_origin ~git_root ~ref in
+      E.append_error_invalid_library_msgf ~earlier:msg ~src "Not a directory: %s" root
+    | Ok root ->
+      let* () = git_init ~root in
+      let* () = git_check_ref_format ~root ~ref in
+      let* () = git_remote_reset_origin ~root ~url in
+      let* () = git_fetch_origin ~root ~ref in
       match id_in_use with
       | None ->
-        let* () = git_reset ~git_root in
-        git_rev_parse ~git_root ~ref:"HEAD"
+        let* () = git_reset ~root in
+        git_rev_parse ~root ~ref:"HEAD"
       | Some id_in_use ->
-        let* () = git_reset ~git_root in
-        let* id = git_rev_parse ~git_root ~ref:"HEAD" in
+        let* () = git_reset ~root in
+        let* id = git_rev_parse ~root ~ref:"HEAD" in
         if id_in_use <> id then
           E.error_invalid_library_msgf ~src "Inconsistent comments in use: %s and %s for %s" id id_in_use url
         else
@@ -97,7 +100,7 @@ let load_git_repo ~crate:{root; id_in_use; url_in_use} {url; ref; path} =
     | _ -> ret ()
   in
   let* commit_id =
-    G.reset_repo ~git_root ~url ~ref
+    G.reset_repo ~root:git_root ~url ~ref
       ~id_in_use:(Hashtbl.find_opt id_in_use url_digest)
   in
   Hashtbl.replace id_in_use url_digest commit_id;
@@ -140,7 +143,7 @@ let router ?(eager_resolution=false) ~crate_root =
   | Error (`FormatError msg) ->
     E.append_error_invalid_library_msgf ~earlier:msg ~src
       "Could not parse the argument: %a" Marshal.dump arg
-  | Error (`SystemError msg | `InvalidLibrary msg) ->
+  | Error (`Msg msg | `InvalidLibrary msg) ->
     E.append_error_invalid_library_msgf ~earlier:msg ~src
       "Could not load the git repository at %a" Marshal.dump arg
   | Ok root -> ret root

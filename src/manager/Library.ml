@@ -2,7 +2,7 @@ module E = Errors
 open BantorraBasis
 open ResultMonad.Syntax
 
-type unitpath = Anchor.unitpath
+type path = Anchor.path
 
 type t =
   { root : File.filepath
@@ -44,16 +44,16 @@ let load_from_unit ~find_cache ~anchor filepath ~suffix =
       E.error_invalid_library_msgf ~src
         "The file path %s does not have the suffix `%s'" filepath suffix
     | Some basename ->
-      let+ root, unitpath_opt =
+      let+ root, path_opt =
         load_from_dir ~find_cache ~anchor @@ Filename.dirname filepath
       in
-      root, Option.map (fun unitpath -> unitpath @ [basename]) unitpath_opt
+      root, Option.map (fun path -> path @ [basename]) path_opt
 
 let root lib = lib.root
 
 let iter_routes f lib = Anchor.iter_routes f lib.loaded_anchor
 
-let dispatch_path ~depth local ~global (lib : t) (path : unitpath) =
+let dispatch_path ~depth local ~global (lib : t) (path : path) =
   match Anchor.dispatch_path lib.loaded_anchor path with
   | None -> local lib path
   | Some (router, router_argument, path) ->
@@ -68,7 +68,7 @@ let resolve_local lib path ~suffix =
       E.error_unit_not_found_msgf ~src
         "The unit path %a does not belong to the library (%s) but a library at its subdirectory. \
          Check all the files named `%s' within the directory %s."
-        Util.pp_unitpath path lib.root lib.anchor lib.root
+        Util.pp_path path lib.root lib.anchor lib.root
     else
       ret (lib, path, File.join (lib.root :: path) ^ suffix)
 

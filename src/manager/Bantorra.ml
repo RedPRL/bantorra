@@ -56,11 +56,11 @@
        Manager.load_library_from_root manager "/usr/lib/built-in/number/"
 
      (** Resolve a unit path and get its location in the file system. *)
-     let _local_lib, _local_unitpath, _filepath = Result.get_ok @@
+     let _local_lib, _local_path, _filepath = Result.get_ok @@
        Manager.resolve manager lib_number ["types"] ~suffix:".source"
 
      (** Resolve the same unit path but with a different suffix. *)
-     let _local_lib, _local_unitpath, _filepath = Result.get_ok @@
+     let _local_lib, _local_path, _filepath = Result.get_ok @@
        Manager.resolve manager lib_number ["types"] ~suffix:".compiled"
 
      (** Resolve another unit path and get its location in the file system.

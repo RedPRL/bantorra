@@ -2,7 +2,7 @@ open BantorraBasis
 
 (** {1 Types} *)
 
-type unitpath = Anchor.unitpath
+type path = Anchor.path
 (** The type of unit paths. *)
 
 type t
@@ -14,10 +14,10 @@ val load_from_root : find_cache:(string -> t option) -> anchor:string -> File.fi
   (t, [> `InvalidLibrary of string ]) result
 
 val load_from_dir : find_cache:(string -> t option) -> anchor:string -> File.filepath ->
-  (t * unitpath option, [> `InvalidLibrary of string ]) result
+  (t * path option, [> `InvalidLibrary of string ]) result
 
 val load_from_unit : find_cache:(string -> t option) -> anchor:string -> File.filepath -> suffix:string ->
-  (t * unitpath option, [> `InvalidLibrary of string ]) result
+  (t * path option, [> `InvalidLibrary of string ]) result
 
 (** {1 Accessor} *)
 
@@ -38,7 +38,7 @@ val resolve :
           router:string ->
           router_argument:Marshal.value ->
           starting_dir:File.filepath ->
-          unitpath ->
+          path ->
           suffix:string ->
-          (t * unitpath * File.filepath, [> `UnitNotFound of string] as 'e) result) ->
-  t -> unitpath -> suffix:string -> (t * unitpath * File.filepath, 'e) result
+          (t * path * File.filepath, [> `UnitNotFound of string] as 'e) result) ->
+  t -> path -> suffix:string -> (t * path * File.filepath, 'e) result

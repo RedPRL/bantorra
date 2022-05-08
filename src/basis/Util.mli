@@ -6,4 +6,4 @@ sig
   val of_unique_list : ('a * 'b) list -> (('a, 'b) Hashtbl.t, [> `DuplicateKeys of 'a]) result
 end
 
-val pp_unitpath : Format.formatter -> string list -> unit
+val pp_path : Format.formatter -> string list -> unit

@@ -74,16 +74,16 @@ let file_exists p =
 
 let locate_anchor ~anchor start_dir =
   let src = "File.locate_anchor" in
-  let rec find_root cwd unitpath_acc =
+  let rec find_root cwd path_acc =
     if file_exists (cwd/anchor) then
-      ret (cwd, unitpath_acc)
+      ret (cwd, path_acc)
     else
       match parent_of_normalized_dir cwd with
       | None ->
         E.error_anchor_not_found_msg ~src
           "No anchor found all the way up to the root"
       | Some parent ->
-        find_root parent @@ Filename.basename cwd :: unitpath_acc
+        find_root parent @@ Filename.basename cwd :: path_acc
   in
   match normalize_dir start_dir with
   | Ok cwd ->
@@ -120,8 +120,7 @@ let getenv_opt = Sys.getenv_opt
 let uname_s =
   lazy begin
     Result.to_option @@
-    Exec.with_system_in ~prog:"uname" ~args:["-s"] @@ fun ic ->
-    String.trim @@ input_line ic
+    Bos.OS.Cmd.(in_null |> run_io Bos.Cmd.(v "uname" % "-s") |> to_string ~trim:true)
   end
 
 let guess_scheme =

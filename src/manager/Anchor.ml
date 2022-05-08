@@ -3,13 +3,13 @@ open ResultMonad.Syntax
 
 let version = "1.0.0"
 
-type unitpath = string list
+type path = string list
 type router_name = string
 type router_argument = Router.argument
 
 type t =
-  { routes : (unitpath, router_name * router_argument) Hashtbl.t
-  ; cache : (unitpath, (router_name * router_argument * unitpath) option) Hashtbl.t
+  { routes : (path, router_name * router_argument) Hashtbl.t
+  ; cache : (path, (router_name * router_argument * path) option) Hashtbl.t
   }
 
 module M =
@@ -42,7 +42,7 @@ let deserialize : Marshal.value -> (t, _) result =
         let* routes = Option.value ~default:[] <$> Marshal.to_olist M.to_route routes in
         match Util.Hashtbl.of_unique_seq @@ List.to_seq routes with
         | Error (`DuplicateKeys k) ->
-          Errors.error_format_msgf ~src "Multiple libraries mounted at %a" Util.pp_unitpath k
+          Errors.error_format_msgf ~src "Multiple libraries mounted at %a" Util.pp_path k
         | Ok routes -> ret {routes; cache}
       end
     | _ -> assert false
@@ -53,34 +53,34 @@ let iter_routes f {routes; _} =
   Hashtbl.to_seq routes |>
   ResultMonad.iter_seq (fun (_, (router, router_argument)) -> f ~router ~router_argument)
 
-let match_prefix unitpath prefix k =
-  let rec loop unitpath prefix acc =
-    match unitpath, prefix with
-    | _, [] -> Some (acc, k unitpath)
+let match_prefix path prefix k =
+  let rec loop path prefix acc =
+    match path, prefix with
+    | _, [] -> Some (acc, k path)
     | [], _ -> None
-    | (id :: unitpath), (id' :: prefix) ->
-      if String.equal id id' then loop unitpath prefix (acc+1) else None
-  in loop unitpath prefix 0
+    | (id :: path), (id' :: prefix) ->
+      if String.equal id id' then loop path prefix (acc+1) else None
+  in loop path prefix 0
 
-let match_route unitpath (mount_point, (router, router_argument)) =
-  match_prefix mount_point unitpath @@ fun unitpath -> router, router_argument, unitpath
+let match_route path (mount_point, (router, router_argument)) =
+  match_prefix mount_point path @@ fun path -> router, router_argument, path
 
 let max_match x y =
   match x, y with
   | Some (n0, _), (n1, _) when (n0 : int) >= n1 -> x
   | _ -> Some y
 
-let dispatch_path_without_cache {routes; _} unitpath =
-  let matched = Seq.filter_map (match_route unitpath) @@ Hashtbl.to_seq routes in
+let dispatch_path_without_cache {routes; _} path =
+  let matched = Seq.filter_map (match_route path) @@ Hashtbl.to_seq routes in
   Option.map snd @@ Seq.fold_left max_match None matched
 
-let dispatch_path anchor unitpath =
-  match Hashtbl.find_opt anchor.cache unitpath with
+let dispatch_path anchor path =
+  match Hashtbl.find_opt anchor.cache path with
   | Some ref -> ref
   | None ->
-    let ref = dispatch_path_without_cache anchor unitpath in
-    Hashtbl.replace anchor.cache unitpath ref;
+    let ref = dispatch_path_without_cache anchor path in
+    Hashtbl.replace anchor.cache path ref;
     ref
 
-let path_is_local anchor unitpath =
-  Option.is_none @@ dispatch_path anchor unitpath
+let path_is_local anchor path =
+  Option.is_none @@ dispatch_path anchor path

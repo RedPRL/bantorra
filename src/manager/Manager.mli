@@ -8,7 +8,7 @@ type t
 type library
 (** The abstract type of libraries. *)
 
-type unitpath = string list
+type path = string list
 (** The type of unit paths. *)
 
 (** {1 Initialization} *)
@@ -57,7 +57,7 @@ val load_library_from_route_with_cwd : t ->
     with [starting_dir] being the current working director.
 *)
 
-val load_library_from_dir : t -> File.filepath -> (library * unitpath option, [> `InvalidLibrary of string ]) result
+val load_library_from_dir : t -> File.filepath -> (library * path option, [> `InvalidLibrary of string ]) result
 (** [load_library_from_dir manager dir] assumes the directory [dir] resides in some library
     and will try to find the root of the library by locating the anchor file.
     It then loads the library marked by the anchor.
@@ -67,13 +67,13 @@ val load_library_from_dir : t -> File.filepath -> (library * unitpath option, [>
     @return The loaded library.
 *)
 
-val load_library_from_cwd : t -> (library * unitpath option, [> `InvalidLibrary of string ]) result
+val load_library_from_cwd : t -> (library * path option, [> `InvalidLibrary of string ]) result
 (** [load_library_from_cwd manager] is the same as {!val load_library_from_dir}[dir] with [dir]
     being the current working director.
 *)
 
 val load_library_from_unit : t -> File.filepath -> suffix:string ->
-  (library * unitpath option, [> `InvalidLibrary of string ]) result
+  (library * path option, [> `InvalidLibrary of string ]) result
 (** [locate_anchor_from_unit filepath ~suffix] assumes [filepath] ends with [suffix]
     and the file at [filepath] resides in some library. It will try to find the root of the library
     and load the library.
@@ -90,13 +90,13 @@ val load_library_from_unit : t -> File.filepath -> suffix:string ->
 *)
 
 val resolve :
-  t -> ?max_depth:int -> library -> unitpath -> suffix:string ->
-  (library * unitpath * File.filepath, [ `InvalidLibrary of string | `UnitNotFound of string ]) result
-(** [resolve manager lib unitpath ~suffix] resolves [unitpath] in the library in the library [lib] and returns the {i eventual} library where the unit belongs and the corresponding file path with the specified suffix.
+  t -> ?max_depth:int -> library -> path -> suffix:string ->
+  (library * path * File.filepath, [ `InvalidLibrary of string | `UnitNotFound of string ]) result
+(** [resolve manager lib path ~suffix] resolves [path] in the library in the library [lib] and returns the {i eventual} library where the unit belongs and the corresponding file path with the specified suffix.
 
     @param manager The library manager.
     @param max_depth Maximum depth for resolving recursive library mounting. The default value is [100].
     @param lib The library.
-    @param unitpath The path to be resolved.
+    @param path The path to be resolved.
     @param suffix The suffix shared by all the units in the file system.
 *)

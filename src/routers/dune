@@ -2,4 +2,4 @@
  (name BantorraRouters)
  (public_name bantorra.routers)
  (flags (:standard -w -16))
- (libraries findlib bantorra.basis bantorra))
+ (libraries bos findlib bantorra.basis bantorra))
