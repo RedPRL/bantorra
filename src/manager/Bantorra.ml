@@ -133,8 +133,3 @@ module Manager = Manager
 
 module Router = Router
 (** The type of routers. *)
-
-(** {1 Helper Modules} *)
-
-module Errors = Errors
-(** Error reporting functions *)

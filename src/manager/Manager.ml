@@ -1,88 +1,54 @@
-module E = Errors
 open BantorraBasis
-open ResultMonad.Syntax
+module E = Error
 
 type t =
-  { anchor : string
-  ; routers : (string, Router.t) Hashtbl.t
-  ; loaded_libs : (string, Library.t) Hashtbl.t
+  { version : string
+  ; anchor : string
+  ; router : Router.t
+  ; loaded_libs : (FilePath.t, Library.t) Hashtbl.t
   }
+type path = UnitPath.t
 type library = Library.t
-type path = Anchor.path
 
-let check_dep routers root =
-  let src = "Manager.check_dep" in
-  Library.iter_routes @@ fun ~router ~router_argument ->
-  match Hashtbl.find_opt routers router with
-  | None -> E.error_invalid_library_msgf ~src "Could not find the router named `%s'" router
-  | Some r ->
-    if Router.fast_check r ~starting_dir:root ~arg:router_argument then
-      ret ()
-    else
-      E.error_invalid_library_msgf ~src
-        "The fast checking failed for the route with router = `%s' and router_argument = `%a'"
-        router Marshal.dump router_argument
-
-let init ~anchor ~routers =
-  let src = "Manager.init" in
-  match Util.Hashtbl.of_unique_seq @@ List.to_seq routers with
-  | Error (`DuplicateKeys key) ->
-    E.error_invalid_router_msgf ~src "Multiple routers named %s" key
-  | Ok routers ->
-    let loaded_libs = Hashtbl.create 10 in
-    ret {anchor; routers; loaded_libs}
+let init ~version ~anchor router =
+  let loaded_libs = Hashtbl.create 10 in
+  {version; anchor; router; loaded_libs}
 
 let find_cache lm = Hashtbl.find_opt lm.loaded_libs
 
-let check_and_cache_library lm lib =
+let cache_library lm lib =
   let lib_root = Library.root lib in
-  let* () = check_dep lm.routers lib_root lib in
-  Hashtbl.replace lm.loaded_libs lib_root lib;
-  ret ()
+  Hashtbl.replace lm.loaded_libs lib_root lib
 
 let load_library_from_root lm lib_root =
-  let* lib = Library.load_from_root ~find_cache:(find_cache lm) ~anchor:lm.anchor lib_root in
-  let* () = check_and_cache_library lm lib in
-  ret lib
+  let lib = Library.load_from_root ~version:lm.version ~find_cache:(find_cache lm) ~anchor:lm.anchor lib_root in
+  cache_library lm lib; lib
 
-let load_library_from_route lm ~router ~router_argument ~starting_dir =
-  let src = "Manager.load_library_from_route" in
-  match Hashtbl.find_opt lm.routers router with
-  | None -> E.error_invalid_library_msgf ~src "Router `%s' not found" router
-  | Some loaded_router ->
-    let* lib_root = Router.route loaded_router ~starting_dir ~arg:router_argument in
-    load_library_from_root lm lib_root
+let load_library_from_route ?hop_limit lm ~lib_root route =
+  let lib_root = lm.router ?hop_limit ~lib_root route in
+  load_library_from_root lm lib_root
 
-let load_library_from_route_with_cwd lm ~router ~router_argument  =
-  load_library_from_route lm  ~router_argument ~router ~starting_dir:(File.getcwd ())
+let load_library_from_route_with_cwd ?hop_limit lm route  =
+  load_library_from_route lm ?hop_limit ~lib_root:(File.get_cwd ()) route
 
 let load_library_from_dir lm dir =
-  let* lib, path_opt = Library.load_from_dir ~find_cache:(find_cache lm) ~anchor:lm.anchor dir in
-  let* () = check_and_cache_library lm lib in
-  ret (lib, path_opt)
+  let lib, path_opt = Library.load_from_dir ~version:lm.version ~find_cache:(find_cache lm) ~anchor:lm.anchor dir in
+  cache_library lm lib; lib, path_opt
 
 let load_library_from_cwd lm =
-  load_library_from_dir lm @@ File.getcwd ()
+  load_library_from_dir lm @@ File.get_cwd ()
 
 let load_library_from_unit lm filepath ~suffix =
-  let* lib, path_opt = Library.load_from_unit ~find_cache:(find_cache lm) ~anchor:lm.anchor filepath ~suffix in
-  let* () = check_and_cache_library lm lib in
-  ret (lib, path_opt)
+  let lib, path_opt = Library.load_from_unit ~version:lm.version ~find_cache:(find_cache lm) ~anchor:lm.anchor filepath ~suffix in
+  cache_library lm lib; lib, path_opt
 
 let resolve lm ?(max_depth=100) =
-  let src = "Manager.resolve" in
-  let rec global ~depth ~router ~router_argument ~starting_dir path ~suffix =
+  let rec global ~depth ~lib_root route path ~suffix =
+    E.tracef "Resolving library via route %a" (Json_repr.pp (module Json_repr.Ezjsonm)) route @@ fun () ->
     if depth > max_depth then
-      E.error_unit_not_found_msgf ~src "Library resolution stack overflow (max depth = %i)." max_depth
+      E.fatalf `InvalidLibrary "Library resolution stack overflow (max depth = %i)." max_depth
     else
-      match
-        let* lib = load_library_from_route lm ~starting_dir ~router ~router_argument in
-        Library.resolve ~depth ~global lib path ~suffix
-      with
-      | Error (`UnitNotFound msg | `InvalidLibrary msg) ->
-        E.append_error_unit_not_found_msgf ~earlier:msg ~src
-          "Could not find %a via the route with router = `%s' and router_argument = `%a'"
-          Util.pp_path path router Marshal.dump router_argument
-      | Ok res -> ret res
+      let lib = load_library_from_route lm ~lib_root route in
+      Library.resolve ~depth ~global lib path ~suffix
   in
   Library.resolve ~depth:0 ~global

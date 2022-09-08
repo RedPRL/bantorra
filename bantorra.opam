@@ -13,14 +13,20 @@ dev-repo: "git+https://github.com/RedPRL/bantorra.git"
 depends: [
   "dune" {>= "2.0"}
   "ocaml" {>= "5.0"}
+  "asai"
+  "algaeff" {>= "0.2"}
   "bos" {>= "0.2"}
+  "bwd" {>= "2.1"}
   "conf-git" {post}
   "ezjsonm" {>= "1.2"}
+  "json-data-encoding" {>= "0.9"}
   "ocamlfind" {>= "1.8"}
   "odoc" {with-doc}
 ]
+pin-depends: [
+  [ "asai.0.1.0~dev" "git+https://github.com/RedPRL/asai" ]
+]
 build: [
-  ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "build" "-p" name "-j" jobs "@runtest"] {with-test}
   ["dune" "build" "-p" name "-j" jobs "@doc"] {with-doc}

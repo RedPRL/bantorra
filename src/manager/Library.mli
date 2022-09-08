@@ -2,30 +2,22 @@ open BantorraBasis
 
 (** {1 Types} *)
 
-type path = Anchor.path
-(** The type of unit paths. *)
-
 type t
 (** The type of libraries. *)
 
 (** {1 Initialization} *)
 
-val load_from_root : find_cache:(string -> t option) -> anchor:string -> File.filepath ->
-  (t, [> `InvalidLibrary of string ]) result
+val load_from_root : version:string -> find_cache:(FilePath.t -> t option) -> anchor:string -> File.path -> t
 
-val load_from_dir : find_cache:(string -> t option) -> anchor:string -> File.filepath ->
-  (t * path option, [> `InvalidLibrary of string ]) result
+val load_from_dir : version:string -> find_cache:(FilePath.t -> t option) -> anchor:string -> File.path -> t * UnitPath.t option
 
-val load_from_unit : find_cache:(string -> t option) -> anchor:string -> File.filepath -> suffix:string ->
-  (t * path option, [> `InvalidLibrary of string ]) result
+val load_from_unit : version:string -> find_cache:(FilePath.t -> t option) -> anchor:string -> File.path -> suffix:string -> t * UnitPath.t option
 
-(** {1 Accessor} *)
+(** {1 Accessors} *)
 
-val root : t -> File.filepath
+val root : t -> File.path
 
-val iter_routes :
-  (router:string -> router_argument:Marshal.value -> (unit, 'e) result) ->
-  t -> (unit, 'e) result
+val iter_routes : (Router.route -> unit) -> t -> unit
 
 (** {1 Hook for Library Managers} *)
 
@@ -35,10 +27,9 @@ val iter_routes :
 val resolve :
   depth:int ->
   global:(depth:int ->
-          router:string ->
-          router_argument:Marshal.value ->
-          starting_dir:File.filepath ->
-          path ->
+          lib_root:File.path ->
+          Router.route ->
+          UnitPath.t ->
           suffix:string ->
-          (t * path * File.filepath, [> `UnitNotFound of string] as 'e) result) ->
-  t -> path -> suffix:string -> (t * path * File.filepath, 'e) result
+          t * UnitPath.t * File.path) ->
+  t -> UnitPath.t -> suffix:string -> t * UnitPath.t * File.path

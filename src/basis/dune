@@ -1,5 +1,12 @@
 (library
  (name BantorraBasis)
  (public_name bantorra.basis)
- (flags (:standard -w -16))
- (libraries bos ezjsonm unix))
+ (libraries
+   algaeff
+   asai
+   bos
+   bwd
+   ezjsonm
+   fpath
+   json-data-encoding
+   unix))

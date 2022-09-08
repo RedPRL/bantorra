@@ -2,24 +2,22 @@
 
 (** {1 Main Modules} *)
 
+module UnitPath = UnitPath
+(** Unit paths. *)
+
+module FilePath = FilePath
+(** Basic path manipulation. *)
+
 module File = File
-(** Basic I/O and path manipulation. *)
+(** Basic I/O. *)
 
 module Marshal = Marshal
 (** Serialization. *)
 
-(**/**)
+(** {1 Error Handling} *)
 
-(** {1 Helper Modules} *)
+module ErrorCode = ErrorCode
+(** Error codes. *)
 
 module Error = Error
-(** Generic error reporting functions. *)
-
-module Errors = Errors
-(** Specialized error reporting functions. *)
-
-module Util = Util
-(** Utility functions. *)
-
-module ResultMonad = ResultMonad
-(** The {!type:result} monad. *)
+(** Error reporting. *)

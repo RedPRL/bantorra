@@ -1,56 +1,35 @@
-type filepath = string
+(** {1 Path types} *)
 
-(** {1 Pure Filename Calculation} *)
-
-val (/) : filepath -> filepath -> filepath
-(**
-   [p / q] concatenates paths [p] and [q].
-*)
-
-val join : filepath list -> filepath
-(**
-   The n-ary version of {!val:(/)}
-*)
+type path = FilePath.t
 
 (** {1 Basic I/O} *)
 
-val writefile : filepath -> string -> (unit, [> `SystemError of string]) result
+val write : path -> string -> unit
 (**
-   [writefile path str] writes the string [str] the file at [path] (in binary mode).
+   [write path str] writes the string [str] the file at [path] (in binary mode).
    If there was already a file at [path], it will be overwritten.
 *)
 
-val readfile : filepath -> (string, [> `SystemError of string]) result
+val read : path -> string
 (**
-   [readfile path] reads the content of string [str] the file at [path] (in binary mode).
+   [read path] reads the content of string [str] the file at [path] (in binary mode).
    If there was already a file at [path], it will be overwritten.
 *)
 
 (** {1 Directories} *)
 
-val getcwd : unit -> filepath
+val get_cwd : unit -> path
 
-val ensure_dir : filepath -> (unit, [> `SystemError of string]) result
+val create_dir : path -> bool
 (**
-   [ensure_dir dir] effectively implements [mkdir dir] in OCaml.
-*)
-
-val normalize_dir : filepath -> (filepath, [> `SystemError of string]) result
-(**
-   [normalize_dir dir] uses [Sys.chdir] and [Sys.getcwd] to normalize a path.
-   The result will be an absolute path free of [.], [..], and symbolic links on many systems.
-*)
-
-val parent_of_normalized_dir : filepath -> filepath option
-(**
-   [parent_of_normalized_dir dir] calculates the parent of a normalized directory [dir]. If [dir] is already the root directory, then this function returns [None]; otherwise it returns [Some parent] where [parent] is the parent directory. The result could be wrong if [dir] was not already normalized.
+   [create_dir dir] effectively implements [mkdir dir] in OCaml. Returns [true] if the directory is newly created.
 *)
 
 (** {1 Locating Files} *)
 
-val file_exists : filepath -> bool
+val file_exists : path -> bool
 
-val locate_anchor : anchor:string -> filepath -> (filepath * string list, [> `AnchorNotFound of string]) result
+val locate_anchor : anchor:string -> path -> path * UnitPath.t
 (**
    [locate_anchor ~anchor dir] finds the closest regular file named [anchor] in [dir] or its ancestors in the file system tree.
 
@@ -65,29 +44,19 @@ val locate_anchor : anchor:string -> filepath -> (filepath * string list, [> `An
    and [locate_anchor ~anchor:"anchor.txt" "/usr"] will return ["/usr", []].
 *)
 
-val hijacking_anchors_exist : anchor:string -> root:filepath -> string list -> bool
+val locate_hijacking_anchor : anchor:string -> root:path -> UnitPath.t -> path option
 
 (** {1 Special Directories} *)
 
-val get_home : unit -> filepath option
+val get_home : unit -> path
 
-val expand_home : filepath -> filepath
+val expand_home : path -> path
 (** Expand the beginning tilde to the home directory. *)
 
-val get_xdg_config_home : ?macos_as_linux:bool -> app_name:string -> (filepath, [> `SystemError of string]) result
+val get_xdg_config_home : app_name:string -> path
 (** Get the per-user config directory based on [XDG_CONFIG_HOME]
     with reasonable default values on major platforms. *)
 
-val get_xdg_cache_home : ?macos_as_linux:bool -> app_name:string -> (filepath, [> `SystemError of string]) result
+val get_xdg_cache_home : app_name:string -> path
 (** Get the per-user persistent cache directory based on [XDG_CACHE_HOME]
     with reasonable default values on major platforms. *)
-
-(**/**)
-
-(** {1 Getting User Inputs} *)
-
-val input_absolute_dir : ?starting_dir:filepath -> string -> (filepath, [> `SystemError of string]) result
-(** Convenience function to get an absolute path from users. *)
-
-val input_relative_dir : string -> filepath
-(** Convenience function to get a relative path from users. *)
