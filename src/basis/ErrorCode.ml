@@ -4,10 +4,14 @@ type t =
   | `JSONFormat
   | `UnitNotFound
   | `InvalidLibrary
+  | `InvalidRoute
   | `InvalidRouter
   ]
 
-let default_severity _ = Asai.Severity.Error
+let default_severity =
+  function
+  | `InvalidRouter -> Asai.Severity.Bug
+  | _ -> Asai.Severity.Error
 
 let to_string : t -> string =
   function
@@ -16,4 +20,5 @@ let to_string : t -> string =
   | `JSONFormat -> "json"
   | `UnitNotFound -> "unit"
   | `InvalidLibrary -> "lib"
+  | `InvalidRoute -> "route"
   | `InvalidRouter -> "router"

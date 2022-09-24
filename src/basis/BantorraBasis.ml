@@ -21,3 +21,7 @@ module ErrorCode = ErrorCode
 
 module Error = Error
 (** Error reporting. *)
+
+(** {1 Other Functions} *)
+
+module Utils = Utils

@@ -12,9 +12,7 @@ val read : version:string -> File.path -> t
 
 (** {1 Accessors} *)
 
-val iter_routes : (Router.route -> unit) -> t -> unit
-
-val dispatch_path : t -> UnitPath.t -> (Router.route * UnitPath.t) option
+val dispatch_path : t -> UnitPath.t -> (Router.param * UnitPath.t) option
 (** [dispatch_path a p] routes the unit path [p] to [Some (ref, p')] if it points to a unit in another library referenced by [ref] and [p'], or [None] if it is a local unit path. The dispatching is done by longest prefix match. *)
 
 val path_is_local : t -> UnitPath.t -> bool

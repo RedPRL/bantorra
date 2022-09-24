@@ -17,8 +17,6 @@ val load_from_unit : version:string -> find_cache:(FilePath.t -> t option) -> an
 
 val root : t -> File.path
 
-val iter_routes : (Router.route -> unit) -> t -> unit
-
 (** {1 Hook for Library Managers} *)
 
 (** The following API is for a library manager to chain all the libraries together.
@@ -28,7 +26,7 @@ val resolve :
   depth:int ->
   global:(depth:int ->
           lib_root:File.path ->
-          Router.route ->
+          Router.param ->
           UnitPath.t ->
           suffix:string ->
           t * UnitPath.t * File.path) ->

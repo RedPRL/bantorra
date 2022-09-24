@@ -14,11 +14,11 @@ type path = UnitPath.t
 (** {1 Initialization} *)
 
 val init : version:string -> anchor:string -> Router.t -> t
-(** [init ~anchor ~routers] initiates a library manager for loading libraries.
+(** [init ~anchor router] initiates a library manager for loading libraries.
 
     @param version Versioning of the router.
     @param anchor The file name of the anchors.
-    @param routers An association list as a mapping from router names to available routers. See {!module:Router}.
+    @param router The router. See {!module:Router}.
 *)
 
 (** {1 Library Loading} *)
@@ -34,19 +34,19 @@ val load_library_from_root : t -> File.path -> library
     @return The loaded library.
 *)
 
-val load_library_from_route : ?hop_limit:int -> t -> lib_root:File.path -> Router.route -> library
-(** [load_library_from_root manager ~lib_root route] loads the library by following the [route]
+val load_library_from_route : t -> lib_root:File.path -> Router.param -> library
+(** [load_library_from_root manager ~lib_root param] loads the library by following the [param]
     from the current library at [lib_root].
 
     @param manager The library manager.
     @param lib_root The starting directory, which is used by some routers ({i e.g.}, the {{:../../BantorraRouters/Waypoint/index.html}Waypoint} routers).
-    @param route The route specification, as a JSON value.
+    @param param The route specification, as a JSON value.
     @return The loaded library.
 *)
 
-val load_library_from_route_with_cwd : ?hop_limit:int -> t -> Router.route -> library
-(** [load_library_from_root manager route] is
-    {!val load_library_from_route}[manager ~lib_root route]
+val load_library_from_route_with_cwd : t -> Router.param -> library
+(** [load_library_from_root manager param] is
+    {!val load_library_from_route}[manager ~lib_root param]
     with [lib_root] being the current working director.
 *)
 

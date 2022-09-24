@@ -26,10 +26,19 @@ let to_list l = l
 
 let of_list l = List.iter assert_seg l; l
 
-let of_string p =
+let of_string ?(accept_dir=false) ?(allow_extra_dots=false) p =
   E.tracef "UnitPath.of_string(%s)" p @@ fun () ->
+  let p =
+    if accept_dir && String.ends_with ~suffix:"/" p then
+      String.sub p 0 (String.length p - 1)
+    else
+      p
+  in
   if p = "." then []
-  else of_list @@ String.split_on_char '/' p
+  else
+    let l = String.split_on_char '/' p in
+    let l = if allow_extra_dots then List.filter (fun s -> s <> ".") l else l in
+    of_list l
 
 let to_string =
   function

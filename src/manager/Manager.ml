@@ -24,12 +24,12 @@ let load_library_from_root lm lib_root =
   let lib = Library.load_from_root ~version:lm.version ~find_cache:(find_cache lm) ~anchor:lm.anchor lib_root in
   cache_library lm lib; lib
 
-let load_library_from_route ?hop_limit lm ~lib_root route =
-  let lib_root = lm.router ?hop_limit ~lib_root route in
+let load_library_from_route lm ~lib_root route =
+  let lib_root = Router.run ~lib_root @@ fun () -> lm.router route in
   load_library_from_root lm lib_root
 
-let load_library_from_route_with_cwd ?hop_limit lm route  =
-  load_library_from_route lm ?hop_limit ~lib_root:(File.get_cwd ()) route
+let load_library_from_route_with_cwd lm route  =
+  load_library_from_route lm ~lib_root:(File.get_cwd ()) route
 
 let load_library_from_dir lm dir =
   let lib, path_opt = Library.load_from_dir ~version:lm.version ~find_cache:(find_cache lm) ~anchor:lm.anchor dir in

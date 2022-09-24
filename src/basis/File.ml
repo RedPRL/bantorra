@@ -24,9 +24,9 @@ let read p =
 
 let get_cwd () = F.of_fpath @@ wrap_bos @@ Bos.OS.Dir.current ()
 
-let create_dir p =
-  E.tracef "File.create_dir(%a)" F.pp p @@ fun () ->
-  wrap_bos @@ Bos.OS.Dir.create (F.to_fpath p)
+let ensure_dir p =
+  E.tracef "File.ensure_dir(%a)" F.pp p @@ fun () ->
+  ignore @@ wrap_bos @@ Bos.OS.Dir.create (F.to_fpath p)
 
 let file_exists p =
   wrap_bos @@ Bos.OS.File.exists (F.to_fpath p)
@@ -88,11 +88,8 @@ let guess_scheme =
 let get_home () =
   F.of_fpath @@ wrap_bos @@ Bos.OS.Dir.user ()
 
-let expand_home _ =
-  E.fatalf `System ~severity:Asai.Severity.Bug "expand_home not implemented yet"
-
 let read_env_path var =
-  Result.map (F.of_fpath ~cwd:(get_cwd ())) @@ Bos.OS.Env.path var
+  Result.map (F.of_fpath ~relative_to:(get_cwd ())) @@ Bos.OS.Env.path var
 
 (* XXX I did not test the following code on different platforms. *)
 let get_xdg_config_home ~app_name =

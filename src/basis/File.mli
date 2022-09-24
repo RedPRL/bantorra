@@ -20,9 +20,9 @@ val read : path -> string
 
 val get_cwd : unit -> path
 
-val create_dir : path -> bool
+val ensure_dir : path -> unit
 (**
-   [create_dir dir] effectively implements [mkdir dir] in OCaml. Returns [true] if the directory is newly created.
+   [ensure_dir dir] effectively implements [mkdir -p dir] in OCaml.
 *)
 
 (** {1 Locating Files} *)
@@ -49,9 +49,6 @@ val locate_hijacking_anchor : anchor:string -> root:path -> UnitPath.t -> path o
 (** {1 Special Directories} *)
 
 val get_home : unit -> path
-
-val expand_home : path -> path
-(** Expand the beginning tilde to the home directory. *)
 
 val get_xdg_config_home : app_name:string -> path
 (** Get the per-user config directory based on [XDG_CONFIG_HOME]

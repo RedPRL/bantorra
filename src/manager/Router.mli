@@ -2,12 +2,16 @@ open BantorraBasis
 
 (** {1 Types} *)
 
-type route = Json_repr.ezjsonm
-(** The type of arguments to routers. *)
+type param = Marshal.value
+(** The type of parameters to routers. *)
 
-type t = ?hop_limit:int -> lib_root:File.path -> route -> File.path
+type t = param -> File.path
 (** The type of library routers. *)
 
-(** {1 Combinators} *)
+type pipe = param -> param
 
-val fix : (t -> t) -> t
+val get_lib_root : unit -> FilePath.t
+
+(**/**)
+
+val run : lib_root:FilePath.t -> (unit -> 'a) -> 'a

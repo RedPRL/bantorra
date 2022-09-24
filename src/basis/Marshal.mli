@@ -1,5 +1,13 @@
 (** {1 Serialization} *)
 
+type value = Json_repr.ezjsonm
+
+val normalize : value -> value
+
+val destruct : 'a Json_encoding.encoding -> value -> 'a
+
+val construct : 'a Json_encoding.encoding -> 'a -> value
+
 val read : 'a Json_encoding.encoding -> File.path -> 'a
 (** [read enc path] reads and deserializes the content of the file at [path]. *)
 

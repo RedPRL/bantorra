@@ -10,7 +10,7 @@ val add_seg : t -> string -> t
 val prepend_seg : string -> t -> t
 val to_list : t -> string list
 val of_list : string list -> t
-val of_string : string -> t
+val of_string : ?accept_dir:bool -> ?allow_extra_dots:bool -> string -> t
 val to_string : t -> string
 val pp : Format.formatter -> t -> unit
 

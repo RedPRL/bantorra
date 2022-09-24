@@ -11,6 +11,7 @@ let (/) = FilePath.add_unit_seg
 
 let load_from_root ~version ~find_cache ~anchor root =
   E.tracef "Library.load_from_root(%s,-,%s,%a)" version anchor FilePath.pp root @@ fun () ->
+  let root = FilePath.to_dir_path root in
   match find_cache root with
   | Some lib -> lib
   | None ->
@@ -19,6 +20,7 @@ let load_from_root ~version ~find_cache ~anchor root =
 
 let load_from_dir ~version ~find_cache ~anchor dir =
   E.tracef "Library.load_from_dir(%s,-,%s,%a)" version anchor FilePath.pp dir @@ fun () ->
+  let dir = FilePath.to_dir_path dir in
   match File.locate_anchor ~anchor dir with
   | root, prefix ->
     let lib = load_from_root ~version ~find_cache ~anchor root in
@@ -40,8 +42,6 @@ let load_from_unit ~version ~find_cache ~anchor filepath ~suffix =
   root, Option.map (fun path -> UnitPath.add_seg path (FilePath.basename filepath)) path_opt
 
 let root lib = lib.root
-
-let iter_routes f lib = Anchor.iter_routes f lib.loaded_anchor
 
 let dispatch_path ~depth local ~global (lib : t) (path : UnitPath.t) =
   E.tracef "Library.dispatch_path" @@ fun () ->

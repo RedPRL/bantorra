@@ -38,8 +38,5 @@ open BantorraBasis
     {1 The Builder}
 *)
 
-val router : ?eager_resolution:bool -> crate_root:File.filepath -> (Bantorra.Router.t, [> `InvalidRouter of string ]) result
-(** [router ~crate_root] downloads git repositories, when requested, into the directory [crate_root] and resolves the URL into a path pointing to a local copy of the library. The resolver assumes the directory [crate_root] already exists and it has total control over the directory during the program execution.
-
-    @param eager_resolution Whether full resolution is performed to check the validity of arguments. If the value is [true], the resolver will immediately download the library when it receives a URL. If the value is [false], the resolver will only check whether the argument is well-formed JSON. The default value is [false].
-*)
+val route : crate:FilePath.t -> Bantorra.Router.t
+(** [route ~crate ~lib_root param] downloads git repositories, when requested, into the directory [crate_root] and resolves the URL into a path pointing to a local copy of the library. The resolver assumes the directory [crate_root] already exists and it has total control over the directory during the program execution. *)
