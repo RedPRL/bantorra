@@ -18,6 +18,7 @@ depends: [
   "bos" {>= "0.2"}
   "bwd" {>= "2.1"}
   "conf-git" {post}
+  "curly" {>= "0.2"}
   "ezjsonm" {>= "1.2"}
   "json-data-encoding" {>= "0.9"}
   "ocamlfind" {>= "1.8"}

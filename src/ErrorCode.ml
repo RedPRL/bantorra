@@ -6,6 +6,7 @@ type t =
   | `InvalidLibrary
   | `InvalidRoute
   | `InvalidRouter
+  | `Web
   ]
 
 let default_severity =
@@ -22,3 +23,4 @@ let to_string : t -> string =
   | `InvalidLibrary -> "lib"
   | `InvalidRoute -> "route"
   | `InvalidRouter -> "router"
+  | `Web -> "web"

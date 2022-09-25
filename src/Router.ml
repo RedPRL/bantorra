@@ -12,6 +12,8 @@ type table = (Marshal.value, Marshal.value) Hashtbl.t
 
 let read_config = ConfigFile.read
 
+let read_config_url = ConfigFile.read_url
+
 let write_config = ConfigFile.write
 
 let dispatch lookup param =

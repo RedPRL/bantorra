@@ -57,7 +57,7 @@ struct
     run_null Cmd.(git ~root % "remote" % "add" % "origin" % url)
 
   let git_fetch_origin ~root ~ref =
-    E.try_with ~fatal:E.emit @@ fun () ->
+    E.try_with ~fatal:(fun d -> E.emit d; E.emitf `InvalidRoute "Use existing files in the directory") @@ fun () ->
     run_null Cmd.(git ~root % "fetch" % "--quiet" % "--no-tags" % "--recurse-submodules=on-demand" % "--depth=1" % "origin" % ref);
     run_null Cmd.(git ~root % "reset" % "--quiet" % "--hard" % "--recurse-submodules" % "FETCH_HEAD" % "--")
 

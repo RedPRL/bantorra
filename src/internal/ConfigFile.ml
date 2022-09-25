@@ -13,8 +13,8 @@ struct
   let config v = J.obj2 (format v) table
 end
 
-let read ~version path : t =
-  let (), l = Marshal.read (Json.config version) path in
+let parse ~version json : t =
+  let (), l = Marshal.parse (Json.config version) json in
   let table = Hashtbl.create 0 in
   l |> List.iter (fun (key, value) ->
       let key = Marshal.normalize key in
@@ -24,6 +24,12 @@ let read ~version path : t =
         Hashtbl.replace table key value
     );
   table
+
+let read ~version path : t =
+  parse ~version @@ File.read path
+
+let read_url ~version url : t =
+  parse ~version @@ Web.get url
 
 let write ~version path table =
   let l = List.of_seq @@ Hashtbl.to_seq table in

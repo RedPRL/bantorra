@@ -8,8 +8,12 @@ val normalize : value -> value
 
 val destruct : 'a Json_encoding.encoding -> value -> 'a
 
+val parse : 'a Json_encoding.encoding -> string -> 'a
+
 val read : 'a Json_encoding.encoding -> FilePath.t -> 'a
 (** [read enc path] reads and deserializes the content of the file at [path]. *)
+
+val read_url : 'a Json_encoding.encoding -> string -> 'a
 
 val write : ?minify:bool -> 'a Json_encoding.encoding -> FilePath.t -> 'a -> unit
 (** [write enc path v] writes the serialization of [v] into the file at [path]. *)

@@ -88,5 +88,7 @@ val git : crate:FilePath.t -> t
 val read_config : version:string -> FilePath.t -> table
 (** [read_config ~version path] reads the configuration file at [path] and parse it as a rewrite table. *)
 
+val read_config_url : version:string -> string -> table
+
 val write_config : version:string -> FilePath.t -> table -> unit
 (** [write_config ~version path table] writes table to the file at [path]. *)

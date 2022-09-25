@@ -33,13 +33,17 @@ let construct enc data =
   with e ->
     E.fatalf `JSONFormat "%a" (Json_encoding.print_error ?print_unknown:None) e
 
-let parse s =
+let parse enc s =
+  destruct enc @@
   try Ezjsonm.value_from_string s with
   | Ezjsonm.Parse_error (_, msg) ->
     E.fatalf `JSONFormat "%s" msg
 
 let read enc path =
-  File.read path |> parse |> destruct enc
+  File.read path |> parse enc
+
+let read_url enc url =
+  Web.get url |> parse enc
 
 let serialize ?(minify=true) enc data =
   data |> construct enc |> Ezjsonm.value_to_string ~minify
