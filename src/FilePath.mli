@@ -21,9 +21,6 @@ val add_unit_seg : t -> string -> t
 val append_unit : t -> UnitPath.t -> t
 (** Append a unit path to a file path. *)
 
-val append_unit_str : ?accept_ending_slash:bool -> ?allow_extra_dots:bool -> t -> string -> t
-(** [append_unit_str f u] is [append_unit f (UnitPath.of_string u)]  *)
-
 val of_fpath : ?relative_to:t -> ?expanding_tilde:t -> Fpath.t -> t
 val to_fpath : t -> Fpath.t
 val of_string : ?relative_to:t -> ?expanding_tilde:t -> string -> t

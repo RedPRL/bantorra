@@ -43,7 +43,7 @@ val load_library_from_route : t -> ?starting_dir:FilePath.t -> Router.param -> l
 
 val load_library_from_route_with_cwd : t -> Router.param -> library
 (** [load_library_from_root manager param] is
-    {!val load_library_from_route}[manager ~relative_to:cwd param]
+    {!val:load_library_from_route}[ manager ~relative_to:cwd param]
     where [cwd] is the current working directory.
 *)
 
@@ -58,7 +58,7 @@ val load_library_from_dir : t -> FilePath.t -> library * path option
 *)
 
 val load_library_from_cwd : t -> library * path option
-(** [load_library_from_cwd manager] is {!val load_library_from_dir}[manager dir]
+(** [load_library_from_cwd manager] is {!val:load_library_from_dir}[ manager dir]
     with [dir] being the current working director.
 *)
 

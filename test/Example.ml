@@ -1,21 +1,27 @@
-open Bantorra
-
 (** Set up the effect handler of error messages. See the documentation of Asai. *)
 module Terminal = Asai_unix.Make(Bantorra.ErrorCode)
-let run_bantorra f = Error.run f
+let run_bantorra f = Bantorra.Error.run f
     ~emit:Terminal.display ~fatal:(fun d -> Terminal.display d; failwith "error")
 
+open Bantorra
+
+(** Get the current working directory. *)
 let cwd = run_bantorra File.get_cwd
 
-(** Create a fixed table router. *)
+(** Create the router.
+
+    This router will route [["local", path]] to local path [path] and
+    [["git", git_params]] to the git repo specified by [git_params],
+    placing cloned git repositories under the directory [_build/git]. *)
 let router = run_bantorra @@ fun () ->
+  (* This is for calculating the absolute path to [_build/git]. *)
   let current_lib_root, _ = File.locate_anchor ~anchor:".lib" cwd in
   Router.dispatch @@
   function
   | "local" -> Option.some @@
     Router.local ?relative_to:(Router.get_starting_dir ()) ~expanding_tilde:true
   | "git" -> Option.some @@
-    Router.git ~crate:(FilePath.append_unit_str current_lib_root "_build/git")
+    Router.git ~crate:(FilePath.of_string ~relative_to:current_lib_root "./_build/git")
   | _ -> None
 
 (** Get a library manager. *)
@@ -46,8 +52,7 @@ let lib_bantorra =
   Manager.load_library_from_route manager @@
   `A [`String "git"; `O ["url", `String "https://github.com/RedPRL/bantorra"; "path", `String "test/lib/number/"]]
 
-let () = prerr_string "cool"
-
+(** Show where the cloned git repository is. *)
 let () =
   run_bantorra @@ fun () ->
   Format.printf "Git repo downloaded at %a@." (FilePath.pp ~relative_to:cwd) (Manager.library_root lib_bantorra)
@@ -79,12 +84,12 @@ let _local_lib, _local_path, filepath3 =
 
 let () =
   run_bantorra @@ fun () ->
-  assert (FilePath.equal filepath1 (FilePath.append_unit_str cwd "lib/number/types.data"))
+  assert (FilePath.equal filepath1 (FilePath.of_string ~relative_to:cwd "./lib/number/types.data"))
 
 let () =
   run_bantorra @@ fun () ->
-  assert (FilePath.equal filepath2 (FilePath.append_unit_str cwd "lib/number/types.compiled"))
+  assert (FilePath.equal filepath2 (FilePath.of_string ~relative_to:cwd "./lib/number/types.compiled"))
 
 let () =
   run_bantorra @@ fun () ->
-  assert (FilePath.equal filepath3 (FilePath.append_unit_str cwd "lib/number/types.compiled"))
+  assert (FilePath.equal filepath3 (FilePath.of_string ~relative_to:cwd "./lib/number/types.compiled"))

@@ -30,9 +30,6 @@ let append_unit p u =
   if UnitPath.is_root u then p else
     Fpath.append p (Fpath.v @@ UnitPath.to_string u)
 
-let append_unit_str ?accept_ending_slash ?allow_extra_dots p u =
-  append_unit p (UnitPath.of_string ?accept_ending_slash ?allow_extra_dots u)
-
 let of_fpath ?relative_to ?expanding_tilde p =
   let p =
     match relative_to with
