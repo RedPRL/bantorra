@@ -75,9 +75,7 @@ val git : ?allow_failed_fetch:bool -> FilePath.t -> t
    {v
 {
     "format": "1.0.0",
-    "rewrite":
-      [ ["stdlib", ""]
-      ]
+    "rewrite": [ ["stdlib", "~/coollib/stdlib"] ]
 }
     v}
 
