@@ -37,7 +37,7 @@ val local : ?relative_to:FilePath.t -> expanding_tilde:bool -> t
 
 (** {2 Git} *)
 
-val git : crate:FilePath.t -> t
+val git : ?allow_failed_fetch:bool -> FilePath.t -> t
 (** [git ~crate] accepts JSON parameters in one of the following formats:
 
     {v

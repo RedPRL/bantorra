@@ -21,7 +21,7 @@ let router = run_bantorra @@ fun () ->
   | "local" -> Option.some @@
     Router.local ?relative_to:(Router.get_starting_dir ()) ~expanding_tilde:true
   | "git" -> Option.some @@
-    Router.git ~crate:(FilePath.of_string ~relative_to:current_lib_root "./_build/git")
+    Router.git (FilePath.of_string ~relative_to:current_lib_root "./_build/git")
   | _ -> None
 
 (** Get a library manager. *)

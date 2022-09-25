@@ -56,7 +56,7 @@ struct
     end;
     run_null Cmd.(git ~root % "remote" % "add" % "origin" % url)
 
-  let git_fetch_origin ~root ~ref =
+  let git_fetch_origin ~allow_failed_fetch ~root ~ref =
     let strict () =
       run_null Cmd.(git ~root % "fetch" % "--quiet" % "--no-tags" % "--recurse-submodules=on-demand" % "--depth=1" % "origin" % ref);
       run_null Cmd.(git ~root % "reset" % "--quiet" % "--hard" % "--recurse-submodules" % "FETCH_HEAD" % "--")
@@ -64,17 +64,17 @@ struct
     let relaxed () =
       E.try_with ~fatal:(fun d -> E.emit d; E.emitf `InvalidRoute "Use existing files in the directory") strict
     in
-    if Web.is_online () then strict () else relaxed ()
+    if allow_failed_fetch then relaxed () else strict ()
 
   let git_rev_parse ~root ~ref =
     wrap_bos @@ Bos.OS.Cmd.(in_null |> run_io Cmd.(git ~root % "rev-parse" % "--verify" % "--end-of-options" % ref) |> to_string)
 
-  let reset_repo ~url ~ref ~root ~hash_in_use =
+  let reset_repo ~allow_failed_fetch ~url ~ref ~root ~hash_in_use =
     File.ensure_dir root;
     git_init ~root;
     git_check_ref_format ~root ~ref;
     git_remote_reset_origin ~root ~url;
-    git_fetch_origin ~root ~ref;
+    git_fetch_origin ~allow_failed_fetch ~root ~ref;
     match hash_in_use with
     | None ->
       git_rev_parse ~root ~ref:"HEAD"
@@ -87,7 +87,7 @@ struct
 end
 
 (* more checking about [ref] *)
-let load_git_repo {root; lock; hash_in_use; url_in_use} {url; ref; path} =
+let load_git_repo ~allow_failed_fetch {root; lock; hash_in_use; url_in_use} {url; ref; path} =
   E.tracef "Git.load_git_repo" @@ fun () ->
   Utils.with_mutex lock @@ fun () ->
   let url_digest = Digest.to_hex @@ Digest.string url in
@@ -99,7 +99,7 @@ let load_git_repo {root; lock; hash_in_use; url_in_use} {url; ref; path} =
     | _ -> ()
   end;
   let hash =
-    G.reset_repo ~root:git_root ~url ~ref
+    G.reset_repo ~allow_failed_fetch ~root:git_root ~url ~ref
       ~hash_in_use:(Hashtbl.find_opt hash_in_use url_digest)
   in
   Hashtbl.replace hash_in_use url_digest hash;
@@ -117,6 +117,12 @@ let load_crate crate_root =
     Hashtbl.replace loaded_crates crate_root crate;
     crate
 
-let route ~crate =
+let route ?allow_failed_fetch crate =
   let crate = load_crate crate in
-  fun param -> load_git_repo crate @@ parse_param param
+  fun param ->
+    let allow_failed_fetch =
+      match allow_failed_fetch with
+      | None -> not @@ Web.is_online ()
+      | Some strict -> strict
+    in
+    load_git_repo ~allow_failed_fetch crate @@ parse_param param
