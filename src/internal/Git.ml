@@ -57,9 +57,14 @@ struct
     run_null Cmd.(git ~root % "remote" % "add" % "origin" % url)
 
   let git_fetch_origin ~root ~ref =
-    E.try_with ~fatal:(fun d -> E.emit d; E.emitf `InvalidRoute "Use existing files in the directory") @@ fun () ->
-    run_null Cmd.(git ~root % "fetch" % "--quiet" % "--no-tags" % "--recurse-submodules=on-demand" % "--depth=1" % "origin" % ref);
-    run_null Cmd.(git ~root % "reset" % "--quiet" % "--hard" % "--recurse-submodules" % "FETCH_HEAD" % "--")
+    let strict () =
+      run_null Cmd.(git ~root % "fetch" % "--quiet" % "--no-tags" % "--recurse-submodules=on-demand" % "--depth=1" % "origin" % ref);
+      run_null Cmd.(git ~root % "reset" % "--quiet" % "--hard" % "--recurse-submodules" % "FETCH_HEAD" % "--")
+    in
+    let relaxed () =
+      E.try_with ~fatal:(fun d -> E.emit d; E.emitf `InvalidRoute "Use existing files in the directory") strict
+    in
+    if Web.is_online () then strict () else relaxed ()
 
   let git_rev_parse ~root ~ref =
     wrap_bos @@ Bos.OS.Cmd.(in_null |> run_io Cmd.(git ~root % "rev-parse" % "--verify" % "--end-of-options" % ref) |> to_string)
