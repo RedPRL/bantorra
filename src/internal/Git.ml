@@ -41,7 +41,7 @@ struct
 
   let git ~root = Cmd.(v "git" % "-C" % FilePath.to_string root)
 
-  let run_null cmd = wrap_bos @@ Bos.OS.Cmd.(in_null |> run_io cmd |> to_null)
+  let run_null ?err cmd = wrap_bos @@ Bos.OS.Cmd.(in_null |> run_io ?err cmd |> to_null)
 
   let git_check_ref_format ~root ~ref =
     run_null Cmd.(git ~root % "check-ref-format" %  "--allow-onelevel" % ref)
@@ -50,13 +50,15 @@ struct
     run_null Cmd.(git ~root % "init" %  "--quiet")
 
   let git_remote_reset_origin ~root ~url =
-    (E.try_with ~fatal:(fun _ -> ()) @@ fun () -> run_null Cmd.(git ~root % "remote" % "remove" % "origin"));
+    begin
+      E.try_with ~fatal:(fun _ -> ()) @@ fun () ->
+      run_null ~err:Bos.OS.Cmd.err_null Cmd.(git ~root % "remote" % "remove" % "origin")
+    end;
     run_null Cmd.(git ~root % "remote" % "add" % "origin" % url)
 
   let git_fetch_origin ~root ~ref =
-    run_null Cmd.(git ~root % "fetch" % "--quiet" % "--no-tags" % "--recurse-submodules=on-demand" % "--depth=1" % "origin" % ref)
-
-  let git_reset ~root =
+    E.try_with ~fatal:E.emit @@ fun () ->
+    run_null Cmd.(git ~root % "fetch" % "--quiet" % "--no-tags" % "--recurse-submodules=on-demand" % "--depth=1" % "origin" % ref);
     run_null Cmd.(git ~root % "reset" % "--quiet" % "--hard" % "--recurse-submodules" % "FETCH_HEAD" % "--")
 
   let git_rev_parse ~root ~ref =
@@ -70,10 +72,8 @@ struct
     git_fetch_origin ~root ~ref;
     match hash_in_use with
     | None ->
-      git_reset ~root;
       git_rev_parse ~root ~ref:"HEAD"
     | Some hash_in_use ->
-      git_reset ~root;
       let hash = git_rev_parse ~root ~ref:"HEAD" in
       if hash_in_use <> hash then
         E.fatalf `InvalidRoute "Inconsistent Git commits in use: %s and %s for %s" hash hash_in_use url
