@@ -1,0 +1,16 @@
+(library
+ (name Bantorra)
+ (public_name bantorra)
+ (libraries
+   algaeff
+   asai
+   bos
+   bwd
+   ezjsonm
+   findlib
+   fpath
+   json-data-encoding
+   unix
+ ))
+
+(include_subdirs unqualified)
