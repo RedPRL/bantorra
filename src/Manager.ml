@@ -26,7 +26,7 @@ let load_library_from_root lm lib_root =
   cache_library lm lib; lib
 
 let load_library_from_route lm ?starting_dir route =
-  let lib_root = Router.run ?starting_dir @@ fun () -> lm.router route in
+  let lib_root = Router.run ~version:lm.version ?starting_dir @@ fun () -> lm.router route in
   load_library_from_root lm lib_root
 
 let load_library_from_route_with_cwd lm route  =

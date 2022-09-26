@@ -4,9 +4,11 @@ type param = Json_repr.ezjsonm
 type t = param -> FilePath.t
 type pipe = param -> param
 
-module Eff = Algaeff.Reader.Make(struct type env = FilePath.t option end)
-let get_starting_dir = Eff.read
-let run ?starting_dir = Eff.run ~env:starting_dir
+type env = {version : string; starting_dir : FilePath.t option}
+module Eff = Algaeff.Reader.Make(struct type nonrec env = env end)
+let get_version () = (Eff.read ()).version
+let get_starting_dir () = (Eff.read ()).starting_dir
+let run ~version ?starting_dir = Eff.run ~env:{version; starting_dir}
 
 let dispatch lookup param =
   let name, param = Marshal.destruct Json_encoding.(tup2 string any_ezjson_value) param in
@@ -14,7 +16,7 @@ let dispatch lookup param =
   | Some route -> route param
   | None -> E.fatalf `InvalidRoute "Router %s does not exist" name
 
-let fix ?(hop_limit=10) (f : t -> t) route =
+let fix ?(hop_limit=255) (f : t -> t) route =
   let rec go i route =
     if i <= 0 then
       E.fatalf `InvalidLibrary "Exceeded hop limit (%d)" hop_limit
@@ -31,6 +33,8 @@ let local ?relative_to ~expanding_tilde param =
   FilePath.of_string ?relative_to ?expanding_tilde path
 
 let rewrite ?(recursively=false) ?(err_on_missing=false) lookup param =
+  if recursively && err_on_missing then
+    E.fatalf `InvalidRouter "Infinitely looping rewrite router (recursively + err_on_missing)";
   let param = Marshal.normalize param in
   let rec go param =
     match lookup param with
@@ -41,7 +45,7 @@ let rewrite ?(recursively=false) ?(err_on_missing=false) lookup param =
 (** Configuration files *)
 
 type table = (Marshal.value, Marshal.value) Hashtbl.t
-let parse_config = ConfigFile.parse
-let read_config = ConfigFile.read
-let get_web_config = ConfigFile.get_web
-let write_config = ConfigFile.write
+let parse_config s = ConfigFile.parse ~version:(get_version ()) s
+let read_config p = ConfigFile.read ~version:(get_version ()) p
+let get_web_config u = ConfigFile.get_web ~version:(get_version ()) u
+let write_config p tbl = ConfigFile.write ~version:(get_version ()) p tbl
