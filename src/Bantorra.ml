@@ -5,4 +5,5 @@ module Error = Error
 module UnitPath = UnitPath
 module FilePath = FilePath
 module File = File
+module Web = Web
 module Marshal = Marshal

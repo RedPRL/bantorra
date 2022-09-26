@@ -16,7 +16,9 @@ val basename : t -> string
 val has_ext : string -> t -> bool
 val add_ext : string -> t -> t
 val rem_ext : t -> t
+
 val add_unit_seg : t -> string -> t
+(** Append a unit segment to a file path. *)
 
 val append_unit : t -> UnitPath.t -> t
 (** Append a unit path to a file path. *)
@@ -26,4 +28,6 @@ val to_fpath : t -> Fpath.t
 val of_string : ?relative_to:t -> ?expanding_tilde:t -> string -> t
 val to_string : t -> string
 val pp : relative_to:t -> Format.formatter -> t -> unit
-val dump : Format.formatter -> t -> unit
+
+val pp_abs : Format.formatter -> t -> unit
+(** An alias of [Fpath.pp]. *)

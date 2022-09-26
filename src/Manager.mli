@@ -1,3 +1,5 @@
+(** Library managers. *)
+
 (** {1 Types} *)
 
 type t
@@ -21,7 +23,7 @@ val init : version:string -> anchor:string -> Router.t -> t
 
 (** {1 Library Loading} *)
 
-(** A library is identified by a JSON file in its root directory, which is called "anchor". *)
+(** A library is identified by a JSON file in its root directory, which is called an {e anchor}. *)
 
 val load_library_from_root : t -> FilePath.t -> library
 (** [load_library_from_root manager lib_root] loads the library at the directory [lib_root]

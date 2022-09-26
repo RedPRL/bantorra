@@ -8,14 +8,6 @@ module Eff = Algaeff.Reader.Make(struct type env = FilePath.t option end)
 let get_starting_dir = Eff.read
 let run ?starting_dir = Eff.run ~env:starting_dir
 
-type table = (Marshal.value, Marshal.value) Hashtbl.t
-
-let read_config = ConfigFile.read
-
-let read_config_url = ConfigFile.read_url
-
-let write_config = ConfigFile.write
-
 let dispatch lookup param =
   let name, param = Marshal.destruct Json_encoding.(tup2 string any_ezjson_value) param in
   match lookup name with
@@ -45,3 +37,11 @@ let rewrite ?(recursively=false) ?(err_on_missing=false) lookup param =
     | None -> if err_on_missing then E.fatalf `InvalidRoute "Entry %s does not exist" (Marshal.to_string param) else param
     | Some param -> if recursively then go param else param
   in go param
+
+(** Configuration files *)
+
+type table = (Marshal.value, Marshal.value) Hashtbl.t
+let parse_config = ConfigFile.parse
+let read_config = ConfigFile.read
+let get_web_config = ConfigFile.get_web
+let write_config = ConfigFile.write

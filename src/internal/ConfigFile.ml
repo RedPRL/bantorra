@@ -13,8 +13,8 @@ struct
   let config v = J.obj2 (format v) table
 end
 
-let parse ~version json : t =
-  let (), l = Marshal.parse (Json.config version) json in
+let parse ~version str : t =
+  let (), l = Marshal.parse (Json.config version) str in
   let table = Hashtbl.create 0 in
   l |> List.iter (fun (key, value) ->
       let key = Marshal.normalize key in
@@ -28,7 +28,7 @@ let parse ~version json : t =
 let read ~version path : t =
   parse ~version @@ File.read path
 
-let read_url ~version url : t =
+let get_web ~version url : t =
   parse ~version @@ Web.get url
 
 let write ~version path table =

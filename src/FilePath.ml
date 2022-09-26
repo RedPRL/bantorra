@@ -23,7 +23,8 @@ let rem_ext ext = Fpath.rem_ext ext
 let add_ext = Fpath.add_ext
 
 let add_unit_seg p s =
-  UnitPath.assert_seg s;
+  if not (UnitPath.is_seg s) then
+    E.fatalf `System "%s not a valid unit segment" s;
   Fpath.add_seg p s
 
 let append_unit p u =
@@ -58,7 +59,7 @@ let of_string ?relative_to ?expanding_tilde p =
 
 let to_string = Fpath.to_string
 
-let dump = Fpath.pp
+let pp_abs = Fpath.pp
 
 let pp ~relative_to fmt p =
   let p =

@@ -1,3 +1,5 @@
+(** Basic I/O. *)
+
 (** {1 Path types} *)
 
 type path = FilePath.t

@@ -26,10 +26,10 @@ let to_list l = l
 
 let of_list l = List.iter assert_seg l; l
 
-let of_string ?(accept_ending_slash=false) ?(allow_extra_dots=false) p =
+let of_string ?(allow_ending_slash=false) ?(allow_extra_dots=false) p =
   E.tracef "UnitPath.of_string(%s)" p @@ fun () ->
   let p =
-    if accept_ending_slash && String.ends_with ~suffix:"/" p then
+    if allow_ending_slash && String.ends_with ~suffix:"/" p then
       String.sub p 0 (String.length p - 1)
     else
       p

@@ -12,7 +12,8 @@ let cwd = run_bantorra File.get_cwd
 
     This router will route [["local", path]] to local path [path] and
     [["git", git_params]] to the git repo specified by [git_params],
-    placing cloned git repositories under the directory [_build/git]. *)
+    placing cloned git repositories under the directory [_build/git].
+*)
 let router = run_bantorra @@ fun () ->
   (* This is for calculating the absolute path to [_build/git]. *)
   let current_lib_root, _ = File.locate_anchor ~anchor:".lib" cwd in
