@@ -1,14 +1,14 @@
-# Bantorra: Library Management
+# Bantorra: 📚 Library Management 🔖
 
 _Bantorra_ is an OCaml package for loading user libraries and resolving unit paths into file paths. The design is informed by proof assistants based on dependent type theory, where it is common to work with source code directly.
 
-- [Introduction](https://RedPRL.org/bantorra/bantorra).
-- [API documentation](https://RedPRL.org/bantorra/bantorra/Bantorra).
-- [An example](test/Example.ml).
+- [Introduction to Bantorra](https://RedPRL.org/bantorra/bantorra)
+- [Bantorra API documentation](https://RedPRL.org/bantorra/bantorra/Bantorra)
+- [Example code](test/Example.ml)
 
 ## Installation
 
-You need OCaml 4.13.0 or newer. You can check out the source repository and install the latest version in development:
+You need OCaml 5.0 or newer. You can check out the source repository and install the latest version in development:
 ```
 git clone https://github.com/RedPRL/bantorra.git
 opam install ./bantorra
