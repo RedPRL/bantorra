@@ -4,7 +4,7 @@ _Bantorra_ is an OCaml package for loading user libraries and resolving unit pat
 
 - [Introduction](https://RedPRL.org/bantorra/bantorra).
 - [API documentation](https://RedPRL.org/bantorra/bantorra/Bantorra).
-- [A tiny example](https://RedPRL.org/bantorra).
+- [An example](test/Example.ml).
 
 ## Installation
 
