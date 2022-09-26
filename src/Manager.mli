@@ -16,7 +16,7 @@ type path = UnitPath.t
 val init : version:string -> anchor:string -> Router.t -> t
 (** [init ~anchor router] initiates a library manager for loading libraries.
 
-    @param version Versioning of the router.
+    @param version Format version of anchors and routing-related files.
     @param anchor The file name of the anchors.
     @param router The router. See {!module:Router}.
 *)
@@ -76,6 +76,7 @@ val load_library_from_unit : t -> FilePath.t -> suffix:string -> library * path 
 *)
 
 val library_root : library -> FilePath.t
+(** Get the root directory of a library. *)
 
 (** {1 Composite Resolver}
 
@@ -84,11 +85,11 @@ val library_root : library -> FilePath.t
 
 val resolve :
   t -> ?max_depth:int -> library -> path -> suffix:string -> library * path * FilePath.t
-(** [resolve manager lib path ~suffix] resolves [path] in the library in the library [lib] and returns the {e eventual} library where the unit belongs and the corresponding file path with the specified suffix.
+(** [resolve manager lib path ~suffix] resolves [path] in the library in the library [lib] and returns a triple [(lib, upath, fpath)] where [lib] is the {e eventual} library where the unit belongs, [upath] is the unit path in the eventual library [lib], and [fpath] is the corresponding file path with the specified suffix.
 
     @param manager The library manager.
-    @param max_depth Maximum depth for resolving recursive library mounting. The default value is [100].
+    @param max_depth Maximum depth for resolving recursive library mounting. The default value is [255].
     @param lib The library.
-    @param path The path to be resolved.
+    @param path The unit path to be resolved.
     @param suffix The suffix shared by all the units in the file system.
 *)

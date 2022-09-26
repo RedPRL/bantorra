@@ -47,7 +47,7 @@ let load_library_from_unit lm filepath ~suffix =
 
 let library_root = Library.root
 
-let resolve lm ?(max_depth=100) =
+let resolve lm ?(max_depth=255) =
   let rec global ~depth ?starting_dir route path ~suffix =
     E.tracef "Resolving library via route %a" (Json_repr.pp (module Json_repr.Ezjsonm)) route @@ fun () ->
     if depth > max_depth then
