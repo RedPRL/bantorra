@@ -48,8 +48,8 @@ val fix : ?hop_limit:int -> (t -> t) -> t
 
 (** {2 Base Routers} *)
 
-val local : ?relative_to:FilePath.t -> expanding_tilde:bool -> t
-(** [local] accepts a JSON string [path] and return the [path] as a file path.
+val file : ?relative_to:FilePath.t -> expanding_tilde:bool -> t
+(** [file] accepts a JSON string [path] and return the [path] as a file path.
 
     @param relative_to The base directory to turn relative paths to absolute paths. Without setting this argument, relative paths will be rejected.
     @param expanding_tilde Whether to expand the tilde prefix in a path. (Recommended in most cases.)

@@ -27,7 +27,7 @@ let fix ?(hop_limit=255) (f : t -> t) route =
 
 let git = Git.route
 
-let local ?relative_to ~expanding_tilde param =
+let file ?relative_to ~expanding_tilde param =
   let path = Marshal.destruct Json_encoding.string param in
   let expanding_tilde = if expanding_tilde then Some (File.get_home ()) else None in
   FilePath.of_string ?relative_to ?expanding_tilde path

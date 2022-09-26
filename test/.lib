@@ -1,4 +1,0 @@
-{
-  "format": "1.0.0",
-  "mounts": { "std/num": ["local", "./lib/number"] }
-}

@@ -10,23 +10,23 @@ let cwd = run_bantorra File.get_cwd
 
 (** Create the router.
 
-    This router will route [["local", path]] to local path [path] and
+    This router will route [["file", path]] to file [path] and
     [["git", git_params]] to the git repo specified by [git_params],
     placing cloned git repositories under the directory [_build/git].
 *)
 let router = run_bantorra @@ fun () ->
   (* This is for calculating the absolute path to [_build/git]. *)
-  let current_lib_root, _ = File.locate_anchor ~anchor:".lib" cwd in
+  let current_lib_root, _ = File.locate_anchor ~anchor:"anchor.json" cwd in
   Router.dispatch @@
   function
-  | "local" -> Option.some @@
-    Router.local ?relative_to:(Router.get_starting_dir ()) ~expanding_tilde:true
+  | "file" -> Option.some @@
+    Router.file ?relative_to:(Router.get_starting_dir ()) ~expanding_tilde:true
   | "git" -> Option.some @@
     Router.git (FilePath.of_string ~relative_to:current_lib_root "./_build/git")
   | _ -> None
 
 (** Get a library manager. *)
-let manager = run_bantorra @@ fun () -> Manager.init ~version:"1.0.0" ~anchor:".lib" router
+let manager = run_bantorra @@ fun () -> Manager.init ~version:"1.0.0" ~anchor:"anchor.json" router
 
 (** Load the library where the current directory belongs. *)
 let lib_cwd, _ = run_bantorra @@ fun () -> Manager.load_library_from_cwd manager
@@ -36,7 +36,7 @@ let lib_number =
   run_bantorra @@ fun () ->
   Manager.load_library_from_route manager
     (* The argument sent to the router, as a JSON value. *)
-    (`A [`String "local"; `String "./lib/number"])
+    (`A [`String "file"; `String "./lib/number"])
     (* Use the current directory as the starting directory (or the relative paths will fail). *)
     ~starting_dir:cwd
 
@@ -75,7 +75,7 @@ let _local_lib, _local_path, filepath2 =
     {v
 {
   "format": "1.0.0",
-  "mounts": { "std/num": ["local", "./lib/number"] }
+  "mounts": { "std/num": ["file", "./lib/number"] }
 }
     v}
 *)
