@@ -99,20 +99,23 @@ val git : ?err_on_failed_fetch:bool -> FilePath.t -> t
 
    [rewrite] is an array of pairs of JSON values. If the property [rewrite] is missing, it is understood as the empty array. The array will be parsed as a {{!type:table}rewrite table}. The table is intended to be used with {!val:rewrite} as follows:
    {[
-     rewrite (Hashtbl.find_opt (read_config ~version:"1.0.0" "file"))
+     rewrite (lookup_table (read_table ~version:"1.0.0" "file"))
    ]}
 
    Note: the format version string of the configuration files should match that used by the library manager.
 *)
 
-val parse_config : string -> table
-(** [parse_config str] parse [str] as a table. *)
+val lookup_table : table -> param -> param option
+(** [lookup_table table param] looks up the (normalized) [param] in [table]. *)
 
-val read_config : FilePath.t -> table
-(** [read_config path] is [parse_config ~version (File.read path)]. *)
+val parse_table : string -> table
+(** [parse_table str] parse [str] as a table. *)
 
-val get_web_config : string -> table
-(** [get_web_config path] is [parse_config ~version (Web.get url)]. *)
+val read_table : FilePath.t -> table
+(** [read_table path] is [parse_table ~version (File.read path)]. *)
 
-val write_config : FilePath.t -> table -> unit
-(** [write_config path table] writes table to the file at [path]. *)
+val get_web_table : string -> table
+(** [get_web_table path] is [parse_table ~version (Web.get url)]. *)
+
+val write_table : FilePath.t -> table -> unit
+(** [write_table path table] writes table to the file at [path]. *)

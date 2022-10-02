@@ -44,8 +44,9 @@ let rewrite ?(recursively=false) ?(err_on_missing=false) lookup param =
 
 (** Configuration files *)
 
-type table = (Marshal.value, Marshal.value) Hashtbl.t
-let parse_config s = ConfigFile.parse ~version:(get_version ()) s
-let read_config p = ConfigFile.read ~version:(get_version ()) p
-let get_web_config u = ConfigFile.get_web ~version:(get_version ()) u
-let write_config p tbl = ConfigFile.write ~version:(get_version ()) p tbl
+type table = Table.t
+let lookup_table = Table.lookup
+let parse_table s = Table.parse ~version:(get_version ()) s
+let read_table p = Table.read ~version:(get_version ()) p
+let get_web_table u = Table.get_web ~version:(get_version ()) u
+let write_table p tbl = Table.write ~version:(get_version ()) p tbl

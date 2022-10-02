@@ -25,6 +25,8 @@ let parse ~version str : t =
     );
   table
 
+let lookup tbl param = Hashtbl.find_opt tbl (Marshal.normalize param)
+
 let read ~version path : t =
   parse ~version @@ File.read path
 
