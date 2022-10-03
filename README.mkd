@@ -1,6 +1,6 @@
-# 📚 Bantorra: Library Management 🔖
+# 📚 bantorra: Library Management 🔖
 
-_Bantorra_ is an OCaml package for loading user libraries and resolving unit paths into file paths. The design is informed by proof assistants based on dependent type theory, where it is common to work with source code directly.
+_bantorra_ is an OCaml package for loading user libraries and resolving unit paths into file paths. The design is informed by proof assistants based on dependent type theory, where it is common to work with source code directly.
 
 - [Introduction to Bantorra](https://RedPRL.org/bantorra/bantorra)
 - [Bantorra API documentation](https://RedPRL.org/bantorra/bantorra/Bantorra)

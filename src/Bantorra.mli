@@ -1,4 +1,4 @@
-(** The Bantorra library manager. *)
+(** The bantorra library manager. *)
 
 (** {1 Main Modules} *)
 
