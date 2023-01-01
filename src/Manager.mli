@@ -13,11 +13,12 @@ type path = UnitPath.t
 
 (** {1 Initialization} *)
 
-val init : version:string -> anchor:string -> Router.t -> t
+val init : version:string -> anchor:string -> ?premount:Router.param Trie.t -> Router.t -> t
 (** [init ~anchor router] initiates a library manager for loading libraries.
 
     @param version Format version of anchors and routing-related files.
     @param anchor The file name of the anchors.
+    @param premount The pre-mounted routes.
     @param router The router. See {!module:Router}.
 *)
 

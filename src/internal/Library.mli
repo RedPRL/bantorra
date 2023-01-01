@@ -5,11 +5,11 @@ type t
 
 (** {1 Initialization} *)
 
-val load_from_root : version:string -> find_cache:(FilePath.t -> t option) -> anchor:string -> FilePath.t -> t
+val load_from_root : version:string -> premount:Router.param Trie.t -> find_cache:(FilePath.t -> t option) -> anchor:string -> FilePath.t -> t
 
-val load_from_dir : version:string -> find_cache:(FilePath.t -> t option) -> anchor:string -> FilePath.t -> t * UnitPath.t option
+val load_from_dir : version:string -> premount:Router.param Trie.t -> find_cache:(FilePath.t -> t option) -> anchor:string -> FilePath.t -> t * UnitPath.t option
 
-val load_from_unit : version:string -> find_cache:(FilePath.t -> t option) -> anchor:string -> FilePath.t -> suffix:string -> t * UnitPath.t option
+val load_from_unit : version:string -> premount:Router.param Trie.t -> find_cache:(FilePath.t -> t option) -> anchor:string -> FilePath.t -> suffix:string -> t * UnitPath.t option
 
 (** {1 Accessors} *)
 

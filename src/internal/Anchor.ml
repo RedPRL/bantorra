@@ -11,9 +11,9 @@ struct
   let anchor v = J.obj2 (format v) mounts
 end
 
-let read ~version path : t =
+let read ~version ~premount path : t =
   let (), routes = Marshal.read (Json.anchor version) path in
-  let mounts = List.fold_right (fun (path, route) -> Trie.add (UnitPath.of_string path) route) routes Trie.empty in
+  let mounts = List.fold_right (fun (path, route) -> Trie.add (UnitPath.of_string path) route) routes premount in
   { mounts }
 
 let dispatch_path {mounts; _} path = Trie.find path mounts
