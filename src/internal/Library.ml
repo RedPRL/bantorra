@@ -8,26 +8,26 @@ type t =
 
 let (/) = FilePath.add_unit_seg
 
-let load_from_root ~version ~find_cache ~anchor root =
+let load_from_root ~version ~premount ~find_cache ~anchor root =
   E.tracef "Library.load_from_root(%s,-,%s,%a)" version anchor (FilePath.pp ~relative_to:(File.get_cwd ())) root @@ fun () ->
   let root = FilePath.to_dir_path root in
   match find_cache root with
   | Some lib -> lib
   | None ->
-    let loaded_anchor = Anchor.read ~version (root/anchor) in
+    let loaded_anchor = Anchor.read ~version ~premount (root/anchor) in
     {root; anchor; loaded_anchor}
 
-let load_from_dir ~version ~find_cache ~anchor dir =
+let load_from_dir ~version ~premount ~find_cache ~anchor dir =
   E.tracef "Library.load_from_dir(%s,-,%s,%a)" version anchor (FilePath.pp ~relative_to:(File.get_cwd ())) dir @@ fun () ->
   let dir = FilePath.to_dir_path dir in
   match File.locate_anchor ~anchor dir with
   | root, prefix ->
-    let lib = load_from_root ~version ~find_cache ~anchor root in
+    let lib = load_from_root ~version ~premount ~find_cache ~anchor root in
     if Anchor.path_is_local lib.loaded_anchor prefix
     then lib, Some prefix
     else lib, None
 
-let load_from_unit ~version ~find_cache ~anchor filepath ~suffix =
+let load_from_unit ~version ~premount ~find_cache ~anchor filepath ~suffix =
   E.tracef "Library.load_from_dir(%s,-,%s,%a,%s)" version anchor (FilePath.pp ~relative_to:(File.get_cwd ())) filepath suffix @@ fun () ->
   if not @@ File.file_exists filepath then
     E.fatalf `InvalidLibrary "The unit %a does not exist" (FilePath.pp ~relative_to:(File.get_cwd ())) filepath
@@ -36,7 +36,7 @@ let load_from_unit ~version ~find_cache ~anchor filepath ~suffix =
     E.fatalf `InvalidLibrary "The file path %a does not have the suffix `%s'" (FilePath.pp ~relative_to:(File.get_cwd ())) filepath suffix;
   let filepath = FilePath.rem_ext filepath in
   let root, path_opt =
-    load_from_dir ~version ~find_cache ~anchor (FilePath.parent filepath)
+    load_from_dir ~version ~premount ~find_cache ~anchor (FilePath.parent filepath)
   in
   root, Option.map (fun path -> UnitPath.add_seg path (FilePath.basename filepath)) path_opt
 

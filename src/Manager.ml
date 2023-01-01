@@ -3,6 +3,7 @@ module E = Error
 type t =
   { version : string
   ; anchor : string
+  ; premount : Router.param Trie.t
   ; router : Router.t
   ; lock : Mutex.t
   ; loaded_libs : (FilePath.t, Library.t) Hashtbl.t
@@ -10,9 +11,9 @@ type t =
 type path = UnitPath.t
 type library = Library.t
 
-let init ~version ~anchor router =
+let init ~version ~anchor ?(premount=Trie.empty) router =
   let loaded_libs = Hashtbl.create 10 in
-  {version; anchor; router; lock = Mutex.create (); loaded_libs}
+  {version; anchor; premount; router; lock = Mutex.create (); loaded_libs}
 
 let find_cache lm = Hashtbl.find_opt lm.loaded_libs
 
@@ -22,7 +23,7 @@ let cache_library lm lib =
 
 let load_library_from_root lm lib_root =
   Utils.with_mutex lm.lock @@ fun () ->
-  let lib = Library.load_from_root ~version:lm.version ~find_cache:(find_cache lm) ~anchor:lm.anchor lib_root in
+  let lib = Library.load_from_root ~version:lm.version ~premount:lm.premount ~find_cache:(find_cache lm) ~anchor:lm.anchor lib_root in
   cache_library lm lib; lib
 
 let load_library_from_route lm ?starting_dir route =
@@ -34,7 +35,7 @@ let load_library_from_route_with_cwd lm route  =
 
 let load_library_from_dir lm dir =
   Utils.with_mutex lm.lock @@ fun () ->
-  let lib, path_opt = Library.load_from_dir ~version:lm.version ~find_cache:(find_cache lm) ~anchor:lm.anchor dir in
+  let lib, path_opt = Library.load_from_dir ~version:lm.version ~premount:lm.premount ~find_cache:(find_cache lm) ~anchor:lm.anchor dir in
   cache_library lm lib; lib, path_opt
 
 let load_library_from_cwd lm =
@@ -42,7 +43,7 @@ let load_library_from_cwd lm =
 
 let load_library_from_unit lm filepath ~suffix =
   Utils.with_mutex lm.lock @@ fun () ->
-  let lib, path_opt = Library.load_from_unit ~version:lm.version ~find_cache:(find_cache lm) ~anchor:lm.anchor filepath ~suffix in
+  let lib, path_opt = Library.load_from_unit ~version:lm.version ~premount:lm.premount ~find_cache:(find_cache lm) ~anchor:lm.anchor filepath ~suffix in
   cache_library lm lib; lib, path_opt
 
 let library_root = Library.root

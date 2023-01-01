@@ -5,7 +5,7 @@ type t
 
 (** {1 Anchor I/O} *)
 
-val read : version:string -> FilePath.t -> t
+val read : version:string -> premount:Router.param Trie.t -> FilePath.t -> t
 (** [read path] read the content of an anchor file. *)
 
 (** {1 Accessors} *)
