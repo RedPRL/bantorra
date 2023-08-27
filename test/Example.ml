@@ -1,5 +1,5 @@
 (** Set up the effect handler of error messages. See the documentation of Asai. *)
-module Terminal = Asai_unix.Make(Bantorra.ErrorCode)
+module Terminal = Asai_tty.Make(Bantorra.ErrorCode)
 let run_bantorra f = Bantorra.Error.run f
     ~emit:Terminal.display ~fatal:(fun d -> Terminal.display d; failwith "error")
 
