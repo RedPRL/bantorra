@@ -32,15 +32,32 @@ let file ?relative_to ~expanding_tilde param =
   let expanding_tilde = if expanding_tilde then Some (File.get_home ()) else None in
   FilePath.of_string ?relative_to ?expanding_tilde path
 
-let rewrite ?(recursively=false) ?(err_on_missing=false) lookup param =
-  if recursively && err_on_missing then
-    E.fatalf `InvalidRouter "Infinitely looping rewrite router (recursively + err_on_missing)";
+let rewrite_try_once lookup param =
   let param = Marshal.normalize param in
-  let rec go param =
-    match lookup param with
-    | None -> if err_on_missing then E.fatalf `InvalidRoute "Entry %s does not exist" (Marshal.to_string param) else param
-    | Some param -> if recursively then go param else param
-  in go param
+  Option.value ~default:param (lookup param)
+
+let rewrite_err_on_missing lookup param =
+  let param = Marshal.normalize param in
+  match lookup param with
+  | None -> E.fatalf `InvalidRoute "Entry %s does not exist" (Marshal.to_string param)
+  | Some param -> param
+
+let rewrite_recursively max_tries lookup param =
+  let rec go i =
+    if i = max_tries then
+      E.fatalf `InvalidRoute "Could not resolve %s within %i rewrites" (Marshal.to_string param) max_tries
+    else
+      let param = Marshal.normalize param in
+      match lookup param with
+      | None -> go (i+1)
+      | Some param -> param
+  in go 0
+
+let rewrite ?(mode=`TryOnce) lookup param =
+  match mode with
+  | `TryOnce -> rewrite_try_once lookup param
+  | `ErrOnMissing -> rewrite_err_on_missing lookup param
+  | `Recursively i -> rewrite_recursively i lookup param
 
 (** Configuration files *)
 

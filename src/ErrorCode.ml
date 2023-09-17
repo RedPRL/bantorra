@@ -15,8 +15,8 @@ type t =
 (** Default severity of error codes. See the Asai documentation. *)
 let default_severity =
   function
-  | `InvalidRouter -> Asai.Severity.Bug
-  | _ -> Asai.Severity.Error
+  | `InvalidRouter -> Asai.Diagnostic.Bug
+  | _ -> Asai.Diagnostic.Error
 
 (** String representation of error codes. See the Asai documentation. *)
 let to_string : t -> string =

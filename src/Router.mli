@@ -6,7 +6,7 @@ type param = Marshal.value
 (** The type of parameters to routers. *)
 
 type t = param -> FilePath.t
-(** The type of library routers. *)
+(** The type of library routers. A router is a function from JSON parameters to file paths. *)
 
 type pipe = param -> param
 (** The type of parameter transformers. *)
@@ -32,12 +32,11 @@ val run : version:string -> ?starting_dir:FilePath.t -> (unit -> 'a) -> 'a
 val dispatch : (string -> t option) -> t
 (** [dispatch lookup] accepts JSON arrays of the form [[name, arg]] and runs the router [lookup name] with the JSON parameter [arg] *)
 
-val rewrite : ?recursively:bool -> ?err_on_missing:bool -> (Marshal.value -> Marshal.value option) -> pipe
+val rewrite : ?mode:[ `TryOnce | `ErrOnMissing | `Recursively of int ] -> (param -> param option) -> pipe
 (** [rewrite lookup] rewrites the JSON parameter [param] to [param'] if [lookup param] is [Some param'].
     Otherwise, if [lookup param] is [None], the [param] is returned unchanged.
 
-    @param recursively Whether to apply [lookup] until it returns [None]. The default value is [false]. Currently, the code does not prevent infinite looping.
-    @param err_on_missing Whether to err (instead of returning the original parameter) when [lookup param] is [None]. The default value is [false].
+    @param mode [`Recursively t] means applying [lookup] until it returns [None], and then the parameter before reaching [None] is returned. [`ErrOnMissing] means erring when [lookup param] is [None] (instead of returning the original parameter) when [lookup param] is [None].
 *)
 
 val fix : ?hop_limit:int -> (t -> t) -> t
