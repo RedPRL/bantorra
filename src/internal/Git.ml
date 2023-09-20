@@ -62,7 +62,7 @@ struct
       run_null Cmd.(git ~root % "reset" % "--quiet" % "--hard" % "--recurse-submodules" % "FETCH_HEAD" % "--")
     in
     let relaxed () =
-      E.try_with ~fatal:(fun d -> E.emit d; E.emitf `InvalidRoute "Network unavailable; use local copies") strict
+      E.try_with ~fatal:(fun d -> E.emit_diagnostic d; E.emitf `InvalidRoute "Network unavailable; use local copies") strict
     in
     if err_on_failed_fetch then strict () else relaxed ()
 
@@ -89,7 +89,7 @@ end
 (* more checking about [ref] *)
 let load_git_repo ~err_on_failed_fetch {root; lock; hash_in_use; url_in_use} {url; ref; path} =
   E.tracef "Git.load_git_repo" @@ fun () ->
-  Utils.with_mutex lock @@ fun () ->
+  Mutex.protect lock @@ fun () ->
   let url_digest = Digest.to_hex @@ Digest.string url in
   let git_root = FilePath.append_unit root (UnitPath.of_list ["repos"; url_digest]) in
   begin
@@ -109,7 +109,7 @@ let load_git_repo ~err_on_failed_fetch {root; lock; hash_in_use; url_in_use} {ur
 let global_lock = Mutex.create ()
 
 let load_crate crate_root =
-  Utils.with_mutex global_lock @@ fun () ->
+  Mutex.protect global_lock @@ fun () ->
   match Hashtbl.find_opt loaded_crates crate_root with
   | Some crate -> crate
   | None -> File.ensure_dir crate_root;

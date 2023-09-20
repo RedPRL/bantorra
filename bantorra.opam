@@ -12,7 +12,7 @@ bug-reports: "https://github.com/RedPRL/bantorra/issues"
 dev-repo: "git+https://github.com/RedPRL/bantorra.git"
 depends: [
   "dune" {>= "2.0"}
-  "ocaml" {>= "5.0"}
+  "ocaml" {>= "5.1"}
   "asai"
   "algaeff" {>= "0.2"}
   "bos" {>= "0.2"}

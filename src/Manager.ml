@@ -22,7 +22,7 @@ let cache_library lm lib =
   Hashtbl.replace lm.loaded_libs lib_root lib
 
 let load_library_from_root lm lib_root =
-  Utils.with_mutex lm.lock @@ fun () ->
+  Mutex.protect lm.lock @@ fun () ->
   let lib = Library.load_from_root ~version:lm.version ~premount:lm.premount ~find_cache:(find_cache lm) ~anchor:lm.anchor lib_root in
   cache_library lm lib; lib
 
@@ -34,7 +34,7 @@ let load_library_from_route_with_cwd lm route  =
   load_library_from_route lm ~starting_dir:(File.get_cwd ()) route
 
 let load_library_from_dir lm dir =
-  Utils.with_mutex lm.lock @@ fun () ->
+  Mutex.protect lm.lock @@ fun () ->
   let lib, path_opt = Library.load_from_dir ~version:lm.version ~premount:lm.premount ~find_cache:(find_cache lm) ~anchor:lm.anchor dir in
   cache_library lm lib; lib, path_opt
 
@@ -42,7 +42,7 @@ let load_library_from_cwd lm =
   load_library_from_dir lm @@ File.get_cwd ()
 
 let load_library_from_unit lm filepath ~suffix =
-  Utils.with_mutex lm.lock @@ fun () ->
+  Mutex.protect lm.lock @@ fun () ->
   let lib, path_opt = Library.load_from_unit ~version:lm.version ~premount:lm.premount ~find_cache:(find_cache lm) ~anchor:lm.anchor filepath ~suffix in
   cache_library lm lib; lib, path_opt
 
