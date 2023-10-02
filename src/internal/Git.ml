@@ -60,8 +60,7 @@ struct
       run_null Cmd.(git ~root % "reset" % "--quiet" % "--hard" % "--recurse-submodules" % "FETCH_HEAD" % "--")
     in
     let relaxed () =
-      Logger.try_with strict
-        ~fatal:(fun d -> Logger.emit_diagnostic d; Logger.emitf `InvalidRoute "Network unavailable; use local copies")
+      Logger.try_with strict ~fatal:Logger.emit_diagnostic
     in
     if err_on_failed_fetch then strict () else relaxed ()
 
