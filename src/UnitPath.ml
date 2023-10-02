@@ -1,5 +1,3 @@
-module E = Error
-
 type t = string list (* all segments must be non-empty and satisfy Fpath.is_seg *)
 
 let equal = List.equal String.equal
@@ -14,7 +12,7 @@ let is_seg s = s <> "" && Fpath.is_seg s && not (Fpath.is_rel_seg s)
 
 let assert_seg s =
   if not (is_seg s) then
-    E.fatalf `InvalidLibrary "%s not a valid unit segment" s
+    Logger.fatalf `InvalidLibrary "`%s' not a valid unit segment" (String.escaped s)
 
 let of_seg s = assert_seg s; [s]
 
@@ -27,7 +25,7 @@ let to_list l = l
 let of_list l = List.iter assert_seg l; l
 
 let of_string ?(allow_ending_slash=false) ?(allow_extra_dots=false) p =
-  E.tracef "UnitPath.of_string(%s)" p @@ fun () ->
+  Logger.tracef "When parsing `%s' as a unit path" (String.escaped p) @@ fun () ->
   let p =
     if allow_ending_slash && String.ends_with ~suffix:"/" p then
       String.sub p 0 (String.length p - 1)

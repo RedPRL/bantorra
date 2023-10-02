@@ -6,9 +6,7 @@ module Manager = Manager
 
 module Router = Router
 
-module ErrorCode = ErrorCode
-
-module Error = Error
+module Logger = Logger
 
 (** {1 Helper Modules} *)
 

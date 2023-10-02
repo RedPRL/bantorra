@@ -1,5 +1,3 @@
-module E = Error
-
 type param = Json_repr.ezjsonm
 type t = param -> FilePath.t
 type pipe = param -> param
@@ -14,12 +12,12 @@ let dispatch lookup param =
   let name, param = Marshal.destruct Json_encoding.(tup2 string any_ezjson_value) param in
   match lookup name with
   | Some route -> route param
-  | None -> E.fatalf `InvalidRoute "Router %s does not exist" name
+  | None -> Logger.fatalf `InvalidRoute "Router %s does not exist" name
 
 let fix ?(hop_limit=255) (f : t -> t) route =
   let rec go i route =
     if i <= 0 then
-      E.fatalf `InvalidLibrary "Exceeded hop limit (%d)" hop_limit
+      Logger.fatalf `InvalidLibrary "Exceeded hop limit (%d)" hop_limit
     else
       f (go (i-1)) route
   in
@@ -39,13 +37,13 @@ let rewrite_try_once lookup param =
 let rewrite_err_on_missing lookup param =
   let param = Marshal.normalize param in
   match lookup param with
-  | None -> E.fatalf `InvalidRoute "Entry %s does not exist" (Marshal.to_string param)
+  | None -> Logger.fatalf `InvalidRoute "Entry `%s' does not exist" (Marshal.to_string param)
   | Some param -> param
 
 let rewrite_recursively max_tries lookup param =
   let rec go i =
     if i = max_tries then
-      E.fatalf `InvalidRoute "Could not resolve %s within %i rewrites" (Marshal.to_string param) max_tries
+      Logger.fatalf `InvalidRoute "Could not resolve %s within %i rewrites" (Marshal.to_string param) max_tries
     else
       let param = Marshal.normalize param in
       match lookup param with

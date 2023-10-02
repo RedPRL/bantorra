@@ -1,5 +1,3 @@
-module E = Error
-
 type t = (Marshal.value, Marshal.value) Hashtbl.t
 
 module Json =
@@ -19,7 +17,7 @@ let parse ~version str : t =
   l |> List.iter (fun (key, value) ->
       let key = Marshal.normalize key in
       if Hashtbl.mem table key then
-        E.fatalf `InvalidRouter "Duplicate rewrite key %s" (Marshal.to_string key)
+        Logger.fatalf `InvalidRouter "Duplicate rewrite key `%s'" (Marshal.to_string key)
       else
         Hashtbl.replace table key value
     );

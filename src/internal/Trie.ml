@@ -33,7 +33,7 @@ let add p d =
     | Some n -> Some (go_node p d n)
   in
   try go (UnitPath.to_list p) d
-  with DuplicateUnitPath -> Error.fatalf `JSONFormat "Multiple libraries mounted at %a" UnitPath.pp p
+  with DuplicateUnitPath -> Logger.fatalf `JSONFormat "Multiple libraries mounted at `%a'" UnitPath.pp p
 
 let rec find_node p n =
   match

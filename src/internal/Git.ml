@@ -1,5 +1,3 @@
-module E = Error
-
 type t =
   { root : FilePath.t
   ; lock : Mutex.t
@@ -37,7 +35,7 @@ struct
   let wrap_bos =
     function
     | Ok r -> r
-    | Error (`Msg m) -> E.fatalf `InvalidRoute "%s" m
+    | Error (`Msg m) -> Logger.fatalf `InvalidRoute "%s" m
 
   let git ~root = Cmd.(v "git" % "-C" % FilePath.to_string root)
 
@@ -51,7 +49,7 @@ struct
 
   let git_remote_reset_origin ~root ~url =
     begin
-      E.try_with ~fatal:(fun _ -> ()) @@ fun () ->
+      Logger.try_with ~fatal:(fun _ -> ()) @@ fun () ->
       run_null ~err:Bos.OS.Cmd.err_null Cmd.(git ~root % "remote" % "remove" % "origin")
     end;
     run_null Cmd.(git ~root % "remote" % "add" % "origin" % url)
@@ -62,7 +60,8 @@ struct
       run_null Cmd.(git ~root % "reset" % "--quiet" % "--hard" % "--recurse-submodules" % "FETCH_HEAD" % "--")
     in
     let relaxed () =
-      E.try_with ~fatal:(fun d -> E.emit_diagnostic d; E.emitf `InvalidRoute "Network unavailable; use local copies") strict
+      Logger.try_with strict
+        ~fatal:(fun d -> Logger.emit_diagnostic d; Logger.emitf `InvalidRoute "Network unavailable; use local copies")
     in
     if err_on_failed_fetch then strict () else relaxed ()
 
@@ -81,21 +80,21 @@ struct
     | Some hash_in_use ->
       let hash = git_rev_parse ~root ~ref:"HEAD" in
       if hash_in_use <> hash then
-        E.fatalf `InvalidRoute "Inconsistent Git commits in use: %s and %s for %s" hash hash_in_use url
+        Logger.fatalf `InvalidRoute "[@<2>Inconsistent Git commits in use:@ %s and %s for `%s']" hash hash_in_use (String.escaped url)
       else
         hash
 end
 
 (* more checking about [ref] *)
 let load_git_repo ~err_on_failed_fetch {root; lock; hash_in_use; url_in_use} {url; ref; path} =
-  E.tracef "Git.load_git_repo" @@ fun () ->
+  Logger.tracef "When loading the git repository at `%s'" url @@ fun () ->
   Mutex.protect lock @@ fun () ->
   let url_digest = Digest.to_hex @@ Digest.string url in
   let git_root = FilePath.append_unit root (UnitPath.of_list ["repos"; url_digest]) in
   begin
     match Hashtbl.find_opt url_in_use url_digest with
     | Some url_in_use when url_in_use <> url ->
-      E.fatalf `InvalidRoute "Unexpected hash collision for URLs %s and %s" url url_in_use
+      Logger.fatalf `InvalidRoute "Unexpected hash collision for URLs %s and %s" url url_in_use
     | _ -> ()
   end;
   let hash =

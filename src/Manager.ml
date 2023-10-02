@@ -1,5 +1,3 @@
-module E = Error
-
 type t =
   { version : string
   ; anchor : string
@@ -50,9 +48,9 @@ let library_root = Library.root
 
 let resolve lm ?(max_depth=255) =
   let rec global ~depth ?starting_dir route path ~suffix =
-    E.tracef "Resolving library via route %a" (Json_repr.pp (module Json_repr.Ezjsonm)) route @@ fun () ->
+    Logger.tracef "@[<2>When resolving library via the route:@ %a@]" (Json_repr.pp (module Json_repr.Ezjsonm)) route @@ fun () ->
     if depth > max_depth then
-      E.fatalf `InvalidLibrary "Library resolution stack overflow (max depth = %i)." max_depth
+      Logger.fatalf `InvalidLibrary "Library resolution stack overflow (max depth = %i)" max_depth
     else
       let lib = load_library_from_route lm ?starting_dir route in
       Library.resolve ~depth ~global lib path ~suffix

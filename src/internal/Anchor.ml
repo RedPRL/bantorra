@@ -1,5 +1,4 @@
 module J = Json_encoding
-module E = Error
 
 type t = { mounts : Router.param Trie.t }
 

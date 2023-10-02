@@ -1,5 +1,3 @@
-module E = Error
-
 type value = Json_repr.ezjsonm
 
 let rec find_duplicate_key =
@@ -15,7 +13,7 @@ let rec normalize : value -> value =
     let sorted_uniq_pairs = List.sort_uniq (fun (key1, _) (key2, _) -> String.compare key1 key2) pairs in
     if List.length pairs <> List.length sorted_uniq_pairs then
       let sorted_pairs = List.sort (fun (key1, _) (key2, _) -> String.compare key1 key2) pairs in
-      E.fatalf `JSONFormat "Duplicate key " (find_duplicate_key sorted_pairs)
+      Logger.fatalf `JSONFormat "Duplicate key: %s" (find_duplicate_key sorted_pairs)
     else
       `O sorted_uniq_pairs
   | `A elems -> `A (List.map normalize elems)
@@ -25,19 +23,19 @@ let destruct enc json =
   try
     Json_encoding.destruct enc json
   with e ->
-    E.fatalf `JSONFormat "%a" (Json_encoding.print_error ?print_unknown:None) e
+    Logger.fatalf `JSONFormat "%a" (Json_encoding.print_error ?print_unknown:None) e
 
 let construct enc data =
   try
     Json_encoding.construct enc data
   with e ->
-    E.fatalf `JSONFormat "%a" (Json_encoding.print_error ?print_unknown:None) e
+    Logger.fatalf `JSONFormat "%a" (Json_encoding.print_error ?print_unknown:None) e
 
 let parse enc s =
   destruct enc @@
   try Ezjsonm.value_from_string s with
   | Ezjsonm.Parse_error (_, msg) ->
-    E.fatalf `JSONFormat "%s" msg
+    Logger.fatal `JSONFormat msg
 
 let read enc path =
   File.read path |> parse enc
