@@ -17,7 +17,7 @@ let parse ~version str : t =
   l |> List.iter (fun (key, value) ->
       let key = Marshal.normalize key in
       if Hashtbl.mem table key then
-        Logger.fatalf `InvalidRouter "Duplicate rewrite key `%s'" (Marshal.to_string key)
+        Reporter.fatalf InvalidRouter "duplicate@ rewrite@ key@ `%s'" (Marshal.to_string key)
       else
         Hashtbl.replace table key value
     );

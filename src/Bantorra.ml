@@ -1,6 +1,6 @@
 module Manager = Manager
 module Router = Router
-module Logger = Logger
+module Reporter = Reporter
 module UnitPath = UnitPath
 module FilePath = FilePath
 module File = File
