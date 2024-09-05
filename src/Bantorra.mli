@@ -6,7 +6,7 @@ module Manager = Manager
 
 module Router = Router
 
-module Logger = Logger
+module Reporter : Asai.MinimumSigs.Reporter
 
 (** {1 Helper Modules} *)
 

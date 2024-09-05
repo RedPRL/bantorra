@@ -35,7 +35,7 @@ struct
   let wrap_bos =
     function
     | Ok r -> r
-    | Error (`Msg m) -> Logger.fatalf `InvalidRoute "%s" m
+    | Error (`Msg m) -> Reporter.fatalf LibraryNotFound "@[<2>@[routing@ failed:@]@ %s@]" m
 
   let git ~root = Cmd.(v "git" % "-C" % FilePath.to_string root)
 
@@ -49,7 +49,7 @@ struct
 
   let git_remote_reset_origin ~root ~url =
     begin
-      Logger.try_with ~fatal:(fun _ -> ()) @@ fun () ->
+      Reporter.try_with ~fatal:(fun _ -> ()) ~emit:(fun _ -> ()) @@ fun () ->
       run_null ~err:Bos.OS.Cmd.err_null Cmd.(git ~root % "remote" % "remove" % "origin")
     end;
     run_null Cmd.(git ~root % "remote" % "add" % "origin" % url)
@@ -60,7 +60,7 @@ struct
       run_null Cmd.(git ~root % "reset" % "--quiet" % "--hard" % "--recurse-submodules" % "FETCH_HEAD" % "--")
     in
     let relaxed () =
-      Logger.try_with strict ~fatal:Logger.emit_diagnostic
+      Reporter.try_with strict ~fatal:Reporter.emit_diagnostic
     in
     if err_on_failed_fetch then strict () else relaxed ()
 
@@ -79,21 +79,21 @@ struct
     | Some hash_in_use ->
       let hash = git_rev_parse ~root ~ref:"HEAD" in
       if hash_in_use <> hash then
-        Logger.fatalf `InvalidRoute "[@<2>Inconsistent Git commits in use:@ %s and %s for `%s']" hash hash_in_use (String.escaped url)
+        Reporter.fatalf LibraryConflict "inconsistent@ Git@ commits@ %s@ and@ %s@ are@ used@ for@ `%s'" hash hash_in_use (String.escaped url)
       else
         hash
 end
 
 (* more checking about [ref] *)
 let load_git_repo ~err_on_failed_fetch {root; lock; hash_in_use; url_in_use} {url; ref; path} =
-  Logger.tracef "When loading the git repository at `%s'" url @@ fun () ->
+  Reporter.tracef "when@ loading@ the@ git@ repository@ at@ `%s'" url @@ fun () ->
   Mutex.protect lock @@ fun () ->
   let url_digest = Digest.to_hex @@ Digest.string url in
   let git_root = FilePath.append_unit root (UnitPath.of_list ["repos"; url_digest]) in
   begin
     match Hashtbl.find_opt url_in_use url_digest with
     | Some url_in_use when url_in_use <> url ->
-      Logger.fatalf `InvalidRoute "Unexpected hash collision for URLs %s and %s" url url_in_use
+      Reporter.fatalf InvalidRouter "unexpected@ hash@ collision@ of@ URLs@ `%s'@ and@ `%s'" url url_in_use
     | _ -> ()
   end;
   let hash =

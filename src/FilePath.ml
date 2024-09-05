@@ -22,7 +22,7 @@ let add_ext = Fpath.add_ext
 
 let add_unit_seg p s =
   if not (UnitPath.is_seg s) then
-    Logger.fatalf `System "`%s' not a valid unit segment" s;
+    Reporter.fatalf IllFormedFilePath "`%s'@ not@ a@ valid@ unit@ segment" s;
   Fpath.add_seg p s
 
 let append_unit p u =
@@ -42,18 +42,18 @@ let of_fpath ?relative_to ?expanding_tilde p =
     let p_str = Fpath.to_string p in
     if p_str == "~" || String.starts_with ~prefix:"~/" p_str then
       match expanding_tilde with
-      | None -> Logger.fatalf `System "Tilde expansion was not enabled for the file path `%a'" Fpath.pp p
+      | None -> Reporter.fatalf IllFormedFilePath "tilde@ expansion@ is@ not@ enabled@ for@ the@ file@ path@ `%a'" Fpath.pp p
       | Some home ->
         Fpath.v (Fpath.to_string home ^ String.sub p_str 1 (String.length p_str - 1))
     else
-      Logger.fatalf `System "File path `%a' is not an absolute path" Fpath.pp p
+      Reporter.fatalf IllFormedFilePath "file@ path@ `%a'@ is@ not@ an@ absolute@ path" Fpath.pp p
 
 let to_fpath p = p
 
 let of_string ?relative_to ?expanding_tilde p =
-  Logger.tracef "When parsing the file path `%s'" (String.escaped p) @@ fun () ->
+  Reporter.tracef "when@ parsing@ the@ file@ path@ `%s'" (String.escaped p) @@ fun () ->
   match Fpath.of_string p with
-  | Error (`Msg msg) -> Logger.fatal `System msg
+  | Error (`Msg msg) -> Reporter.fatal IllFormedFilePath msg
   | Ok p -> of_fpath ?relative_to ?expanding_tilde p
 
 let to_string = Fpath.to_string
