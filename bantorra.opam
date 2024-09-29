@@ -4,9 +4,9 @@ synopsis: "Extensible Library Management and Path Resolution"
 description: """
 Managing libraries and resolving unit paths within them.
 """
-maintainer: "favonia <favonia@gmail.com>"
-authors: "favonia <favonia@gmail.com>"
-license: "Apache-2.0"
+maintainer: ["favonia <favonia@gmail.com>"]
+authors: ["The RedPRL Development Team"]
+license: "Apache-2.0 WITH LLVM-exception"
 homepage: "https://github.com/RedPRL/bantorra"
 bug-reports: "https://github.com/RedPRL/bantorra/issues"
 dev-repo: "git+https://github.com/RedPRL/bantorra.git"
